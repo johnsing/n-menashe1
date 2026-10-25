@@ -3,13 +3,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FiBook, FiCalendar, FiHeadphones, FiHome, FiMessageSquare, FiVideo,  } from "react-icons/fi";
 
 const tabs = [
-  { href: "/", icon: "🏠", label: "Home" },
-  { href: "/library", icon: "📚", label: "Library" },
-  { href: "/videos", icon: "🎬", label: "Videos" },
-  { href: "/audio", icon: "🎧", label: "Audio" },
-  { href: "/qa", icon: "💬", label: "Q&A" },
+  { href: "/", label: "Home", Icon: FiHome },
+  { href: "/library", label: "Library", Icon: FiBook },
+  { href: "/videos", label: "Videos", Icon: FiVideo },
+  { href: "/audio", label: "Audio", Icon: FiHeadphones },
+  { href: "/qa", label: "Q&A", Icon: FiMessageSquare },
+  { href: "/calendar", label: "Calendar", Icon: FiCalendar },
 ];
 
 export default function TabBar() {
@@ -34,7 +36,7 @@ export default function TabBar() {
             title={tab.label}
           >
             <span className="tabbar-icon" aria-hidden="true">
-              {tab.icon}
+              <tab.Icon />
             </span>
           </Link>
         );

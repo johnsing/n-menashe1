@@ -7,8 +7,14 @@
   --muted: #6b7280;
   --border: #e5e7eb;
   --surface: #f9fafb;
+  --surface-hover: #f3f4f6;
+  --accent: #f5c518; /* gold */
+  --accent-fg: #1a1a1a;
   --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   --max-width: 680px;
+  --max-width-wide: 1080px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,49 +24,125 @@
     --muted: #a1a1aa;
     --border: #27272a;
     --surface: #18181b;
+    --surface-hover: #27272a;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   }
 }
 
 /* ---------- Base ---------- */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  /* stop iOS Safari from inflating text on rotation/zoom */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif; /* system stack renders Hebrew without webfonts */
   background: var(--bg);
   color: var(--fg);
   line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  /* remove the gray tap flash on mobile Chrome/Android */
+  -webkit-tap-highlight-color: transparent;
+  /* never allow accidental horizontal scroll on tiny screens */
+  overflow-x: hidden;
 }
 
 h1,
+h2,
 h3 {
   margin: 0 0 0.25rem;
+  line-height: 1.25;
+}
+
+img,
+iframe,
+video {
+  max-width: 100%;
+}
+
+audio {
+  width: 100%;
+  display: block;
 }
 
 .muted {
   color: var(--muted);
 }
 
+/* Keyboard accessibility: clear focus ring, only for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Mouse users keep clean outlines removed by some resets */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Respect users who prefer minimal animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- Header ---------- */
 .nav {
+  position: sticky; /* stays visible while scrolling */
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
+  gap: 1rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+  background: var(--bg);
 }
 
 .nav-brand {
   font-weight: 900;
   letter-spacing: 0.1em;
-  color: #f5c518; /* gold */
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: clamp(1rem, 0.9rem + 0.8vw, 1.25rem);
+  white-space: nowrap;
 }
 
 .nav-date {
   color: var(--muted);
   font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hide the Hebrew date on very small screens so the brand always fits */
+@media (max-width: 420px) {
+  .nav-date {
+    display: none;
+  }
 }
 
 /* ---------- Page content & footer ---------- */
@@ -75,7 +157,6 @@ h3 {
   color: var(--muted);
 }
 
-
 /* ---------- Layout ---------- */
 .container {
   max-width: var(--max-width);
@@ -83,16 +164,27 @@ h3 {
   padding: 1.5rem 1rem 2.5rem;
 }
 
+@media (min-width: 640px) {
+  .container {
+    padding: 2.5rem 1.25rem;
+  }
+}
+
+.container-wide {
+  max-width: var(--max-width-wide);
+}
+
 .hero {
   text-align: center;
-  padding: 2rem 0 2.5rem;
+  padding: clamp(1.5rem, 5vw, 3rem) 0 2.5rem;
 }
 
 /* ---------- Cards grid ---------- */
+/* minmax(min(200px, 100%), 1fr): cards never overflow narrower than 200px */
 .grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
 }
 
 .card {
@@ -105,23 +197,35 @@ h3 {
   border-radius: var(--radius);
   color: inherit;
   text-decoration: none;
-  transition: border-color 0.2s ease;
+  box-shadow: var(--shadow);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-.card:hover {
+a.card:hover {
   border-color: var(--muted);
+  background: var(--surface-hover);
+}
+
+a.card:active {
+  transform: scale(0.98);
 }
 
 .card-icon {
   font-size: 1.75rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
+
 /* ---------- Library page ---------- */
 .book-section {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
 .section-title {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   margin-bottom: 0.75rem;
 }
 
@@ -130,21 +234,11 @@ h3 {
   align-items: flex-start;
   gap: 0.15rem;
   padding: 0.85rem 1rem;
-  cursor: pointer;
-}
-
-.book-card:hover {
-  border-color: var(--muted);
-}
-
-/* ---------- Wide container (videos) ---------- */
-.container-wide {
-  max-width: 1080px;
 }
 
 /* ---------- Videos page ---------- */
 .grid-videos {
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
 }
 
 .video-card {
@@ -160,10 +254,15 @@ h3 {
   width: 100%;
   aspect-ratio: 16 / 9; /* keeps the player proportioned at any width */
   border: 0;
+  height: auto;
 }
 
 .video-info {
   padding: 1rem;
+}
+
+.video-info h3 {
+  font-size: 0.95rem;
 }
 
 /* ---------- Audio page ---------- */
@@ -184,11 +283,6 @@ h3 {
   gap: 1rem;
 }
 
-audio {
-  width: 100%;
-  display: block;
-}
-
 /* ---------- Q&A page ---------- */
 .qa-form {
   display: flex;
@@ -196,35 +290,74 @@ audio {
   margin-bottom: 2rem;
 }
 
-.input {
+/* Forms: stack gracefully on narrow screens */
+@media (max-width: 560px) {
+  .qa-form {
+    flex-direction: column;
+  }
+  .qa-form .btn {
+    width: 100%;
+  }
+}
+
+.input,
+.select {
   flex: 1;
   min-width: 0;
   padding: 0.6rem 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--bg);
   color: var(--fg);
   font-size: 0.95rem;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.input:focus {
-  outline: 2px solid #f5c518;
+/* custom chevron for the styled <select> (appearance:none removes the OS one) */
+.select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.select option {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.input:focus,
+.select:focus {
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
 .btn {
   padding: 0.6rem 1.1rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--fg);
   font-size: 0.9rem;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .btn:hover {
   border-color: var(--muted);
+  background: var(--surface-hover);
+}
+
+.btn:active {
+  transform: scale(0.97);
 }
 
 .qa-card {
@@ -247,16 +380,81 @@ audio {
   color: var(--fg);
   font-size: 0.85rem;
   cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
 }
 
 .vote-btn:hover {
-  border-color: #f5c518;
+  border-color: var(--accent);
 }
 
-@media (max-width: 560px) {
-  .qa-form {
-    flex-direction: column;
-  }
+/* ---------- Zmanim page ---------- */
+.city-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.city-picker .select {
+  flex: 1;
+}
+
+.zman-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+}
+
+/* highlight the next upcoming zman */
+.zman-row.is-next {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.next-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+}
+
+.zman-times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.zman-times strong {
+  font-variant-numeric: tabular-nums; /* clock digits don't jitter */
+}
+
+/* loading + error states */
+.loading-note,
+.error-note {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--muted);
+}
+
+.error-note {
+  color: #ff8080;
+}
+
+.error-note .btn {
+  margin-top: 0.75rem;
 }
 
 /* ---------- Bottom tab bar ---------- */
@@ -275,26 +473,46 @@ audio {
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* frosted glass — with graceful fallback for old browsers */
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+}
+
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .tabbar {
+    background: var(--bg); /* solid fallback, still fully usable */
+  }
 }
 
 .tabbar-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.15rem;
   min-width: 44px; /* touch-friendly target */
   min-height: 44px;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  transition: background 0.15s ease;
+  color: var(--muted);
+  font-size: 0.65rem;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .tabbar-item:hover {
-  background: var(--surface);
+  background: var(--surface-hover);
+  color: var(--fg);
 }
 
 .tabbar-item.is-active {
   background: var(--surface);
+  color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--border);
 }
 
@@ -303,56 +521,32 @@ audio {
   line-height: 1;
 }
 
+.tabbar-label {
+  display: none; /* icons-only on small screens */
+}
+
+/* room for text labels on larger screens */
+@media (min-width: 520px) {
+  .tabbar-label {
+    display: block;
+  }
+}
+
+@media (max-width: 360px) {
+  .tabbar-item {
+    min-width: 40px;
+    padding: 0.5rem 0.55rem;
+  }
+}
+
 /* Push page content up so the bar never covers the footer */
 body {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-
-/* ---------- Zmanim page ---------- */
-.zman-row {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.25rem;
-}
-
-/* ---------- City picker & countdown board ---------- */
-.city-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.city-picker label {
-  font-size: 0.9rem;
-}
-
-.city-picker select {
-  max-width: 220px;
-  cursor: pointer;
-}
-
-.zman-row.is-next {
-  border-color: #f5c518;
-  background: var(--surface);
-}
-
-.next-badge {
-  margin-left: 0.5rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(245, 197, 24, 0.15);
-  color: #f5c518;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.zman-times {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.1rem;
+@media (min-width: 1024px) {
+  /* on desktop the floating bar is small relative to the page; breathe a bit */
+  body {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
 }

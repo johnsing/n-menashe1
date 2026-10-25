@@ -53,7 +53,11 @@ export default function QaPage() {
       </header>
 
       <form className="qa-form" onSubmit={handleSubmit}>
+        <label htmlFor="qa-input" className="muted" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)" }}>
+          Ask a question
+        </label>
         <input
+          id="qa-input"
           className="input"
           value={newQuestion}
           onChange={(e) => setNewQuestion(e.target.value)}
@@ -72,8 +76,10 @@ export default function QaPage() {
               <p className="qa-question">{post.question}</p>
             </div>
             <button
+              type="button"
               className="vote-btn"
               onClick={() => handleVote(post.id)}
+              aria-label={`Upvote: ${post.question} (${post.votes} votes)`}
             >
               ▲ {post.votes}
             </button>

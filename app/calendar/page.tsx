@@ -50,6 +50,8 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
+  // Bump this to retry — the effect below is the single source of fetching.
+  const [retryCount, setRetryCount] = useState(0);
 
   // Live clock: set `now` every 30 seconds so countdowns stay fresh
   useEffect(() => {
@@ -58,15 +60,20 @@ export default function CalendarPage() {
     return () => clearInterval(timer); // cleanup when leaving the page
   }, []);
 
-  // Fetch times — runs on load AND every time `city` changes,
-  // because `city` is in the dependency array.
+  // Fetch times — runs on load, on city change, and on manual retries,
+  // because all three are in the dependency array.
   useEffect(() => {
+    // AbortController: if the city changes mid-flight, cancel the old request
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000); // 10s cap
+
     async function loadZmanim() {
       setLoading(true);
       setError(null);
       try {
         const response = await fetch(
           `https://www.hebcal.com/zmanim?cfg=json&geonameid=${city.id}`,
+          { signal: controller.signal },
         );
         if (!response.ok) throw new Error("Hebcal didn't answer");
 
@@ -81,14 +88,22 @@ export default function CalendarPage() {
         }
         setZmanim(list);
       } catch (err) {
+        // Aborted because the city changed? That's not an error — the new
+        // fetch already replaced us. Only surface real failures.
+        if (err instanceof Error && err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     }
 
     loadZmanim();
-  }, [city]); // ← re-runs whenever the city changes
+    return () => {
+      controller.abort();
+      clearTimeout(timeout);
+    };
+  }, [city, retryCount]); // ← re-runs whenever the city changes or user retries
 
   // The first zman in the list that's still in the future
   const nextZman = now
@@ -100,15 +115,23 @@ export default function CalendarPage() {
       <header className="hero">
         <h1>Zmanim</h1>
         <p className="muted">
-          {now ? now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" }) : ""}
+          {now
+            ? now.toLocaleDateString([], {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })
+            : ""}
         </p>
       </header>
 
       <div className="city-picker">
-        <label htmlFor="city" className="muted">City</label>
+        <label htmlFor="city" className="muted">
+          City
+        </label>
         <select
           id="city"
-          className="input"
+          className="select"
           value={city.id}
           onChange={(e) =>
             setCity(cities.find((c) => c.id === e.target.value) ?? cities[0])
@@ -122,11 +145,19 @@ export default function CalendarPage() {
         </select>
       </div>
 
-      {loading && <p className="muted">Loading times…</p>}
+      {loading && <p className="loading-note">Loading times…</p>}
 
       {error && (
-        <p style={{ color: "#ff8080" }}>
-          Couldn’t load the times ({error}). Check your internet and refresh.
+        <p className="error-note" role="alert">
+          Couldn’t load the times ({error}). Check your internet and try again.
+          <br />
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setRetryCount((c) => c + 1)}
+          >
+            Try again
+          </button>
         </p>
       )}
 
@@ -151,9 +182,7 @@ export default function CalendarPage() {
                     })}
                   </strong>
                   {now && (
-                    <small className="muted">
-                      {countdown(zman.time, now)}
-                    </small>
+                    <small className="muted">{countdown(zman.time, now)}</small>
                   )}
                 </span>
               </div>
