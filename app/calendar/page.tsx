@@ -1,7 +1,7 @@
-// app/calendar/page.tsx
+// app/calendar/page.tsx — Zmanim train timetable
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const cities = [
   { id: "281184", name: "Jerusalem" },
@@ -16,21 +16,100 @@ const cities = [
   { id: "295277", name: "Eilat" },
 ];
 
-const zmanimWanted = [
-  { key: "alotHaShachar", name: "Alot HaShachar (Dawn)" },
-  { key: "sunrise", name: "Netz — Sunrise" },
-  { key: "sofZmanShma", name: "Latest Shema (Gra)" },
-  { key: "sofZmanTfilla", name: "Latest Shacharit (Gra)" },
-  { key: "chatzot", name: "Chatzot (Midday)" },
-  { key: "minchaGedola", name: "Mincha Gedola" },
-  { key: "plagHaMincha", name: "Plag HaMincha" },
-  { key: "sunset", name: "Shkiah — Sunset" },
-  { key: "tzeit72min", name: "Tzeit — Nightfall (72 min)" },
+interface TrainStop {
+  key: string;
+  name: string;
+  hebrew: string;
+}
+
+interface TrainGroup {
+  label: string;
+  stops: TrainStop[];
+}
+
+// The main board — grouped like a train timetable: night line, morning line…
+const BOARD_GROUPS: TrainGroup[] = [
+  {
+    label: "Night & Dawn",
+    stops: [
+      { key: "chatzotNight", name: "Midnight — Chatzot", hebrew: "חצות הלילה" },
+      { key: "alotHaShachar", name: "Alot haShachar — Dawn", hebrew: "עלות השחר" },
+      { key: "misheyakir", name: "Earliest talis & tefillin", hebrew: "משיכיר" },
+      { key: "misheyakirMachmir", name: "Misheyakir Machmir", hebrew: "משיכיר מחמיר" },
+      { key: "dawn", name: "Civil dawn", hebrew: "שחר" },
+    ],
+  },
+  {
+    label: "Morning",
+    stops: [
+      { key: "sunrise", name: "Sunrise — Netz", hebrew: "הנץ החמה" },
+      { key: "sofZmanShmaMGA", name: "Latest Shema (MGA)", hebrew: "סוף זמן ק״ש מג״א" },
+      { key: "sofZmanShma", name: "Latest Shema (Gra)", hebrew: "סוף זמן ק״ש גר״א" },
+      { key: "sofZmanTfillaMGA", name: "Latest Shacharit (MGA)", hebrew: "סוף זמן תפלה מג״א" },
+      { key: "sofZmanTfilla", name: "Latest Shacharit (Gra)", hebrew: "סוף זמן תפלה גר״א" },
+      { key: "chatzot", name: "Chatzot — Midday", hebrew: "חצות היום" },
+    ],
+  },
+  {
+    label: "Afternoon",
+    stops: [
+      { key: "minchaGedola", name: "Mincha Gedola", hebrew: "מנחה גדולה" },
+      { key: "minchaKetana", name: "Mincha Ketana", hebrew: "מנחה קטנה" },
+      { key: "plagHaMincha", name: "Plag haMincha", hebrew: "פלג המנחה" },
+    ],
+  },
+  {
+    label: "Evening & Night",
+    stops: [
+      { key: "sunset", name: "Sunset — Shkiah", hebrew: "שקיעה" },
+      { key: "dusk", name: "Civil dusk", hebrew: "דמדומים" },
+      { key: "beinHaShmashos", name: "Bein haShmashot", hebrew: "בין השמשות" },
+      { key: "tzeit7083deg", name: "Nightfall — 3 medium stars", hebrew: "צאת הכוכבים" },
+      { key: "tzeit85deg", name: "Nightfall — 3 small stars", hebrew: "צאת הכוכבים" },
+      { key: "tzeit42min", name: "Nightfall — 42 min", hebrew: "צאת הכוכבים" },
+      { key: "tzeit50min", name: "Nightfall — 50 min", hebrew: "צאת הכוכבים" },
+      { key: "tzeit72min", name: "Nightfall — 72 min · Rabbeinu Tam", hebrew: "צאת הכוכבים" },
+    ],
+  },
 ];
 
-interface Zman {
-  name: string;
-  time: Date;
+// Extra times, revealed with the "show all" toggle
+const EXTRA_GROUP: TrainGroup = {
+  label: "Baal HaTanya Times",
+  stops: [
+    { key: "alosBaalHatanya", name: "Alot HaShachar", hebrew: "עלות השחר" },
+    { key: "sofZmanShmaBaalHatanya", name: "Latest Shema", hebrew: "סוף זמן ק״ש" },
+    { key: "sofZmanTfilaBaalHatanya", name: "Latest Shacharit", hebrew: "סוף זמן תפלה" },
+    { key: "minchaGedolaBaalHatanya", name: "Mincha Gedola", hebrew: "מנחה גדולה" },
+    { key: "minchaKetanaBaalHatanya", name: "Mincha Ketana", hebrew: "מנחה קטנה" },
+    { key: "plagHaminchaBaalHatanya", name: "Plag HaMincha", hebrew: "פלג המנחה" },
+    { key: "tzaisBaalHatanya", name: "Tzeit", hebrew: "צאת הכוכבים" },
+  ],
+};
+
+// Columns of the 7-day timetable
+const WEEK_COLUMNS: { key: string; label: string }[] = [
+  { key: "alotHaShachar", label: "Dawn" },
+  { key: "sunrise", label: "Sunrise" },
+  { key: "sofZmanShma", label: "Shema" },
+  { key: "minchaGedola", label: "Mincha" },
+  { key: "sunset", label: "Sunset" },
+  { key: "tzeit42min", label: "Night 42" },
+  { key: "tzeit72min", label: "Night 72" },
+];
+
+interface DayData {
+  date: string; // "2026-10-25"
+  times: Record<string, string>;
+}
+
+type ViewMode = "today" | "week";
+
+/** Local calendar date → YYYY-MM-DD (what Hebcal expects) */
+function toApiDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
 // "in 47 min" / "2h 10m" / "Departed"
@@ -44,52 +123,56 @@ function countdown(target: Date, now: Date): string {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
+const fmtTime = (d: Date) =>
+  d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
 export default function CalendarPage() {
   const [city, setCity] = useState(cities[0]); // starts on Jerusalem
-  const [zmanim, setZmanim] = useState<Zman[]>([]);
+  const [days, setDays] = useState<DayData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
-  // Bump this to retry — the effect below is the single source of fetching.
+  const [view, setView] = useState<ViewMode>("today");
+  const [showAll, setShowAll] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
   // Live clock: set `now` every 30 seconds so countdowns stay fresh
   useEffect(() => {
-    setNow(new Date());
+    const initialUpdate = setTimeout(() => setNow(new Date()), 0);
     const timer = setInterval(() => setNow(new Date()), 30_000);
-    return () => clearInterval(timer); // cleanup when leaving the page
+    return () => {
+      clearTimeout(initialUpdate);
+      clearInterval(timer);
+    };
   }, []);
 
-  // Fetch times — runs on load, on city change, and on manual retries,
-  // because all three are in the dependency array.
+  // One request fetches the whole week (start..end). Today = days[0].
   useEffect(() => {
-    // AbortController: if the city changes mid-flight, cancel the old request
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000); // 10s cap
+    const timeout = setTimeout(() => controller.abort(), 12_000);
 
-    async function loadZmanim() {
+    async function load() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(
-          `https://www.hebcal.com/zmanim?cfg=json&geonameid=${city.id}`,
-          { signal: controller.signal },
-        );
+        const start = new Date();
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6); // 7-day timetable
+
+        const url =
+          `https://www.hebcal.com/zmanim?cfg=json&geonameid=${city.id}` +
+          `&start=${toApiDate(start)}&end=${toApiDate(end)}`;
+
+        const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error("Hebcal didn't answer");
 
         const data = await response.json();
-
-        const list: Zman[] = [];
-        for (const wanted of zmanimWanted) {
-          const rawTime = data.times[wanted.key];
-          if (rawTime) {
-            list.push({ name: wanted.name, time: new Date(rawTime) });
-          }
-        }
-        setZmanim(list);
+        // Range requests return an array; a single-date request returns one object
+        const list: DayData[] = (Array.isArray(data) ? data : [data]).map(
+          (d) => ({ date: d.date, times: d.times ?? {} }),
+        );
+        setDays(list);
       } catch (err) {
-        // Aborted because the city changed? That's not an error — the new
-        // fetch already replaced us. Only surface real failures.
         if (err instanceof Error && err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
@@ -98,33 +181,34 @@ export default function CalendarPage() {
       }
     }
 
-    loadZmanim();
+    load();
     return () => {
       controller.abort();
       clearTimeout(timeout);
     };
-  }, [city, retryCount]); // ← re-runs whenever the city changes or user retries
+  }, [city, retryCount]);
 
-  // The first zman in the list that's still in the future
-  const nextZman = now
-    ? zmanim.find((z) => z.time.getTime() > now.getTime())
-    : undefined;
+  const today: DayData | null = days[0] ?? null;
+
+  const groups = useMemo(
+    () => (showAll ? [...BOARD_GROUPS, EXTRA_GROUP] : BOARD_GROUPS),
+    [showAll],
+  );
+
+  // The first stop of the day still in the future
+  const nextKey = useMemo(() => {
+    if (!now || !today) return null;
+    for (const g of groups) {
+      for (const s of g.stops) {
+        const raw = today.times[s.key];
+        if (raw && new Date(raw).getTime() > now.getTime()) return s.key;
+      }
+    }
+    return null;
+  }, [now, today, groups]);
 
   return (
     <main className="container">
-      <header className="hero">
-        <h1>Zmanim</h1>
-        <p className="muted">
-          {now
-            ? now.toLocaleDateString([], {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })
-            : ""}
-        </p>
-      </header>
-
       <div className="city-picker">
         <label htmlFor="city" className="muted">
           City
@@ -145,7 +229,29 @@ export default function CalendarPage() {
         </select>
       </div>
 
-      {loading && <p className="loading-note">Loading times…</p>}
+      {/* Today / 7-Day view toggle */}
+      <div className="view-toggle" role="tablist" aria-label="Timetable view">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === "today"}
+          className={view === "today" ? "toggle-btn is-active" : "toggle-btn"}
+          onClick={() => setView("today")}
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={view === "week"}
+          className={view === "week" ? "toggle-btn is-active" : "toggle-btn"}
+          onClick={() => setView("week")}
+        >
+          7-Day
+        </button>
+      </div>
+
+      {loading && <p className="loading-note">Loading timetable…</p>}
 
       {error && (
         <p className="error-note" role="alert">
@@ -161,34 +267,142 @@ export default function CalendarPage() {
         </p>
       )}
 
-      {!loading && !error && (
-        <div className="stack">
-          {zmanim.map((zman) => {
-            const isNext = zman === nextZman;
+      {/* ── TODAY: departure board ─────────────────────────── */}
+      {!loading && !error && view === "today" && today && (
+        <section className="board" aria-label="Today's zmanim">
+          <div className="board-head">
+            <div>
+              <div className="station">N-Menashe Central</div>
+              <div className="board-sub">
+                {city.name} ·{" "}
+                {now
+                  ? now.toLocaleDateString([], {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })
+                  : today.date}
+              </div>
+            </div>
+            <div className="board-clock">
+              {now ? fmtTime(now) : "--:--"}
+            </div>
+          </div>
+
+          {groups.map((group) => {
+            const stops = group.stops.filter((s) => today.times[s.key]);
+            if (stops.length === 0) return null;
             return (
-              <div
-                key={zman.name}
-                className={isNext ? "card zman-row is-next" : "card zman-row"}
-              >
-                <span>
-                  {zman.name}
-                  {isNext && <span className="next-badge">Next</span>}
-                </span>
-                <span className="zman-times">
-                  <strong>
-                    {zman.time.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </strong>
-                  {now && (
-                    <small className="muted">{countdown(zman.time, now)}</small>
-                  )}
-                </span>
+              <div key={group.label}>
+                <div className="board-group-label">{group.label}</div>
+                {stops.map((stop) => {
+                  const time = new Date(today.times[stop.key]);
+                  const isNext = stop.key === nextKey;
+                  const isPast = now ? time.getTime() <= now.getTime() : false;
+                  const cd = now ? countdown(time, now) : "";
+                  const soon =
+                    now !== null &&
+                    !isPast &&
+                    time.getTime() - now.getTime() <= 5 * 60_000;
+
+                  return (
+                    <div
+                      key={stop.key}
+                      className={
+                        "train-row" +
+                        (isNext ? " next" : "") +
+                        (isPast ? " past" : "")
+                      }
+                    >
+                      <span className="train-no" aria-hidden="true">
+                        {fmtTime(time)}
+                      </span>
+                      <span className="train-name">
+                        <strong>
+                          {stop.name}
+                          {isNext && <span className="next-badge">Next</span>}
+                        </strong>
+                        <small lang="he">{stop.hebrew}</small>
+                      </span>
+                      <span className="train-countdown">
+                        <span
+                          className={
+                            "train-count" +
+                            (isPast
+                              ? " departed"
+                              : soon
+                                ? " soon"
+                                : " future")
+                          }
+                        >
+                          {isPast ? "Departed" : cd}
+                        </span>
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
-        </div>
+
+          <button
+            type="button"
+            className="show-all"
+            onClick={() => setShowAll((v) => !v)}
+            aria-expanded={showAll}
+          >
+            {showAll ? "− Show fewer times" : "+ Show all times (incl. Baal HaTanya)"}
+          </button>
+        </section>
+      )}
+
+      {/* ── 7-DAY: classic timetable table ─────────────────── */}
+      {!loading && !error && view === "week" && (
+        <section className="board" aria-label="7-day zmanim timetable">
+          <div className="board-head">
+            <div>
+              <div className="station">Weekly Timetable</div>
+              <div className="board-sub">{city.name}</div>
+            </div>
+          </div>
+          <div className="board-scroll">
+            <table className="week-table">
+              <thead>
+                <tr>
+                  <th scope="col">Day</th>
+                  {WEEK_COLUMNS.map((col) => (
+                    <th key={col.key} scope="col">
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {days.map((d, i) => {
+                  const date = new Date(`${d.date}T00:00:00`);
+                  return (
+                    <tr key={d.date} className={i === 0 ? "today" : ""}>
+                      <td>
+                        {date.toLocaleDateString([], {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </td>
+                      {WEEK_COLUMNS.map((col) => (
+                        <td key={col.key}>
+                          {d.times[col.key]
+                            ? fmtTime(new Date(d.times[col.key]))
+                            : "—"}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
     </main>
   );
