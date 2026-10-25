@@ -1,3 +1,14 @@
+// app/page.tsx
+import Link from "next/link";
+
+const sections = [
+  { href: "/calendar", icon: "📅", title: "Zmanim Calendar", desc: "Prayer times & daily schedule" },
+  { href: "/library", icon: "📚", title: "Library", desc: "Scriptures of the Tanakh" },
+  { href: "/videos", icon: "🎬", title: "Videos", desc: "Teachings & holiday lessons" },
+  { href: "/audio", icon: "🎧", title: "Audio", desc: "Shiurim, worship & podcasts" },
+  { href: "/qa", icon: "💬", title: "Q&A", desc: "Ask the community" },
+];
+
 export default function Home() {
   return (
     <main className="container">
@@ -9,45 +20,15 @@ export default function Home() {
       </section>
 
       <div className="grid">
-        <a href="/calendar" className="card">
-          <span className="card-icon">📅</span>
-          <div>
-            <h3>Zmanim Calendar</h3>
-            <small className="muted">Prayer times &amp; daily schedule</small>
-          </div>
-        </a>
-
-        <a href="/library" className="card">
-          <span className="card-icon">📚</span>
-          <div>
-            <h3>Library</h3>
-            <small className="muted">Scriptures of the Tanakh</small>
-          </div>
-        </a>
-
-        <a href="/videos" className="card">
-          <span className="card-icon">🎬</span>
-          <div>
-            <h3>Videos</h3>
-            <small className="muted">Teachings &amp; holiday lessons</small>
-          </div>
-        </a>
-
-        <a href="/audio" className="card">
-          <span className="card-icon">🎧</span>
-          <div>
-            <h3>Audio</h3>
-            <small className="muted">Shiurim, worship &amp; podcasts</small>
-          </div>
-        </a>
-
-        <a href="/qa" className="card">
-          <span className="card-icon">💬</span>
-          <div>
-            <h3>Q&amp;A</h3>
-            <small className="muted">Ask the community</small>
-          </div>
-        </a>
+        {sections.map((s) => (
+          <Link key={s.href} href={s.href} className="card">
+            <span className="card-icon">{s.icon}</span>
+            <div>
+              <h3>{s.title}</h3>
+              <small className="muted">{s.desc}</small>
+            </div>
+          </Link>
+        ))}
       </div>
     </main>
   );

@@ -12,7 +12,6 @@ export const metadata: Metadata = {
   description: "Heritage library & media — Torah, zmanim, and community.",
 };
 
-// themeColor colors the browser UI (mobile Chrome/Safari address bar)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

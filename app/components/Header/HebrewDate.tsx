@@ -1,46 +1,44 @@
 // app/components/Header/HebrewDate.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+
+function toApiDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
 
 /**
- * Displays today's Hebrew date using Hebcal's official widget
- * (https://www.hebcal.com/etc/hdate-he-v2.js).
+ * Displays today's Hebrew date, fetched as JSON from Hebcal's
+ * Gregorian→Hebrew converter API (the same domain the app already
+ * uses for zmanim — no document.write, no script injection).
  *
- * The widget renders via document.write(), which Next.js/React can't do
- * (the document is already parsed when scripts run). So we intercept
- * document.write for the brief moment the widget executes, capture the
- * Hebrew string it produces, and render it through React instead.
+ * Response shape: { hd: 15, hm: "Cheshvan", hy: 5787 }
  */
 export default function HebrewDate() {
-  const hostRef = useRef<HTMLSpanElement>(null);
   const [date, setDate] = useState("");
 
   useEffect(() => {
-    const el = hostRef.current;
-    if (!el) return;
+    const controller = new AbortController();
+    const url = `https://www.hebcal.com/converter?cfg=json&date=${toApiDate(new Date())}&g2h=1&strict=1`;
 
-    // Save the real document.write* so we can restore them afterwards
-    const originalWrite = document.write;
-    const originalWriteln = document.writeln;
+    fetch(url, { signal: controller.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error("Hebcal converter failed");
+        return r.json();
+      })
+      .then((j) => setDate(`${j.hd} ${j.hm} ${j.hy}`))
+      .catch(() => {
+        /* offline / error → leave the header date blank */
+      });
 
-    // Redirect the widget's output into React state
-    const capture = (html: string) => setDate(html);
-    document.write = capture;
-    document.writeln = capture;
-
-    const script = document.createElement("script");
-    script.src = "https://www.hebcal.com/etc/hdate-he-v2.js";
-    script.crossOrigin = "anonymous";
-    el.appendChild(script);
-
-    return () => {
-      // restore + cleanup if the component unmounts
-      document.write = originalWrite;
-      document.writeln = originalWriteln;
-      script.remove();
-    };
+    return () => controller.abort();
   }, []);
 
-  return <span ref={hostRef} lang="he">{date}</span>;
+  return (
+    <span className="nav-date" lang="he">
+      {date}
+    </span>
+  );
 }

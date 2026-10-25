@@ -1,409 +1,398 @@
-// app/calendar/page.tsx — Zmanim train timetable
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
 
-const cities = [
-  { id: "281184", name: "Jerusalem" },
-  { id: "293397", name: "Tel Aviv" },
-  { id: "294801", name: "Haifa" },
-  { id: "293100", name: "Tzfat" },
-  { id: "293322", name: "Tiberias" },
-  { id: "294098", name: "Nazareth" },
-  { id: "295530", name: "Be'er Sheva" },
-  { id: "295629", name: "Ashdod" },
-  { id: "295620", name: "Ashkelon" },
-  { id: "295277", name: "Eilat" },
-];
-
-interface TrainStop {
-  key: string;
-  name: string;
-  hebrew: string;
-}
-
-interface TrainGroup {
-  label: string;
-  stops: TrainStop[];
-}
-
-// The main board — grouped like a train timetable: night line, morning line…
-const BOARD_GROUPS: TrainGroup[] = [
-  {
-    label: "Night & Dawn",
-    stops: [
-      { key: "chatzotNight", name: "Midnight — Chatzot", hebrew: "חצות הלילה" },
-      { key: "alotHaShachar", name: "Alot haShachar — Dawn", hebrew: "עלות השחר" },
-      { key: "misheyakir", name: "Earliest talis & tefillin", hebrew: "משיכיר" },
-      { key: "misheyakirMachmir", name: "Misheyakir Machmir", hebrew: "משיכיר מחמיר" },
-      { key: "dawn", name: "Civil dawn", hebrew: "שחר" },
-    ],
-  },
-  {
-    label: "Morning",
-    stops: [
-      { key: "sunrise", name: "Sunrise — Netz", hebrew: "הנץ החמה" },
-      { key: "sofZmanShmaMGA", name: "Latest Shema (MGA)", hebrew: "סוף זמן ק״ש מג״א" },
-      { key: "sofZmanShma", name: "Latest Shema (Gra)", hebrew: "סוף זמן ק״ש גר״א" },
-      { key: "sofZmanTfillaMGA", name: "Latest Shacharit (MGA)", hebrew: "סוף זמן תפלה מג״א" },
-      { key: "sofZmanTfilla", name: "Latest Shacharit (Gra)", hebrew: "סוף זמן תפלה גר״א" },
-      { key: "chatzot", name: "Chatzot — Midday", hebrew: "חצות היום" },
-    ],
-  },
-  {
-    label: "Afternoon",
-    stops: [
-      { key: "minchaGedola", name: "Mincha Gedola", hebrew: "מנחה גדולה" },
-      { key: "minchaKetana", name: "Mincha Ketana", hebrew: "מנחה קטנה" },
-      { key: "plagHaMincha", name: "Plag haMincha", hebrew: "פלג המנחה" },
-    ],
-  },
-  {
-    label: "Evening & Night",
-    stops: [
-      { key: "sunset", name: "Sunset — Shkiah", hebrew: "שקיעה" },
-      { key: "dusk", name: "Civil dusk", hebrew: "דמדומים" },
-      { key: "beinHaShmashos", name: "Bein haShmashot", hebrew: "בין השמשות" },
-      { key: "tzeit7083deg", name: "Nightfall — 3 medium stars", hebrew: "צאת הכוכבים" },
-      { key: "tzeit85deg", name: "Nightfall — 3 small stars", hebrew: "צאת הכוכבים" },
-      { key: "tzeit42min", name: "Nightfall — 42 min", hebrew: "צאת הכוכבים" },
-      { key: "tzeit50min", name: "Nightfall — 50 min", hebrew: "צאת הכוכבים" },
-      { key: "tzeit72min", name: "Nightfall — 72 min · Rabbeinu Tam", hebrew: "צאת הכוכבים" },
-    ],
-  },
-];
-
-// Extra times, revealed with the "show all" toggle
-const EXTRA_GROUP: TrainGroup = {
-  label: "Baal HaTanya Times",
-  stops: [
-    { key: "alosBaalHatanya", name: "Alot HaShachar", hebrew: "עלות השחר" },
-    { key: "sofZmanShmaBaalHatanya", name: "Latest Shema", hebrew: "סוף זמן ק״ש" },
-    { key: "sofZmanTfilaBaalHatanya", name: "Latest Shacharit", hebrew: "סוף זמן תפלה" },
-    { key: "minchaGedolaBaalHatanya", name: "Mincha Gedola", hebrew: "מנחה גדולה" },
-    { key: "minchaKetanaBaalHatanya", name: "Mincha Ketana", hebrew: "מנחה קטנה" },
-    { key: "plagHaminchaBaalHatanya", name: "Plag HaMincha", hebrew: "פלג המנחה" },
-    { key: "tzaisBaalHatanya", name: "Tzeit", hebrew: "צאת הכוכבים" },
-  ],
+type CalendarEvent = {
+  id: number;
+  title: string;
+  date: string;
+  color: string;
+  time: string;
 };
 
-// Columns of the 7-day timetable
-const WEEK_COLUMNS: { key: string; label: string }[] = [
-  { key: "alotHaShachar", label: "Dawn" },
-  { key: "sunrise", label: "Sunrise" },
-  { key: "sofZmanShma", label: "Shema" },
-  { key: "minchaGedola", label: "Mincha" },
-  { key: "sunset", label: "Sunset" },
-  { key: "tzeit42min", label: "Night 42" },
-  { key: "tzeit72min", label: "Night 72" },
-];
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-interface DayData {
-  date: string; // "2026-10-25"
-  times: Record<string, string>;
-}
+const toDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
-type ViewMode = "today" | "week";
+const createEvent = (id: number, title: string, date: Date, color: string, time: string): CalendarEvent => ({
+  id,
+  title,
+  date: toDateKey(date),
+  color,
+  time,
+});
 
-/** Local calendar date → YYYY-MM-DD (what Hebcal expects) */
-function toApiDate(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-}
+const buildMonthEvents = (referenceDate: Date): CalendarEvent[] => {
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
 
-// "in 47 min" / "2h 10m" / "Departed"
-function countdown(target: Date, now: Date): string {
-  const diffMs = target.getTime() - now.getTime();
-  if (diffMs <= 0) return "Departed";
-  const totalMin = Math.ceil(diffMs / 60000);
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
-}
+  return [
+    createEvent(1, 'Team Sync', new Date(year, month, 2), '#4f46e5', '09:00 AM'),
+    createEvent(2, 'Design Review', new Date(year, month, 5), '#f59e0b', '11:30 AM'),
+    createEvent(3, 'Project Check-in', new Date(year, month, 9), '#10b981', '02:00 PM'),
+    createEvent(4, 'Client Call', new Date(year, month, 12), '#ec4899', '04:15 PM'),
+    createEvent(5, 'Lunch with Sam', new Date(year, month, 15), '#38bdf8', '12:30 PM'),
+    createEvent(6, 'Sprint Demo', new Date(year, month, 19), '#8b5cf6', '10:00 AM'),
+    createEvent(7, 'Planning', new Date(year, month, 23), '#ef4444', '01:45 PM'),
+    createEvent(8, 'Workshop', new Date(year, month, 27), '#14b8a6', '03:00 PM'),
+    createEvent(9, 'Quarterly Review', new Date(year, month, 30), '#f97316', '09:30 AM'),
+  ];
+};
 
-const fmtTime = (d: Date) =>
-  d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const getCalendarDates = (monthDate: Date) => {
+  const firstDayOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const firstWeekday = firstDayOfMonth.getDay();
+
+  const cells: Date[] = [];
+
+  for (let index = 0; index < 42; index += 1) {
+    const dayOffset = index - firstWeekday + 1;
+    const cellDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), dayOffset);
+    cells.push(cellDate);
+  }
+
+  return cells;
+};
 
 export default function CalendarPage() {
-  const [city, setCity] = useState(cities[0]); // starts on Jerusalem
-  const [days, setDays] = useState<DayData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState<Date | null>(null);
-  const [view, setView] = useState<ViewMode>("today");
-  const [showAll, setShowAll] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState(today);
 
-  // Live clock: set `now` every 30 seconds so countdowns stay fresh
-  useEffect(() => {
-    const initialUpdate = setTimeout(() => setNow(new Date()), 0);
-    const timer = setInterval(() => setNow(new Date()), 30_000);
-    return () => {
-      clearTimeout(initialUpdate);
-      clearInterval(timer);
-    };
-  }, []);
+  const calendarDates = useMemo(() => getCalendarDates(currentMonth), [currentMonth]);
+  const monthEvents = useMemo(() => buildMonthEvents(currentMonth), [currentMonth]);
 
-  // One request fetches the whole week (start..end). Today = days[0].
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12_000);
+  const monthLabel = currentMonth.toLocaleString('en-US', {
+    month: 'long',
+    year: 'numeric',
+  });
 
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const start = new Date();
-        const end = new Date(start);
-        end.setDate(end.getDate() + 6); // 7-day timetable
+  const selectedKey = toDateKey(selectedDate);
+  const selectedDayEvents = monthEvents.filter((event) => event.date === selectedKey);
 
-        const url =
-          `https://www.hebcal.com/zmanim?cfg=json&geonameid=${city.id}` +
-          `&start=${toApiDate(start)}&end=${toApiDate(end)}`;
+  const handleMonthChange = (direction: number) => {
+    const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + direction, 1);
+    const lastDayOfNextMonth = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+    const clampedDay = Math.min(selectedDate.getDate(), lastDayOfNextMonth);
 
-        const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error("Hebcal didn't answer");
+    setCurrentMonth(nextMonth);
+    setSelectedDate(new Date(nextMonth.getFullYear(), nextMonth.getMonth(), clampedDay));
+  };
 
-        const data = await response.json();
-        // Range requests return an array; a single-date request returns one object
-        const list: DayData[] = (Array.isArray(data) ? data : [data]).map(
-          (d) => ({ date: d.date, times: d.times ?? {} }),
-        );
-        setDays(list);
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        setError(err instanceof Error ? err.message : "Something went wrong");
-      } finally {
-        clearTimeout(timeout);
-        setLoading(false);
-      }
-    }
+  const goToToday = () => {
+    const now = new Date();
+    setCurrentMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    setSelectedDate(now);
+  };
 
-    load();
-    return () => {
-      controller.abort();
-      clearTimeout(timeout);
-    };
-  }, [city, retryCount]);
-
-  const today: DayData | null = days[0] ?? null;
-
-  const groups = useMemo(
-    () => (showAll ? [...BOARD_GROUPS, EXTRA_GROUP] : BOARD_GROUPS),
-    [showAll],
-  );
-
-  // The first stop of the day still in the future
-  const nextKey = useMemo(() => {
-    if (!now || !today) return null;
-    for (const g of groups) {
-      for (const s of g.stops) {
-        const raw = today.times[s.key];
-        if (raw && new Date(raw).getTime() > now.getTime()) return s.key;
-      }
-    }
-    return null;
-  }, [now, today, groups]);
+  const upcomingEvents = [...monthEvents]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 4);
 
   return (
-    <main className="container">
-      <div className="city-picker">
-        <label htmlFor="city" className="muted">
-          City
-        </label>
-        <select
-          id="city"
-          className="select"
-          value={city.id}
-          onChange={(e) =>
-            setCity(cities.find((c) => c.id === e.target.value) ?? cities[0])
-          }
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #eef4ff 0%, #f8fafc 100%)',
+        padding: '32px 20px',
+        fontFamily: 'Inter, Arial, sans-serif',
+        color: '#0f172a',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '1120px',
+          margin: '0 auto',
+          background: '#ffffff',
+          borderRadius: '24px',
+          boxShadow: '0 18px 45px rgba(15, 23, 42, 0.08)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            padding: '26px 28px',
+            borderBottom: '1px solid #e2e8f0',
+            background: '#f8fafc',
+          }}
         >
-          {cities.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Today / 7-Day view toggle */}
-      <div className="view-toggle" role="tablist" aria-label="Timetable view">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === "today"}
-          className={view === "today" ? "toggle-btn is-active" : "toggle-btn"}
-          onClick={() => setView("today")}
-        >
-          Today
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={view === "week"}
-          className={view === "week" ? "toggle-btn is-active" : "toggle-btn"}
-          onClick={() => setView("week")}
-        >
-          7-Day
-        </button>
-      </div>
-
-      {loading && <p className="loading-note">Loading timetable…</p>}
-
-      {error && (
-        <p className="error-note" role="alert">
-          Couldn’t load the times ({error}). Check your internet and try again.
-          <br />
-          <button
-            type="button"
-            className="btn"
-            onClick={() => setRetryCount((c) => c + 1)}
-          >
-            Try again
-          </button>
-        </p>
-      )}
-
-      {/* ── TODAY: departure board ─────────────────────────── */}
-      {!loading && !error && view === "today" && today && (
-        <section className="board" aria-label="Today's zmanim">
-          <div className="board-head">
-            <div>
-              <div className="station">N-Menashe Central</div>
-              <div className="board-sub">
-                {city.name} ·{" "}
-                {now
-                  ? now.toLocaleDateString([], {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    })
-                  : today.date}
-              </div>
-            </div>
-            <div className="board-clock">
-              {now ? fmtTime(now) : "--:--"}
-            </div>
+          <div>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '12px',
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: '#64748b',
+                fontWeight: 700,
+              }}
+            >
+              Calendar
+            </p>
+            <h1 style={{ margin: '8px 0 0', fontSize: '2.1rem', lineHeight: 1.1 }}> {monthLabel} </h1>
           </div>
 
-          {groups.map((group) => {
-            const stops = group.stops.filter((s) => today.times[s.key]);
-            if (stops.length === 0) return null;
-            return (
-              <div key={group.label}>
-                <div className="board-group-label">{group.label}</div>
-                {stops.map((stop) => {
-                  const time = new Date(today.times[stop.key]);
-                  const isNext = stop.key === nextKey;
-                  const isPast = now ? time.getTime() <= now.getTime() : false;
-                  const cd = now ? countdown(time, now) : "";
-                  const soon =
-                    now !== null &&
-                    !isPast &&
-                    time.getTime() - now.getTime() <= 5 * 60_000;
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => handleMonthChange(-1)}
+              style={navButtonStyle}
+              aria-label="Previous month"
+            >
+              ←
+            </button>
+            <button onClick={goToToday} style={primaryButtonStyle}>
+              Today
+            </button>
+            <button
+              onClick={() => handleMonthChange(1)}
+              style={navButtonStyle}
+              aria-label="Next month"
+            >
+              →
+            </button>
+          </div>
+        </div>
 
-                  return (
-                    <div
-                      key={stop.key}
-                      className={
-                        "train-row" +
-                        (isNext ? " next" : "") +
-                        (isPast ? " past" : "")
-                      }
-                    >
-                      <span className="train-no" aria-hidden="true">
-                        {fmtTime(time)}
-                      </span>
-                      <span className="train-name">
-                        <strong>
-                          {stop.name}
-                          {isNext && <span className="next-badge">Next</span>}
-                        </strong>
-                        <small lang="he">{stop.hebrew}</small>
-                      </span>
-                      <span className="train-countdown">
-                        <span
-                          className={
-                            "train-count" +
-                            (isPast
-                              ? " departed"
-                              : soon
-                                ? " soon"
-                                : " future")
-                          }
-                        >
-                          {isPast ? "Departed" : cd}
-                        </span>
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+            gap: '10px',
+            padding: '18px 22px 0',
+          }}
+        >
+          {weekdays.map((day) => (
+            <div
+              key={day}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px 0',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#475569',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+            gap: '10px',
+            padding: '12px 22px 22px',
+          }}
+        >
+          {calendarDates.map((date) => {
+            const key = toDateKey(date);
+            const isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+            const isSelected = key === selectedKey;
+            const isToday = key === toDateKey(today);
+            const dayEvents = monthEvents.filter((event) => event.date === key);
+
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedDate(date)}
+                style={{
+                  minHeight: '120px',
+                  borderRadius: '18px',
+                  border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                  background: isSelected ? '#eff6ff' : isCurrentMonth ? '#ffffff' : '#f8fafc',
+                  padding: '10px 8px',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-start',
+                  boxShadow: isSelected ? '0 8px 20px rgba(37, 99, 235, 0.12)' : 'none',
+                  color: isCurrentMonth ? '#0f172a' : '#94a3b8',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '8px',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '10px',
+                      background: isToday ? '#2563eb' : 'transparent',
+                      color: isToday ? '#ffffff' : 'inherit',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {date.getDate()}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                  {dayEvents.slice(0, 3).map((event) => (
+                    <span
+                      key={event.id}
+                      title={event.title}
+                      style={{
+                        display: 'inline-block',
+                        width: '9px',
+                        height: '9px',
+                        borderRadius: '50%',
+                        background: event.color,
+                        boxShadow: '0 0 0 2px rgba(255,255,255,0.9)',
+                      }}
+                    />
+                  ))}
+                </div>
+              </button>
             );
           })}
+        </div>
 
-          <button
-            type="button"
-            className="show-all"
-            onClick={() => setShowAll((v) => !v)}
-            aria-expanded={showAll}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(0, 1.5fr) minmax(240px, 0.7fr)',
+            gap: '20px',
+            padding: '0 28px 28px',
+          }}
+        >
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '20px',
+              padding: '20px 22px',
+            }}
           >
-            {showAll ? "− Show fewer times" : "+ Show all times (incl. Baal HaTanya)"}
-          </button>
-        </section>
-      )}
+            <h2 style={{ margin: '0 0 18px', fontSize: '1.2rem' }}>
+              {selectedDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </h2>
 
-      {/* ── 7-DAY: classic timetable table ─────────────────── */}
-      {!loading && !error && view === "week" && (
-        <section className="board" aria-label="7-day zmanim timetable">
-          <div className="board-head">
-            <div>
-              <div className="station">Weekly Timetable</div>
-              <div className="board-sub">{city.name}</div>
+            {selectedDayEvents.length > 0 ? (
+              <div style={{ display: 'grid', gap: '12px' }}>
+                {selectedDayEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      background: '#ffffff',
+                      borderRadius: '14px',
+                      padding: '12px 14px',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        background: event.color,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700 }}>{event.title}</div>
+                      <div style={{ color: '#64748b', fontSize: '0.9rem', marginTop: '2px' }}>{event.time}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ margin: 0, color: '#64748b' }}>No events scheduled for this date.</p>
+            )}
+          </div>
+
+          <div
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '20px',
+              padding: '20px 22px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem' }}>Upcoming</h3>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {upcomingEvents.map((event) => (
+                <div key={event.id} style={{ display: 'grid', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: '10px',
+                        height: '10px',
+                        borderRadius: '50%',
+                        background: event.color,
+                      }}
+                    />
+                    <span style={{ fontWeight: 700 }}>{event.title}</span>
+                  </div>
+                  <div style={{ color: '#64748b', fontSize: '0.8rem' }}>
+                    {new Date(event.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}{' '}
+                    • {event.time}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="board-scroll">
-            <table className="week-table">
-              <thead>
-                <tr>
-                  <th scope="col">Day</th>
-                  {WEEK_COLUMNS.map((col) => (
-                    <th key={col.key} scope="col">
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {days.map((d, i) => {
-                  const date = new Date(`${d.date}T00:00:00`);
-                  return (
-                    <tr key={d.date} className={i === 0 ? "today" : ""}>
-                      <td>
-                        {date.toLocaleDateString([], {
-                          weekday: "short",
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </td>
-                      {WEEK_COLUMNS.map((col) => (
-                        <td key={col.key}>
-                          {d.times[col.key]
-                            ? fmtTime(new Date(d.times[col.key]))
-                            : "—"}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
-    </main>
+        </div>
+      </div>
+    </div>
   );
 }
+
+const navButtonStyle: React.CSSProperties = {
+  border: '1px solid #dbe3f0',
+  background: '#ffffff',
+  color: '#1e293b',
+  width: '42px',
+  height: '42px',
+  borderRadius: '12px',
+  fontSize: '1.1rem',
+  cursor: 'pointer',
+  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+};
+
+const primaryButtonStyle: React.CSSProperties = {
+  border: 'none',
+  background: '#2563eb',
+  color: '#ffffff',
+  padding: '10px 16px',
+  borderRadius: '12px',
+  fontWeight: 700,
+  cursor: 'pointer',
+  boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)',
+};
