@@ -1,26 +1,318 @@
 @import "tailwindcss";
 
+/* ---------- Design tokens (variables) ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #f9fafb;
+  --radius: 16px;
+  --max-width: 680px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #09090b;
+    --fg: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #27272a;
+    --surface: #18181b;
   }
 }
 
+/* ---------- Base ---------- */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+}
+
+h1,
+h3 {
+  margin: 0 0 0.25rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ---------- Header ---------- */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #f5c518; /* gold */
+}
+
+.nav-date {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---------- Page content & footer ---------- */
+.site-content {
+  min-height: 60vh; /* pushes footer down on short pages */
+}
+
+.footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
+
+
+/* ---------- Layout ---------- */
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2.5rem;
+}
+
+.hero {
+  text-align: center;
+  padding: 2rem 0 2.5rem;
+}
+
+/* ---------- Cards grid ---------- */
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--muted);
+}
+
+.card-icon {
+  font-size: 1.75rem;
+}
+/* ---------- Library page ---------- */
+.book-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.book-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+}
+
+.book-card:hover {
+  border-color: var(--muted);
+}
+
+/* ---------- Wide container (videos) ---------- */
+.container-wide {
+  max-width: 1080px;
+}
+
+/* ---------- Videos page ---------- */
+.grid-videos {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.video-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden; /* keeps iframe corners rounded */
+}
+
+.video-embed {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9; /* keeps the player proportioned at any width */
+  border: 0;
+}
+
+.video-info {
+  padding: 1rem;
+}
+
+/* ---------- Audio page ---------- */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.audio-card {
+  gap: 0.75rem;
+}
+
+.audio-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+audio {
+  width: 100%;
+  display: block;
+}
+
+/* ---------- Q&A page ---------- */
+.qa-form {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.95rem;
+}
+
+.input:focus {
+  outline: 2px solid #f5c518;
+  outline-offset: 1px;
+}
+
+.btn {
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--muted);
+}
+
+.qa-card {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.qa-question {
+  margin: 0.25rem 0 0;
+}
+
+.vote-btn {
+  flex-shrink: 0;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.vote-btn:hover {
+  border-color: #f5c518;
+}
+
+@media (max-width: 560px) {
+  .qa-form {
+    flex-direction: column;
+  }
+}
+
+/* ---------- Bottom tab bar ---------- */
+.tabbar {
+  position: fixed; /* floats above content, stays on screen while scrolling */
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%); /* centers it */
+  z-index: 20;
+
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  max-width: calc(100vw - 1.5rem);
+
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.tabbar-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px; /* touch-friendly target */
+  min-height: 44px;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  transition: background 0.15s ease;
+}
+
+.tabbar-item:hover {
+  background: var(--surface);
+}
+
+.tabbar-item.is-active {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.tabbar-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Push page content up so the bar never covers the footer */
+body {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+
+/* ---------- Zmanim page ---------- */
+.zman-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.25rem;
 }
