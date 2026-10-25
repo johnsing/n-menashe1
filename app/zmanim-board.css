@@ -1,0 +1,381 @@
+/* app/zmanim-board.css — Zmanim Train styles (imported by app/calendar/page.tsx) */
+
+.zt-app {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #eee;
+  padding-bottom: 6rem;
+}
+
+/* ---------- Header ---------- */
+.zt-header {
+  background: linear-gradient(180deg, #141414, #0f0f0f);
+  border-bottom: 1px solid #2a2a2a;
+  padding: 20px 20px 16px;
+}
+
+.zt-header-top {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.zt-line {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ffd700;
+}
+
+.zt-title {
+  margin: 0;
+  font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
+  color: #fff;
+}
+
+.zt-clock {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.3rem, 1rem + 1.5vw, 1.8rem);
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 1px;
+}
+
+.zt-header-bottom {
+  max-width: 900px;
+  margin: 10px auto 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  font-size: 13px;
+  color: #888;
+}
+
+.zt-next strong {
+  color: #ffd700;
+}
+
+/* ---------- Content ---------- */
+.zt-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 0;
+}
+
+.zt-picker {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.zt-select {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 38px 10px 16px;
+  background: #1a1a1a;
+  color: #eee;
+  border: 1px solid #2a2a2a;
+  border-radius: 50px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.zt-select:hover,
+.zt-select:focus {
+  border-color: rgba(255, 215, 0, 0.4);
+  outline: none;
+}
+
+.zt-select option,
+.zt-select optgroup {
+  background: #1a1a1a;
+  color: #eee;
+}
+
+.zt-geo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  background: transparent;
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.zt-geo:hover:not(:disabled) {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.zt-geo:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.zt-geo-error {
+  width: 100%;
+  margin: -8px 0 0 6px;
+  font-size: 12px;
+  color: #ff8080;
+}
+
+.zt-section {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zt-section::before {
+  content: "";
+  width: 4px;
+  height: 16px;
+  background: #ffd700;
+  border-radius: 2px;
+}
+
+/* ---------- Board rows ---------- */
+.zt-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  background: #1a1a1a;
+  padding: 14px 18px;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.zt-row.st-yellow { border-color: #2a2a2a; }
+.zt-row.st-green  { border-color: rgba(81, 207, 102, 0.35); }
+.zt-row.st-red    { border-color: rgba(255, 77, 79, 0.35); }
+
+.zt-row.is-next {
+  border-color: rgba(255, 215, 0, 0.65);
+  background: #1e1a10;
+  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.1), 0 0 20px rgba(255, 215, 0, 0.07);
+}
+
+.zt-row-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.zt-row-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zt-row-he {
+  font-size: 12px;
+  font-weight: 400;
+  color: #777;
+}
+
+.zt-badge {
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.zt-row-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #888;
+}
+
+.zt-row-side {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zt-pill {
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.zt-pill.st-yellow { background: rgba(255, 215, 0, 0.12); color: #ffd700; }
+.zt-pill.st-green  { background: rgba(81, 207, 102, 0.15); color: #51cf66; }
+.zt-pill.st-red    { background: rgba(255, 77, 79, 0.15); color: #ff4d4f; }
+
+/* ---------- Animated WiFi icon (pure CSS) ---------- */
+.zw {
+  position: relative;
+  display: inline-block;
+}
+
+.zw span {
+  position: absolute;
+  left: 50%;
+  border-style: solid;
+  border-color: transparent;
+  opacity: 0.25;
+}
+
+.zw-dot {
+  bottom: 8%;
+  width: 18%;
+  height: 18%;
+  margin-left: -9%;
+  border-radius: 50%;
+  background: currentColor;
+  border: none !important;
+  opacity: 1;
+}
+
+.zw-a1, .zw-a2, .zw-a3 {
+  bottom: 12%;
+  border-width: 2px 2px 0 0;
+  border-radius: 0 100% 0 0;
+  transform-origin: bottom left;
+}
+
+.zw-a1 { width: 28%; height: 28%; margin-left: -4%;  transform: rotate(-45deg); }
+.zw-a2 { width: 52%; height: 52%; margin-left: -8%;  transform: rotate(-45deg); }
+.zw-a3 { width: 76%; height: 76%; margin-left: -12%; transform: rotate(-45deg); }
+
+.zw-green  { color: #51cf66; }
+.zw-red    { color: #ff4d4f; }
+.zw-yellow { color: #ffd700; }
+
+.zw-green .zw-a1 { animation: zt-wave 1.6s ease-in-out infinite; }
+.zw-green .zw-a2 { animation: zt-wave 1.6s ease-in-out infinite 0.2s; }
+.zw-green .zw-a3 { animation: zt-wave 1.6s ease-in-out infinite 0.4s; }
+.zw-green .zw-dot { animation: zt-blink 0.8s ease-in-out infinite; }
+
+.zw-red .zw-a1,
+.zw-red .zw-a2,
+.zw-red .zw-a3,
+.zw-red .zw-dot { opacity: 1; }
+
+@keyframes zt-wave {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 1; }
+}
+
+@keyframes zt-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ---------- Skeleton / error / empty ---------- */
+.zt-skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zt-skeleton {
+  height: 64px;
+  border-radius: 12px;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  animation: zt-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes zt-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+
+.zt-error,
+.zt-empty {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: #1a1a1a;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.zt-error {
+  border: 1px solid rgba(255, 77, 79, 0.35);
+  color: #ff8080;
+}
+
+.zt-error strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #ffb3b3;
+}
+
+.zt-error small {
+  display: block;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.zt-retry {
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  border: 1px solid #ffd700;
+  background: transparent;
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.zt-retry:hover {
+  background: rgba(255, 215, 0, 0.12);
+}
+
+.zt-empty {
+  border: 1px solid #2a2a2a;
+  color: #888;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 480px) {
+  .zt-content { padding: 20px 16px 0; }
+  .zt-row { padding: 12px 14px; gap: 10px; }
+  .zt-pill { padding: 3px 10px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zw span,
+  .zt-skeleton { animation: none !important; }
+}
