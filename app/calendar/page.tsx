@@ -3,8 +3,19 @@
 
 import { useEffect, useState } from "react";
 
-// Which zmanim to show, in the order we want them on screen.
-// The keys come from Hebcal's API response (their docs list all of them).
+const cities = [
+  { id: "281184", name: "Jerusalem" },
+  { id: "293397", name: "Tel Aviv" },
+  { id: "294801", name: "Haifa" },
+  { id: "293100", name: "Tzfat" },
+  { id: "293322", name: "Tiberias" },
+  { id: "294098", name: "Nazareth" },
+  { id: "295530", name: "Be'er Sheva" },
+  { id: "295629", name: "Ashdod" },
+  { id: "295620", name: "Ashkelon" },
+  { id: "295277", name: "Eilat" },
+];
+
 const zmanimWanted = [
   { key: "alotHaShachar", name: "Alot HaShachar (Dawn)" },
   { key: "sunrise", name: "Netz — Sunrise" },
@@ -17,29 +28,50 @@ const zmanimWanted = [
   { key: "tzeit72min", name: "Tzeit — Nightfall (72 min)" },
 ];
 
-// One row of the final list: a name + a real Date object
 interface Zman {
   name: string;
   time: Date;
 }
 
+// "in 47 min" / "2h 10m" / "Departed"
+function countdown(target: Date, now: Date): string {
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return "Departed";
+  const totalMin = Math.ceil(diffMs / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m} min`;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
 export default function CalendarPage() {
+  const [city, setCity] = useState(cities[0]); // starts on Jerusalem
   const [zmanim, setZmanim] = useState<Zman[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
 
+  // Live clock: set `now` every 30 seconds so countdowns stay fresh
+  useEffect(() => {
+    setNow(new Date());
+    const timer = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(timer); // cleanup when leaving the page
+  }, []);
+
+  // Fetch times — runs on load AND every time `city` changes,
+  // because `city` is in the dependency array.
   useEffect(() => {
     async function loadZmanim() {
+      setLoading(true);
+      setError(null);
       try {
         const response = await fetch(
-          "https://www.hebcal.com/zmanim?cfg=json&geonameid=281184",
+          `https://www.hebcal.com/zmanim?cfg=json&geonameid=${city.id}`,
         );
         if (!response.ok) throw new Error("Hebcal didn't answer");
 
         const data = await response.json();
 
-        // Turn the API's raw strings into clean { name, time } rows,
-        // skipping any zman the API didn't return today.
         const list: Zman[] = [];
         for (const wanted of zmanimWanted) {
           const rawTime = data.times[wanted.key];
@@ -47,24 +79,48 @@ export default function CalendarPage() {
             list.push({ name: wanted.name, time: new Date(rawTime) });
           }
         }
-
         setZmanim(list);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
-        setLoading(false); // runs whether it worked or failed
+        setLoading(false);
       }
     }
 
     loadZmanim();
-  }, []); // [] = run once, when the page loads
+  }, [city]); // ← re-runs whenever the city changes
+
+  // The first zman in the list that's still in the future
+  const nextZman = now
+    ? zmanim.find((z) => z.time.getTime() > now.getTime())
+    : undefined;
 
   return (
     <main className="container">
       <header className="hero">
         <h1>Zmanim</h1>
-        <p className="muted">Jerusalem · today</p>
+        <p className="muted">
+          {now ? now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" }) : ""}
+        </p>
       </header>
+
+      <div className="city-picker">
+        <label htmlFor="city" className="muted">City</label>
+        <select
+          id="city"
+          className="input"
+          value={city.id}
+          onChange={(e) =>
+            setCity(cities.find((c) => c.id === e.target.value) ?? cities[0])
+          }
+        >
+          {cities.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {loading && <p className="muted">Loading times…</p>}
 
@@ -76,17 +132,33 @@ export default function CalendarPage() {
 
       {!loading && !error && (
         <div className="stack">
-          {zmanim.map((zman) => (
-            <div key={zman.name} className="card zman-row">
-              <span>{zman.name}</span>
-              <strong>
-                {zman.time.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </strong>
-            </div>
-          ))}
+          {zmanim.map((zman) => {
+            const isNext = zman === nextZman;
+            return (
+              <div
+                key={zman.name}
+                className={isNext ? "card zman-row is-next" : "card zman-row"}
+              >
+                <span>
+                  {zman.name}
+                  {isNext && <span className="next-badge">Next</span>}
+                </span>
+                <span className="zman-times">
+                  <strong>
+                    {zman.time.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </strong>
+                  {now && (
+                    <small className="muted">
+                      {countdown(zman.time, now)}
+                    </small>
+                  )}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </main>

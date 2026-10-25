@@ -316,3 +316,43 @@ body {
   justify-content: space-between;
   padding: 0.9rem 1.25rem;
 }
+
+/* ---------- City picker & countdown board ---------- */
+.city-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.city-picker label {
+  font-size: 0.9rem;
+}
+
+.city-picker select {
+  max-width: 220px;
+  cursor: pointer;
+}
+
+.zman-row.is-next {
+  border-color: #f5c518;
+  background: var(--surface);
+}
+
+.next-badge {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(245, 197, 24, 0.15);
+  color: #f5c518;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.zman-times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
