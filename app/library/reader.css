@@ -1,0 +1,44 @@
+/* app/library/reader.css — chapter reader styles */
+
+.reader {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.verse {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.15rem 0.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.verse-num {
+  grid-row: span 2;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding-top: 0.3rem;
+}
+
+.verse-he {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+
+.verse-en {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.reader-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
