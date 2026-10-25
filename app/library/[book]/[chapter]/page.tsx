@@ -48,6 +48,22 @@ export async function generateMetadata({
   return { title: book ? `${book.name} ${n}` : "Library" };
 }
 
+/** 
+ * Helper function to strip HTML tags, convert non-breaking spaces 
+ * to regular spaces, and clean up extra punctuation artifacts. 
+ */
+const cleanText = (html: string) => {
+  if (!html) return "";
+  return html
+    .replace(/&nbsp;/gi, " ")   // Replace &nbsp; with a space
+    .replace(/&thinsp;/gi, " ") // Replace &thinsp; with a space
+    .replace(/<[^>]*>?/gm, "")  // Remove HTML tags
+    .replace(/;/g, "")          // Remove stray semicolons
+    .replace(/׀/g, "")          // Remove Hebrew vertical line separator (sof pasuq variant)
+    .replace(/\s+/g, " ")       // Normalize multiple consecutive spaces into one
+    .trim();
+};
+
 export default async function ChapterPage({
   params,
 }: {
@@ -97,15 +113,22 @@ export default async function ChapterPage({
         </div>
       ) : (
         <article className="reader">
-          {Array.from({ length: verses }, (_, i) => (
-            <div key={i} className="verse">
-              <span className="verse-num">{i + 1}</span>
-              <p className="verse-he" dir="rtl" lang="he">
-                {content.hebrew[i] ?? ""}
-              </p>
-              <p className="verse-en">{content.english[i] ?? ""}</p>
-            </div>
-          ))}
+          {content.hebrew.map((hebrewText, index) => {
+            const verseNum = index + 1;
+            const englishText = content.english?.[index] ?? "";
+
+            return (
+              <div key={`verse-${verseNum}`} className="verse">
+                <span className="verse-num" aria-hidden="true">{verseNum}</span>
+                <p className="verse-he" dir="rtl" lang="he">
+                  {cleanText(hebrewText)}
+                </p>
+                <p className="verse-en">
+                  {cleanText(englishText)}
+                </p>
+              </div>
+            );
+          })}
         </article>
       )}
 
