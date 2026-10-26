@@ -51,6 +51,11 @@ export default function LibraryPage() {
           ))}
         </div>
       </section>
+      <Link href="/library/parashat" className="card parasha-card parasha-hero p-4 border rounded-lg hover:shadow-md transition-shadow flex flex-col justify-between">
+        <div className="parasha-title mb-2">
+          <strong>📜 Parashat — Weekly Portions</strong>
+        </div>
+      </Link>
     </main>
   );
 }
