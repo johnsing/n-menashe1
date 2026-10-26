@@ -12,12 +12,6 @@ export const PRESET_LOCATIONS: { group: string; locations: ZmanimLocation[] }[] 
     locations: [{ id: "jerusalem", label: "Jerusalem", params: "geonameid=281184" }],
   },
   {
-    group: "Center",
-    locations: [
-      { id: "telaviv", label: "Tel Aviv", params: "geonameid=293397" },
-    ],
-  },
-  {
     group: "North",
     locations: [
       { id: "haifa", label: "Haifa", params: "geonameid=294801" },

@@ -18,8 +18,7 @@
   max-width: 900px;
   margin: 0 auto;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  justify-content: space-around;
   gap: 16px;
 }
 
@@ -31,7 +30,11 @@
   text-transform: uppercase;
   color: #ffd700;
 }
-
+.zt-loc{
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
 .zt-title {
   margin: 0;
   font-size: clamp(1.4rem, 1rem + 2vw, 2rem);
@@ -55,6 +58,7 @@
   align-items: center;
   font-size: 13px;
   color: #888;
+  justify-content: center;
 }
 
 .zt-next strong {

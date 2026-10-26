@@ -27,6 +27,9 @@ export default function TimelineStation({
           minute: "2-digit",
         });
 
+        // Get the dynamic icon component assigned from zmanim.ts
+        const IconComponent = station.icon;
+
         return (
           <div
             key={station.id}
@@ -42,7 +45,10 @@ export default function TimelineStation({
                 )}
                 {isNext && <span className="zt-badge">Next</span>}
               </div>
-              <div className="zt-row-meta">🕐 {timeStr}</div>
+              <div className="zt-row-meta flex items-center gap-1.5">
+                {IconComponent && <IconComponent size={16} className="opacity-75" />}
+                <span>{timeStr}</span>
+              </div>
             </div>
 
             <div className="zt-row-side">
