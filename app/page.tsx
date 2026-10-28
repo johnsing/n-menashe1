@@ -1,5 +1,6 @@
 // app/page.tsx
 import Link from "next/link";
+import ParashaThisWeek from "./utils/ParashaThisWeek";
 
 const sections = [
   { href: "/calendar", icon: "📅", title: "Zmanim Calendar", desc: "Prayer times & daily schedule" },
@@ -15,7 +16,7 @@ export default function Home() {
       <section className="hero">
         <h1>N-MENASHE</h1>
         <p className="muted">
-          Heritage library &amp; media — Torah, zmanim, and community.
+          <ParashaThisWeek /> — the weekly Torah portion, in order
         </p>
       </section>
 

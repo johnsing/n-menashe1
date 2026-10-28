@@ -1,61 +1,65 @@
+// app/library/page.tsx — Tanakh index with section tabs + Parashat entry
 "use client";
-// app/library/page.tsx — Tanakh index: sections → books → chapters with section tabs
 
 import { useState } from "react";
 import Link from "next/link";
-import { SECTIONS, booksBySection } from "./data";
+import { SECTIONS, booksBySection } from "../data/data";
+import { FaTorah } from "react-icons/fa";
 
 export default function LibraryPage() {
-  // Default to the first section (e.g., Torah) instead of "all"
-  const [activeTab, setActiveTab] = useState<(typeof SECTIONS)[number]>(SECTIONS[0]);
+  const [activeTab, setActiveTab] =
+    useState<(typeof SECTIONS)[number]>(SECTIONS[0]);
 
   return (
     <main className="container">
       <header className="hero">
         <h1>Library</h1>
-        <p className="muted">The books of the Tanakh — tap a book to see its chapters</p>
+        <p className="muted">
+          The books of the Tanakh — tap a book to see its chapters
+        </p>
       </header>
 
-      {/* Tabs Navigation (Sections Only) */}
-      <div className="flex gap-2 border-b border-gray-200 pb-4 mb-8 overflow-x-auto">
+      {/* Section tabs — styled by .view-toggle/.toggle-btn in globals.css */}
+      <div className="view-toggle" role="tablist" aria-label="Tanakh sections">
         {SECTIONS.map((section) => (
           <button
             key={section}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === section}
             onClick={() => setActiveTab(section)}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
-              activeTab === section
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
+            className={`toggle-btn${activeTab === section ? " is-active" : ""}`}
           >
             {section}
           </button>
         ))}
       </div>
 
-      {/* Active Section and Book Grid */}
-      <section className="book-section mb-8">
-        <h2 className="section-title text-xl font-semibold mb-4">{activeTab}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {/* Active section's books */}
+      <section className="book-section">
+        <h2 className="section-title">{activeTab}</h2>
+        <div className="grid">
           {booksBySection(activeTab).map((book) => (
             <Link
               key={book.slug}
               href={`/library/${book.slug}`}
-              className="card book-card p-4 border rounded-lg hover:shadow-md transition-shadow flex flex-col justify-between"
+              className="card book-card"
             >
               <strong>{book.name}</strong>
-              <small className="muted text-gray-500">
+              <small className="muted">
                 {book.chapters} {book.chapters === 1 ? "chapter" : "chapters"}
               </small>
             </Link>
           ))}
         </div>
       </section>
-      <Link href="/library/parashat" className="card parasha-card parasha-hero p-4 border rounded-lg hover:shadow-md transition-shadow flex flex-col justify-between">
-        <div className="parasha-title mb-2">
-          <strong>📜 Parashat — Weekly Portions</strong>
-        </div>
-      </Link>
+
+      {/* Weekly Torah portions */}
+      <section className="book-section">
+        <Link href="/library/parashat" className="card book-card">
+          <strong><FaTorah />Parashat — Weekly Portions</strong>
+        </Link>
+      </section>
     </main>
   );
 }

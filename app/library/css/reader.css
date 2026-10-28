@@ -20,14 +20,19 @@
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent);
-  padding-top: 0.3rem;
+  padding-top: 0.35rem;
 }
 
+/* Preferred Hebrew fonts when installed; falls back to the body font
+   (system stack renders Hebrew fine — these just improve ta'amei
+   hamikra / cantillation marks on devices that have them) */
 .verse-he {
   margin: 0;
   font-size: 1.15rem;
-  line-height: 1.7;
-  font-family: "Noto Sans Hebrew", "Frank Ruehl Libre", "SBL Hebrew", inherit;
+  line-height: 1.8;
+  font-family: "Noto Sans Hebrew", "Frank Ruehl Libre", "David Libre",
+    "SBL Hebrew", inherit;
+  max-width: 70ch; /* comfortable reading measure */
 }
 
 .verse-en {
@@ -35,6 +40,7 @@
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.6;
+  max-width: 70ch;
 }
 
 .reader-nav {
