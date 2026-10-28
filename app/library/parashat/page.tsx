@@ -20,7 +20,7 @@ export default function ParashatIndexPage() {
     <main className="container">
       <header className="hero">
         <p className="muted">
-          <Link href="/library">← Library</Link>
+          <Link href="/library">Library</Link>
         </p>
         <h1>Parashat</h1>
         <p className="muted">The 54 weekly Torah portions, in order</p>
@@ -40,7 +40,6 @@ export default function ParashatIndexPage() {
               >
                 <span className="parasha-he" lang="he">{p.hebrew}</span>
                 <strong>{p.name}</strong>
-                <small className="muted">{p.range}</small>
               </Link>
             ))}
           </div>
