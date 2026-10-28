@@ -11,7 +11,7 @@ export interface Parasha {
 
 export const PARASHIYOT: Parasha[] = [
   // ── Genesis / Bereshit (12) ──
-  { slug: "bereshit",      name: "Bereshit",       hebrew: "בראשית",     book: "genesis", ref: "Genesis.1.1-6.8",      range: "Genesis 1:1–6:8" },
+  { slug: "bereshit",      name: "Bereshit",       hebrew: "בראשית",     book: "genesis", ref: "Genesis.1.1-6.8",      range: "Genesis 1:1-6:8" },
   { slug: "noach",         name: "Noach",          hebrew: "נח",         book: "genesis", ref: "Genesis.6.9-11.32",    range: "Genesis 6:9–11:32" },
   { slug: "lech-lecha",    name: "Lech-Lecha",     hebrew: "לך לך",      book: "genesis", ref: "Genesis.12.1-17.27",   range: "Genesis 12:1–17:27" },
   { slug: "vayera",        name: "Vayera",         hebrew: "וירא",       book: "genesis", ref: "Genesis.18.1-22.24",   range: "Genesis 18:1–22:24" },

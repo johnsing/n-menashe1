@@ -1,4 +1,4 @@
-/* app/library/reader.css — chapter reader styles */
+/* app/library/reader.css — bilingual reader + aliyah tabs + tikkun view */
 
 .reader {
   display: flex;
@@ -7,6 +7,101 @@
   margin-bottom: 2rem;
 }
 
+/* ---------- View toggle (Bilingual / Tikkun) ---------- */
+.view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  margin-bottom: 14px;
+}
+
+.view-toggle-btn {
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.view-toggle-btn.is-active {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+/* ---------- Aliyah tabs ---------- */
+.aliyah-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+.aliyah-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.aliyah-tab:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+}
+
+.aliyah-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.aliyah-tab-he {
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.aliyah-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.aliyah-heading {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0.25rem 0 1.25rem;
+}
+
+.aliyah-heading .aliyah-he {
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ---------- Bilingual verses ---------- */
 .verse {
   display: grid;
   grid-template-columns: 2rem 1fr;
@@ -20,19 +115,13 @@
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--accent);
-  padding-top: 0.35rem;
+  padding-top: 0.3rem;
 }
 
-/* Preferred Hebrew fonts when installed; falls back to the body font
-   (system stack renders Hebrew fine — these just improve ta'amei
-   hamikra / cantillation marks on devices that have them) */
 .verse-he {
   margin: 0;
   font-size: 1.15rem;
-  line-height: 1.8;
-  font-family: "Noto Sans Hebrew", "Frank Ruehl Libre", "David Libre",
-    "SBL Hebrew", inherit;
-  max-width: 70ch; /* comfortable reading measure */
+  line-height: 1.7;
 }
 
 .verse-en {
@@ -40,7 +129,44 @@
   color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.6;
-  max-width: 70ch;
+}
+
+/* ---------- Tikkun view (tikkun.io style) ---------- */
+.tikkun {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.tikkun-verse {
+  position: relative;
+  padding-right: 3.5rem; /* room for the ref marker */
+}
+
+.tikkun-ref {
+  position: absolute;
+  right: 0;
+  top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tikkun-pointed {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  line-height: 2;
+  font-weight: 500;
+}
+
+.tikkun-scroll {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 2;
+  color: var(--muted);
+  letter-spacing: 0.02em;
 }
 
 .reader-nav {

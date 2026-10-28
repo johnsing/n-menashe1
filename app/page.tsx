@@ -15,9 +15,9 @@ export default function Home() {
     <main className="container">
       <section className="hero">
         <h1>N-MENASHE</h1>
-        <p className="muted">
-          <ParashaThisWeek /> — the weekly Torah portion, in order
-        </p>
+        <p className="muted">Heritage library & media — Torah, zmanim, and community</p>
+        {/* Weekly portion card — must live OUTSIDE the <p> (it renders a <section>) */}
+        <ParashaThisWeek />
       </section>
 
       <div className="grid">
