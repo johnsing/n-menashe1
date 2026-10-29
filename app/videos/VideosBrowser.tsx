@@ -5,7 +5,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { FiPlay } from "react-icons/fi";
-import { CATEGORIES, videos, type Category, type Video } from "./data";
+import { CATEGORIES, videos, type Category, type Video } from "../data/video-data";
 
 type Filter = Category | "All";
 

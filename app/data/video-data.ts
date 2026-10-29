@@ -49,4 +49,10 @@ export const videos: Video[] = [
     speaker: "BimBam",
     category: "For Kids",
   },
+  {
+    id: "KFTCzL-j_Tk",
+    title: "PARASHAT LEKH LEKHA Nangma nahina tah'a hinkho naman khah hitam?",
+    speaker: "HaRav Yadiel Hatlei",
+    category: "Torah & Parsha",
+  }
 ];

@@ -1,0 +1,101 @@
+/* ============================================================
+   APPEND this whole block to the END of app/globals.css
+   Videos browser + parashat styles (were referenced but missing)
+   ============================================================ */
+
+/* ---------- Videos browser (thumbnail + chips) ---------- */
+.videos-toolbar {
+  margin-bottom: 0.75rem;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chip {
+  padding: 0.4rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  color: var(--fg);
+  border-color: var(--muted);
+}
+
+.chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1a1a1a;
+}
+
+.videos-count {
+  font-size: 0.8rem;
+  margin: 0 0 1rem;
+}
+
+/* clickable thumbnail — iframe mounts on top of it when active */
+.video-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: #000;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.video-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.video-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  color: #fff;
+  font-size: 2rem;
+  transition: background 0.15s ease;
+}
+
+.video-thumb:hover .video-play,
+.video-thumb:focus-visible .video-play {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.video-cat {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Parashat ---------- */
+.parasha-he {
+  font-size: 1.15em;
+  line-height: 1.4;
+}
