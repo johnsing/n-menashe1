@@ -1,16 +1,16 @@
-// app/library/[book]/[chapter]/page.tsx — read one chapter (Hebrew + English)
+// app/library/[book]/[chapter]/page.tsx — read one chapter, Hebrew only
 // Text comes from the free Sefaria API (no key required), cached 24h.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getBook } from "@/app/data/data";
+import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
 import "@/app/library/css/reader.css";
 
 export const revalidate = 86400; // ISR
 
 interface SefariaResponse {
   ref?: string;
-  text?: string[] | string[][];
   he?: string[] | string[][];
   error?: string;
 }
@@ -30,7 +30,7 @@ async function fetchText(ref: string) {
   if (!res.ok) return null;
   const data = (await res.json()) as SefariaResponse;
   if (data.error) return null;
-  return { hebrew: toVerses(data.he), english: toVerses(data.text) };
+  return { hebrew: toVerses(data.he) };
 }
 
 export async function generateMetadata({
@@ -57,10 +57,7 @@ export default async function ChapterPage({
   }
 
   const content = await fetchText(`${book.sefaria}.${n}`);
-  const verses = Math.max(
-    content?.hebrew.length ?? 0,
-    content?.english.length ?? 0,
-  );
+  const verses = content?.hebrew.length ?? 0;
 
   const prev = n > 1 ? n - 1 : null;
   const next = n < book.chapters ? n + 1 : null;
@@ -95,17 +92,13 @@ export default async function ChapterPage({
           {Array.from({ length: verses }, (_, i) => (
             <div key={i} className="verse">
               <span className="verse-num">{i + 1}</span>
-              {/* Sefaria text contains legitimate HTML (footnotes,
-                  ta'amim markers) — safe to render, static & trusted */}
               <p
                 className="verse-he"
                 dir="rtl"
                 lang="he"
-                dangerouslySetInnerHTML={{ __html: content.hebrew[i] ?? "" }}
-              />
-              <p
-                className="verse-en"
-                dangerouslySetInnerHTML={{ __html: content.english[i] ?? "" }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeSefariaHtml(content.hebrew[i] ?? ""),
+                }}
               />
             </div>
           ))}

@@ -1,4 +1,4 @@
-// app/library/parashat/[slug]/page.tsx — read a weekly portion (Hebrew + English)
+// app/library/parashat/[slug]/page.tsx — read a weekly portion (Hebrew only)
 // Fetches the portion's full range from the free Sefaria API, cached 24h.
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,13 +8,13 @@ import {
   getParasha,
   parashaIndex,
 } from "@/app/data/parashat-data";
+import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
 import "@/app/library/css/reader.css";
 
 export const revalidate = 86400; // ISR
 
 interface SefariaResponse {
   ref?: string;
-  text?: string[] | string[][];
   he?: string[] | string[][];
   error?: string;
 }
@@ -34,7 +34,7 @@ async function fetchText(ref: string) {
   if (!res.ok) return null;
   const data = (await res.json()) as SefariaResponse;
   if (data.error) return null;
-  return { hebrew: toVerses(data.he), english: toVerses(data.text) };
+  return { hebrew: toVerses(data.he) };
 }
 
 // All 54 portions are generated at build time.
@@ -62,10 +62,7 @@ export default async function ParashatReaderPage({
   if (!parasha) notFound();
 
   const content = await fetchText(parasha.ref);
-  const verses = Math.max(
-    content?.hebrew.length ?? 0,
-    content?.english.length ?? 0,
-  );
+  const verses = content?.hebrew.length ?? 0;
 
   const idx = parashaIndex(slug);
   const prev = idx > 0 ? PARASHIYOT[idx - 1] : null;
@@ -80,10 +77,7 @@ export default async function ParashatReaderPage({
           <Link href="/library/parashat">Parashat</Link>
         </p>
         <h1>
-          <span className="parasha-he" lang="he">
-            {" "}
-            {parasha.hebrew}{" "}
-          </span>{" "}
+          <span className="parasha-he" lang="he">{parasha.hebrew}</span>{" "}
           {parasha.name}
         </h1>
         <p className="muted">{parasha.range}</p>
@@ -107,13 +101,13 @@ export default async function ParashatReaderPage({
           {Array.from({ length: verses }, (_, i) => (
             <div key={i} className="verse">
               <span className="verse-num">{i + 1}</span>
-              {/* Sefaria text contains legitimate HTML (footnotes,
-                  ta'amim markers) — safe to render, static & trusted */}
               <p
                 className="verse-he"
                 dir="rtl"
                 lang="he"
-                dangerouslySetInnerHTML={{ __html: content.hebrew[i] ?? "" }}
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeSefariaHtml(content.hebrew[i] ?? ""),
+                }}
               />
             </div>
           ))}
