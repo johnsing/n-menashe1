@@ -115,7 +115,6 @@ export default async function ParashatReaderPage({
                 lang="he"
                 dangerouslySetInnerHTML={{ __html: content.hebrew[i] ?? "" }}
               />
-             
             </div>
           ))}
         </article>

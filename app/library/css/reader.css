@@ -12,7 +12,6 @@
   grid-template-columns: 2rem 1fr;
   gap: 0.15rem 0.75rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
 }
 
 .verse-num {

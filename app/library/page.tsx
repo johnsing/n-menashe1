@@ -55,7 +55,7 @@ export default function LibraryPage() {
         className="card parasha-card parasha-hero p-4 border rounded-lg hover:shadow-md transition-shadow flex flex-col justify-between"
       >
         <div className="parasha-title mb-2">
-          <strong>📜 Parashat — Weekly Portions</strong>
+          <strong>Parashat HaShavua</strong>
         </div>
       </Link>
     </main>

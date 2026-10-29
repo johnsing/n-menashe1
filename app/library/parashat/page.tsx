@@ -22,8 +22,7 @@ export default function ParashatIndexPage() {
         <p className="muted">
           <Link href="/library">Library</Link>
         </p>
-        <h1>Parashat</h1>
-        <p className="muted">The 54 weekly Torah portions, in order</p>
+        <h1>Parashat HaShavua</h1>
       </header>
 
       {books.map((book) => (
