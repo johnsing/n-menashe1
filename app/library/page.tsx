@@ -11,7 +11,6 @@ export default function LibraryPage() {
     <main className="container">
       <header className="hero">
         <h1>Library</h1>
-        <p className="muted">The books of the Tanakh — tap a book to see its chapters</p>
       </header>
 
       {/* Tabs Navigation (Sections Only) */}
