@@ -41,9 +41,6 @@ export default function LibraryPage() {
               className="card book-card p-4 border rounded-lg hover:shadow-md transition-shadow flex flex-col justify-between"
             >
               <strong>{book.name}</strong>
-              <small className="muted text-gray-500">
-                {book.chapters} {book.chapters === 1 ? "chapter" : "chapters"}
-              </small>
             </Link>
           ))}
         </div>
