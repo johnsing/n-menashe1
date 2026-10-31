@@ -5,7 +5,14 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { FiNavigation } from "react-icons/fi";
 import TransitHeader from "@/app/components/Zmanim/TransitHeader";
 import TimelineStation from "@/app/components/Zmanim/TimelineStation";
-import { fetchZmanim, toApiDate, type Station } from "@/app/lib/zmanim";
+import {
+  fetchZmanim,
+  fetchShabbat,
+  shabbatStations,
+  toApiDate,
+  type ShabbatInfo,
+  type Station,
+} from "@/app/lib/zmanim";
 import {
   PRESET_LOCATIONS,
   ALL_PRESET_LOCATIONS,
@@ -47,6 +54,12 @@ const getClock = () => clockSnapshot;
 const getServerClock = () => null;
 const getServerLocation = () => DEFAULT_LOCATION;
 
+const EMPTY_SHABBAT: ShabbatInfo = {
+  candleLighting: null,
+  havdalah: null,
+  parasha: null,
+};
+
 export default function ZmanimTrainApp() {
   const now = useSyncExternalStore(subscribeClock, getClock, getServerClock);
   const location = useSyncExternalStore(
@@ -56,6 +69,7 @@ export default function ZmanimTrainApp() {
   );
 
   const [stations, setStations] = useState<Station[]>([]);
+  const [shabbat, setShabbat] = useState<ShabbatInfo>(EMPTY_SHABBAT);
   const [locationTitle, setLocationTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,19 +80,24 @@ export default function ZmanimTrainApp() {
   const dateKey = now ? toApiDate(now) : "";
 
   // Single source of fetching: date / location / retry changes.
+  // Shabbat info is fetched alongside; if it fails, the board still loads.
   useEffect(() => {
     if (!dateKey) return;
     let active = true;
+    const date = new Date(`${dateKey}T00:00:00`);
 
     (async () => {
+      const shabbatPromise = fetchShabbat(location.params, date).catch(
+        () => EMPTY_SHABBAT,
+      );
       try {
-        const result = await fetchZmanim(
-          new Date(`${dateKey}T00:00:00`),
-          location.params,
-          location.label,
-        );
+        const [result, shabbatResult] = await Promise.all([
+          fetchZmanim(date, location.params, location.label),
+          shabbatPromise,
+        ]);
         if (!active) return;
         setStations(result.stations);
+        setShabbat(shabbatResult);
         setLocationTitle(result.locationTitle);
         setError(null);
       } catch (e) {
@@ -134,17 +153,26 @@ export default function ZmanimTrainApp() {
     );
   };
 
+  // Zmanim + tonight's Shabbat rows, chronological.
+  const allStations = useMemo(() => {
+    const shabbatRows = shabbatStations(shabbat);
+    if (shabbatRows.length === 0) return stations;
+    return [...stations, ...shabbatRows].sort(
+      (a, b) => a.time.getTime() - b.time.getTime(),
+    );
+  }, [stations, shabbat]);
+
   const nextStation = useMemo(() => {
     if (!now) return null;
-    return stations.find((s) => s.time.getTime() > now.getTime()) ?? null;
-  }, [stations, now]);
+    return allStations.find((s) => s.time.getTime() > now.getTime()) ?? null;
+  }, [allStations, now]);
 
   // Train-board behaviour: keep the last hour + everything upcoming.
   const visible = useMemo(() => {
     if (!now) return [];
     const cutoff = now.getTime() - 60 * 60_000;
-    return stations.filter((s) => s.time.getTime() >= cutoff);
-  }, [stations, now]);
+    return allStations.filter((s) => s.time.getTime() >= cutoff);
+  }, [allStations, now]);
 
   const isPreset = ALL_PRESET_LOCATIONS.some((l) => l.id === location.id);
 
@@ -153,6 +181,7 @@ export default function ZmanimTrainApp() {
       <TransitHeader
         location={locationTitle || location.label}
         nextStation={now ? nextStation : null}
+        parasha={shabbat.parasha}
       />
 
       <main className="zt-content">
@@ -213,7 +242,7 @@ export default function ZmanimTrainApp() {
               Try again
             </button>
           </div>
-        ) : loading && stations.length === 0 ? (
+        ) : loading && allStations.length === 0 ? (
           <div className="zt-skeletons" aria-hidden="true">
             <div className="zt-skeleton" />
             <div className="zt-skeleton" />

@@ -1,5 +1,6 @@
 "use client";
-// Board header: line name, location, live clock, next-event countdown.
+// Board header: line name, location, live clock, next-event countdown,
+// and the weekly parasha when it's Shabbat-relevant.
 import { useEffect, useState } from "react";
 import { formatIn } from "@/app/utils/wifiStatus";
 import type { Station } from "@/app/lib/zmanim";
@@ -8,9 +9,11 @@ import { TfiLocationPin } from "react-icons/tfi";
 export default function TransitHeader({
   location,
   nextStation,
+  parasha,
 }: {
   location: string;
   nextStation: Station | null;
+  parasha?: string | null;
 }) {
   const [now, setNow] = useState<Date | null>(null);
 
@@ -36,7 +39,9 @@ export default function TransitHeader({
       </div>
 
       <div className="zt-header-bottom">
-        <span className="zt-loc"><TfiLocationPin /> {location}</span>
+        <span className="zt-loc">
+          <TfiLocationPin /> {location}
+        </span>
         <span className="zt-next">
           {nextStation ? (
             <>
@@ -47,6 +52,7 @@ export default function TransitHeader({
             "All of today's zmanim have passed"
           )}
         </span>
+        {parasha && <span className="zt-parasha">📖 {parasha}</span>}
       </div>
     </header>
   );

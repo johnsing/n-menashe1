@@ -383,3 +383,29 @@
   .zw span,
   .zt-skeleton { animation: none !important; }
 }
+
+
+/* ── APPEND to the end of app/zmanim-board.css ──────────────
+   Shabbat rows + parasha line */
+
+.zt-row.zt-shabbat {
+  background: linear-gradient(135deg, #241c10, #1a1409);
+  border-color: rgba(255, 215, 0, 0.5) !important;
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.08);
+}
+
+.zt-shabbat-flag {
+  border-radius: 999px;
+  background: rgba(255, 215, 0, 0.18);
+  color: #ffd700;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.zt-parasha {
+  color: #ffd700;
+  font-weight: 600;
+}

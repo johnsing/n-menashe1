@@ -1,4 +1,4 @@
-// app/lib/zmanim.ts — Hebcal zmanim API client + station definitions
+// app/lib/zmanim.ts — Hebcal zmanim + shabbat API client + station definitions
 
 import type { ComponentType } from "react";
 import { 
@@ -9,8 +9,11 @@ import {
   LuSunset, 
   LuCloudSun, 
   LuClock, 
-  LuSparkles 
+  LuSparkles,
+  LuFlame,
 } from "react-icons/lu";
+
+export type StationKind = "zman" | "candles" | "havdalah";
 
 export interface Station {
   id: string;
@@ -18,6 +21,7 @@ export interface Station {
   hebrew?: string;
   time: Date;
   icon: ComponentType<{ size?: number; className?: string }>;
+  kind?: StationKind; // default "zman"; shabbat rows get special styling
 }
 
 interface ZmanimStationConfig {
@@ -90,4 +94,81 @@ export async function fetchZmanim(
   if (stations.length === 0) throw new Error("Hebcal returned no zmanim for this date");
 
   return { stations, locationTitle: data.location?.title ?? fallbackLabel };
+}
+
+// ── Shabbat: candle lighting, havdalah, weekly parasha ─────
+
+export interface ShabbatInfo {
+  candleLighting: Date | null;
+  havdalah: Date | null;
+  parasha: string | null;
+}
+
+interface HebcalShabbatItem {
+  category?: string;
+  title?: string;
+  date?: string;
+}
+
+/**
+ * Fetches the upcoming Shabbat from Hebcal, but only returns
+ * candle-lighting / havdalah times that fall ON forDate's day —
+ * so on Friday you see tonight's candle lighting, on Saturday
+ * tonight's havdalah, and mid-week the board stays clean.
+ */
+export async function fetchShabbat(
+  params: string,
+  forDate: Date,
+): Promise<ShabbatInfo> {
+  const url = `https://www.hebcal.com/shabbat?cfg=json&${params}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Hebcal shabbat request failed (${res.status})`);
+
+  const data = (await res.json()) as { items?: HebcalShabbatItem[] };
+  const items = data?.items ?? [];
+
+  const dayStart = new Date(forDate);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  const inDay = (d: Date) => d >= dayStart && d < dayEnd;
+
+  const candles = items.find((i) => i.category === "candles" && i.date);
+  const havdalah = items.find((i) => i.category === "havdalah" && i.date);
+  const parashaItem = items.find((i) => i.category === "parashat");
+
+  const candleDate = candles?.date ? new Date(candles.date) : null;
+  const havdalahDate = havdalah?.date ? new Date(havdalah.date) : null;
+
+  return {
+    candleLighting: candleDate && inDay(candleDate) ? candleDate : null,
+    havdalah: havdalahDate && inDay(havdalahDate) ? havdalahDate : null,
+    parasha: parashaItem?.title ?? null,
+  };
+}
+
+/** Build the special Shabbat rows shown on the board. */
+export function shabbatStations(info: ShabbatInfo): Station[] {
+  const rows: Station[] = [];
+  if (info.candleLighting) {
+    rows.push({
+      id: "candle-lighting",
+      name: "Candle lighting",
+      hebrew: "הדלקת נרות",
+      time: info.candleLighting,
+      icon: LuFlame,
+      kind: "candles",
+    });
+  }
+  if (info.havdalah) {
+    rows.push({
+      id: "havdalah",
+      name: "Havdalah",
+      hebrew: "הבדלה",
+      time: info.havdalah,
+      icon: LuSparkles,
+      kind: "havdalah",
+    });
+  }
+  return rows;
 }
