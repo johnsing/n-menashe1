@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# N-MENASHE
+
+Torah, zmanim, and community — a mobile-first web app. Daily prayer times as a live "train board," the full Tanakh as a bilingual reader, weekly parasha pages, curated video and audio teachings, and a community Q&A.
+
+## Features
+
+- **Zmanim Train** — daily zmanim (dawn → nightfall) on an animated transit-board: live clock, countdown pills, status indicators, and a location picker (Israeli cities + browser geolocation). On Fridays it shows **candle lighting**, on Saturdays **havdalah**, and the weekly **parasha** in the header.
+- **Library** — all 39 books of the Tanakh (Torah, Nevi'im, Ketuvim). Click a book → see all its chapters → read any chapter with **verse-by-verse Hebrew (RTL) + English**, powered by the free Sefaria API (no key required).
+- **Parashat** — weekly Torah portion pages, linked from the zmanim board.
+- **Aliyah Reader** — read the parasha by aliyah.
+- **Videos** — curated Torah & holiday teachings (privacy-enhanced YouTube embeds).
+- **Audio** — shiurim with a persistent bottom **player bar** (keep listening while browsing).
+- **Q&A** — community question feed with detail pages.
+- Hebrew date in the header, computed locally via `@hebcal/core` (works offline).
+- Dark theme, mobile-first with a floating tab bar.
+
+## Tech Stack
+
+- Next.js 16 (App Router, Turbopack) · React 19 · TypeScript
+- Tailwind CSS v4 + CSS custom properties
+- `@hebcal/core` (Hebrew dates) · Hebcal API (zmanim & shabbat times) · Sefaria API (biblical text)
+- zustand (audio player state) · framer-motion (animations) · react-icons
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm start` | Serve the production build |
+| `npm run lint` | Run ESLint |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```javascript
+app/
+├── page.tsx                 # Home
+├── layout.tsx               # Root layout (nav, tab bar, providers)
+├── calendar/                # Zmanim Train timetable
+├── library/                 # Tanakh index → book → chapter reader
+│   ├── data.ts              # All 39 books (slugs, Sefaria names, chapter counts)
+│   ├── [book]/page.tsx      # Chapter list
+│   ├── [book]/[chapter]/    # Bilingual chapter reader (Sefaria API)
+│   └── parashat/            # Weekly parasha pages
+├── parashat/                # Parasha index
+├── videos/                  # Video teachings
+├── audio/                   # Audio library + persistent player
+│   ├── AudioLibrary.tsx
+│   ├── tracks.ts
+│   └── player-store.ts      # zustand player state
+├── qa/                      # Community Q&A (+ [id] detail pages)
+├── components/
+│   ├── Header/              # Nav, HebrewDate, TabBar
+│   ├── Zmanim/              # Transit board (app, header, stations)
+│   ├── icons/               # Animated WiFi status icon
+│   ├── audio/               # PlayerBar (global)
+│   └── library/             # AliyahReader
+├── lib/
+│   └── zmanim.ts            # Hebcal zmanim + shabbat API client
+├── data/                    # Shared data (parashat, Q&A seed, etc.)
+└── utils/                   # zmanimLocations, wifiStatus, sefaria, ParashaThisWeek
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data Sources
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Hebcal](https://www.hebcal.com/) — zmanim, shabbat times, Hebrew calendar
+- [Sefaria](https://www.sefaria.org/) — biblical text (Hebrew + English translations)
 
-## Deploy on Vercel
+Both are free, no API key required.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT (add a `LICENSE` file if you want others to reuse this code)
