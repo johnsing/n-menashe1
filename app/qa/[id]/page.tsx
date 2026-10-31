@@ -12,6 +12,8 @@ import {
   FiSend,
 } from "react-icons/fi";
 import "@/app/qa/qa.css";
+import "@/app/qa/qa-extras.css";
+
 import {
   loadQuestions,
   saveQuestions,

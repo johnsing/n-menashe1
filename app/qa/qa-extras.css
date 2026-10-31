@@ -1,0 +1,37 @@
+/* Append to app/globals.css — Q&A additions */
+
+/* Voted state: gold highlight so users see what they already upvoted */
+.vote-btn.voted {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Answer callout box */
+.answer-box {
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: var(--bg);
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent, #9333ea);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Keep vote/answer buttons icon-aligned */
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  font: inherit;
+  padding: 0.25rem 0.5rem;
+}
+
+.vote-btn:hover {
+  color: var(--fg);
+}
