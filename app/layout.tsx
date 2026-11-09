@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import Header from "./components/Header/Header";
 import TabBar from "./components/Header/TabBar";
+import SmoothScroll from "./components/providers/SmoothScroll";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -30,9 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Header />
-        <div className="site-content">{children}</div>
-        <TabBar />
+        <SmoothScroll>
+          <Header />
+          <div className="site-content">{children}</div>
+          <TabBar />
+        </SmoothScroll>
       </body>
     </html>
   );
