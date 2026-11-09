@@ -138,12 +138,6 @@ audio {
   text-overflow: ellipsis;
 }
 
-/* Hide the Hebrew date on very small screens so the brand always fits */
-@media (max-width: 420px) {
-  .nav-date {
-    display: none;
-  }
-}
 
 /* ---------- Page content & footer ---------- */
 .site-content {
@@ -230,7 +224,7 @@ a.card:active {
 }
 
 .book-card {
-  flex-direction: column;
+  flex-direction: row-reverse;
   align-items: flex-start;
   gap: 0.15rem;
   padding: 0.85rem 1rem;
