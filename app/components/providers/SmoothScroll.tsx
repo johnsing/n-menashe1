@@ -1,12 +1,11 @@
-// app/components/providers/SmoothScroll.tsx
-// Lenis smooth scrolling, driven by the GSAP ticker and synced with
-// ScrollTrigger. Rendered once in the root layout (root mode).
 'use client';
 
 import { useEffect } from 'react';
 import { ReactLenis, useLenis } from 'lenis/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useReducedMotion } from 'framer-motion';
+import 'lenis/dist/lenis.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -33,9 +32,21 @@ export default function SmoothScroll({
 }: {
   children: React.ReactNode;
 }) {
+  // SSR-safe: false on the server, real value after hydration
+  const reducedMotion = useReducedMotion();
+
   return (
-    // autoRaf:false — the GSAP ticker above drives Lenis instead
-    <ReactLenis root options={{ autoRaf: false }}>
+    // autoRaf:false — the GSAP ticker drives Lenis instead
+    // syncTouch: smooth scrolling on touch devices too
+    <ReactLenis
+      root
+      options={{
+        autoRaf: false,
+        syncTouch: true,
+        // fall back to native scroll for users who prefer reduced motion
+        smoothWheel: !reducedMotion,
+      }}
+    >
       <ScrollTriggerSync />
       {children}
     </ReactLenis>
