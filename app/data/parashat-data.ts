@@ -74,13 +74,7 @@ export const PARASHIYOT: Parasha[] = [
 export const getParasha = (slug: string) =>
   PARASHIYOT.find((p) => p.slug === slug);
 
-export const parashiyotByBook = (book: string) =>
-  PARASHIYOT.filter((p) => p.book === book);
 
-/** "bereshit" → 0, used for prev/next navigation */
 export const parashaIndex = (slug: string) =>
   PARASHIYOT.findIndex((p) => p.slug === slug);
 
-/** Normalize names for matching Hebcal output, e.g. "Lech-Lecha" ↔ "LechLecha" */
-export const normalizeName = (s: string) =>
-  s.toLowerCase().replace(/[\s\-'’]/g, "");
