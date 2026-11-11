@@ -538,6 +538,8 @@ a.card:active {
    items share the available width instead of spilling past the edge. */
 @media (max-width: 340px) {
   .tabbar {
+    width: calc(100vw - 1.5rem);
+    max-width: 340px;
     gap: 0.125rem;
     padding: 0.3rem;
   }
