@@ -1,57 +1,46 @@
 'use client';
 
-import { useEffect } from 'react';
-import { ReactLenis, useLenis } from 'lenis/react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useReducedMotion } from 'framer-motion';
+import { useSyncExternalStore } from 'react';
+import { ReactLenis } from 'lenis/react';
 import 'lenis/dist/lenis.css';
 
-gsap.registerPlugin(ScrollTrigger);
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
-function ScrollTriggerSync() {
-  const lenis = useLenis();
-
-  useEffect(() => {
-    if (!lenis) return;
-    lenis.on('scroll', ScrollTrigger.update);
-    const raf = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0); // keep ScrollTrigger and Lenis perfectly in sync
-    return () => {
-      gsap.ticker.remove(raf);
-      lenis.off('scroll', ScrollTrigger.update);
-    };
-  }, [lenis]);
-
-  return null;
+function subscribeReducedMotion(onStoreChange: () => void) {
+  const query = window.matchMedia(REDUCED_MOTION_QUERY);
+  query.addEventListener('change', onStoreChange);
+  return () => query.removeEventListener('change', onStoreChange);
 }
+
+const getReducedMotion = () => window.matchMedia(REDUCED_MOTION_QUERY).matches;
+
+// The server cannot know the user's motion preference. `false` matches the
+// prerendered HTML; the subscription corrects it right after hydration.
+const getServerReducedMotion = () => false;
 
 export default function SmoothScroll({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // SSR-safe: false on the server, real value after hydration
-  const reducedMotion = useReducedMotion();
+  const reducedMotion = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    getServerReducedMotion,
+  );
 
   return (
-    // autoRaf:false — the GSAP ticker drives Lenis instead
-    // syncTouch: smooth scrolling on touch devices too
+    // Lenis runs its own RAF loop; no animation library is needed.
     <ReactLenis
       root
       options={{
-        autoRaf: false,
+        autoRaf: true,
         syncTouch: true,
         // fall back to native scroll for users who prefer reduced motion
         smoothWheel: !reducedMotion,
       }}
     >
-      <ScrollTriggerSync />
       {children}
     </ReactLenis>
   );
 }
-
-// Re-exports so the rest of the app can import GSAP pieces from one place:
-export { gsap, ScrollTrigger };
