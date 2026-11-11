@@ -20,7 +20,6 @@ export const CATEGORIES = [
 
 export const TRACKS: Track[] = [
   // ── Shiurim ──
-  { id: "shacharit-halacha", title: "Daily Shacharit & Halacha Briefing", artist: "N-Menashe Beit Midrash", category: "Shiurim", src: "", color: "#7c3aed" },
   { id: "parsha-insights",   title: "Weekly Parsha Insights & Shiur",      artist: "N-Menashe Beit Midrash", category: "Shiurim", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", color: "#2563eb" },
   { id: "mishnah-daily",     title: "Mishnah Yomit — One Chapter a Day", artist: "N-Menashe Beit Midrash", category: "Shiurim", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", color: "#0891b2" },
   { id: "daf-yomi",          title: "Daf Yomi Highlights",                 artist: "Guest Maggid Shiur",     category: "Shiurim", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", color: "#059669" },

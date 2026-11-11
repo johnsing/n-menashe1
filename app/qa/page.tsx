@@ -1,7 +1,7 @@
 // app/qa/page.tsx — Community Q&A feed (list)
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   FiArrowUp,
@@ -13,8 +13,6 @@ import {
   FiCheckCircle,
   FiX,
 } from "react-icons/fi";
-import "@/app/qa/qa.css";
-import "@/app/qa/qa-extras.css";
 
 import {
   INITIAL_QUESTIONS,
@@ -28,9 +26,60 @@ import {
   type Question,
 } from "@/app/data/qa-data";
 
+type QaListSnapshot = {
+  questions: Question[];
+  voted: string[];
+};
+
+const QA_STORAGE_CHANGE = "qa-storage-change";
+
+function subscribeToQaStorage(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(QA_STORAGE_CHANGE, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(QA_STORAGE_CHANGE, onStoreChange);
+  };
+}
+
+// useSyncExternalStore requires a stable snapshot reference between reads.
+let cachedSnapshotKey = "";
+let cachedSnapshot: QaListSnapshot = {
+  questions: INITIAL_QUESTIONS,
+  voted: [],
+};
+
+function getQaListSnapshot(): QaListSnapshot {
+  const questions = loadQuestions();
+  const voted = [...loadVoted()];
+  const key = JSON.stringify({ questions, voted });
+  if (key !== cachedSnapshotKey) {
+    cachedSnapshotKey = key;
+    cachedSnapshot = { questions, voted };
+  }
+  return cachedSnapshot;
+}
+
+// Hydration uses the same seed data that was prerendered, then swaps to
+// localStorage data once React starts listening to the store.
+const SERVER_SNAPSHOT: QaListSnapshot = {
+  questions: INITIAL_QUESTIONS,
+  voted: [],
+};
+const getServerQaListSnapshot = () => SERVER_SNAPSHOT;
+
+function publishQaChange() {
+  window.dispatchEvent(new Event(QA_STORAGE_CHANGE));
+}
+
 export default function QAPage() {
-  const [questions, setQuestions] = useState<Question[]>(loadQuestions);
-  const [voted, setVoted] = useState<Set<string>>(loadVoted);
+  const snapshot = useSyncExternalStore(
+    subscribeToQaStorage,
+    getQaListSnapshot,
+    getServerQaListSnapshot,
+  );
+  const questions = snapshot.questions;
+  const voted = useMemo(() => new Set(snapshot.voted), [snapshot.voted]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState("All");
   const [sortBy, setSortBy] = useState<"votes" | "newest">("votes");
@@ -40,15 +89,6 @@ export default function QAPage() {
   const [newExcerpt, setNewExcerpt] = useState("");
   const [newTags, setNewTags] = useState("");
   const [newAuthor, setNewAuthor] = useState("");
-
-  // ── persistence ────────────────────────────────────────────
-  useEffect(() => {
-    saveQuestions(questions);
-  }, [questions]);
-
-  useEffect(() => {
-    saveVoted(voted);
-  }, [voted]);
 
   // ── modal: Escape to close + body scroll lock ───────────────
   useEffect(() => {
@@ -82,10 +122,12 @@ export default function QAPage() {
 
   const handleVote = (id: string) => {
     if (voted.has(id)) return; // one vote per question, per browser
-    setVoted(new Set(voted).add(id));
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? { ...q, votes: q.votes + 1 } : q)),
+    const nextVoted = new Set(voted).add(id);
+    saveVoted(nextVoted);
+    saveQuestions(
+      questions.map((q) => (q.id === id ? { ...q, votes: q.votes + 1 } : q)),
     );
+    publishQaChange();
   };
 
   const handleSubmitQuestion = (e: React.FormEvent) => {
@@ -109,7 +151,8 @@ export default function QAPage() {
       isResolved: false,
     };
 
-    setQuestions((prev) => [question, ...prev]);
+    saveQuestions([question, ...questions]);
+    publishQaChange();
     setNewTitle("");
     setNewExcerpt("");
     setNewTags("");
@@ -218,7 +261,7 @@ export default function QAPage() {
                   <span className="qa-avatar" aria-hidden="true">
                     {q.avatar}
                   </span>
-                  <span>
+                  <span suppressHydrationWarning>
                     {q.author} · {relTime(q.createdAtTs)}
                   </span>
                   <span className="qa-stat">

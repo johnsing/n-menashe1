@@ -51,15 +51,21 @@ export const ZMANIM_STATIONS: ZmanimStationConfig[] = [
   { key: "tzeit72min",       name: "Tzeit Rabbeinu Tam",     hebrew: "ר״ת · 72 דקות", icon: LuMoon },
 ];
 
-/** Local calendar date in Hebcal's expected format: YYYY-MM-DD */
-export const toApiDate = (d: Date): string => {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
+/** Calendar date in `timeZone` as YYYY-MM-DD (Hebcal's expected format). */
+export const toApiDate = (d: Date, timeZone: string): string => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const part = (type: string) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 };
 
 interface HebcalTimes {
-  location: { title?: string };
+  location: { title?: string; tzid?: string };
   times: Record<string, string>;
 }
 
@@ -69,11 +75,11 @@ export interface ZmanimResult {
 }
 
 export async function fetchZmanim(
-  date: Date,
+  dateKey: string,
   params: string,
   fallbackLabel: string,
 ): Promise<ZmanimResult> {
-  const url = `https://www.hebcal.com/zmanim?cfg=json&${params}&date=${toApiDate(date)}`;
+  const url = `https://www.hebcal.com/zmanim?cfg=json&${params}&date=${dateKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Hebcal request failed (${res.status})`);
 
@@ -111,27 +117,24 @@ interface HebcalShabbatItem {
 }
 
 /**
- * Fetches the upcoming Shabbat from Hebcal, but only returns
- * candle-lighting / havdalah times that fall ON forDate's day —
- * so on Friday you see tonight's candle lighting, on Saturday
- * tonight's havdalah, and mid-week the board stays clean.
+ * Fetches the Shabbat week that contains `dateKey`, but only returns
+ * candle-lighting / havdalah times that fall ON that date in the
+ * location's timezone — so on Friday you see tonight's candle lighting,
+ * on Saturday tonight's havdalah, and mid-week the board stays clean.
  */
 export async function fetchShabbat(
   params: string,
-  forDate: Date,
+  dateKey: string,
+  timeZone: string,
 ): Promise<ShabbatInfo> {
-  const url = `https://www.hebcal.com/shabbat?cfg=json&${params}`;
+  const url = `https://www.hebcal.com/shabbat?cfg=json&${params}&start=${dateKey}&end=${dateKey}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Hebcal shabbat request failed (${res.status})`);
 
   const data = (await res.json()) as { items?: HebcalShabbatItem[] };
   const items = data?.items ?? [];
 
-  const dayStart = new Date(forDate);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
-  const inDay = (d: Date) => d >= dayStart && d < dayEnd;
+  const inDay = (d: Date) => toApiDate(d, timeZone) === dateKey;
 
   const candles = items.find((i) => i.category === "candles" && i.date);
   const havdalah = items.find((i) => i.category === "havdalah" && i.date);

@@ -1,7 +1,6 @@
 // app/audio/page.tsx
 import type { Metadata } from "next";
 import AudioLibrary from "./AudioLibrary";
-import "./player.css";
 
 export const metadata: Metadata = {
   title: "Audio",

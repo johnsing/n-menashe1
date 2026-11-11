@@ -19,7 +19,7 @@ Torah, zmanim, and community — a mobile-first web app. Daily prayer times as a
 - Next.js 16 (App Router, Turbopack) · React 19 · TypeScript
 - Tailwind CSS v4 + CSS custom properties
 - `@hebcal/core` (Hebrew dates) · Hebcal API (zmanim & shabbat times) · Sefaria API (biblical text)
-- zustand (audio player state) · framer-motion (animations) · react-icons
+- zustand (audio player state) · lenis (smooth scrolling) · react-icons
 
 ## Getting Started
 

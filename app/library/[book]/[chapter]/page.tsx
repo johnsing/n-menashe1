@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getBook } from "@/app/data/data";
 import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
-import "@/app/library/css/reader.css";
 
 export const revalidate = 86400; // ISR
 

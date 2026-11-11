@@ -9,10 +9,12 @@ export default function TimelineStation({
   stations,
   now,
   nextId,
+  timeZone,
 }: {
   stations: Station[];
   now: Date;
   nextId?: string;
+  timeZone: string;
 }) {
   const sorted = [...stations].sort(
     (a, b) => a.time.getTime() - b.time.getTime(),
@@ -27,6 +29,7 @@ export default function TimelineStation({
         const timeStr = station.time.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone,
         });
 
         // Get the dynamic icon component assigned from zmanim.ts

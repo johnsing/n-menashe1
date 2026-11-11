@@ -3,7 +3,7 @@
 // superscripts). Keep a tiny allowlist, unwrap everything else.
 // Script/style blocks are removed entirely (content included).
 
-const ALLOWED = /^<\/?(?:b|i|em|strong|small|sup|u)(?:\s[^>]*)?>$/i;
+const ALLOWED = /^<\/?(?:b|i|em|strong|small|sup|u)\s*>$/i;
 
 export function sanitizeSefariaHtml(html: string): string {
   return html

@@ -14,7 +14,7 @@ function formatTime(sec: number): string {
 
 export default function PlayerBar() {
   const track = useCurrentTrack();
-  const { isPlaying, currentTime, duration, volume } = usePlayerStore();
+  const { isPlaying, currentTime, duration, volume, error } = usePlayerStore();
   const { toggle, next, prev, seek, setVolume } = usePlayerStore();
 
   if (!track) return null;
@@ -33,7 +33,9 @@ export default function PlayerBar() {
         </span>
         <span className="pb-meta">
           <strong>{track.title}</strong>
-          <small className="muted">{track.artist}</small>
+          <small className={error ? "pb-error" : "muted"} aria-live="polite">
+            {error ?? track.artist}
+          </small>
         </span>
       </div>
 

@@ -23,6 +23,11 @@ export interface Answer {
   createdAtTs: number;
 }
 
+// Seed timestamps are fixed so the prerendered HTML and the first client
+// render agree. Relative times are refreshed after hydration.
+const SEED_NOW = Date.UTC(2026, 10, 11, 6, 0, 0);
+const minutesAgo = (minutes: number) => SEED_NOW - minutes * 60_000;
+
 export const INITIAL_QUESTIONS: Question[] = [
   {
     id: "1",
@@ -35,7 +40,7 @@ export const INITIAL_QUESTIONS: Question[] = [
     answers: 2,
     views: 340,
     tags: ["Torah", "Parasha"],
-    createdAtTs: Date.now() - 26 * 60 * 60_000,
+    createdAtTs: minutesAgo(26 * 60),
     isResolved: true,
   },
   {
@@ -49,7 +54,7 @@ export const INITIAL_QUESTIONS: Question[] = [
     answers: 1,
     views: 120,
     tags: ["Torah", "Vayikra"],
-    createdAtTs: Date.now() - 6 * 60 * 60_000,
+    createdAtTs: minutesAgo(6 * 60),
     isResolved: true,
   },
   {
@@ -63,7 +68,7 @@ export const INITIAL_QUESTIONS: Question[] = [
     answers: 0,
     views: 95,
     tags: ["Tehillim", "Study"],
-    createdAtTs: Date.now() - 2 * 60 * 60_000,
+    createdAtTs: minutesAgo(2 * 60),
     isResolved: false,
   },
   {
@@ -77,7 +82,7 @@ export const INITIAL_QUESTIONS: Question[] = [
     answers: 1,
     views: 61,
     tags: ["Torah", "Study"],
-    createdAtTs: Date.now() - 40 * 60_000,
+    createdAtTs: minutesAgo(40),
     isResolved: false,
   },
 ];
@@ -99,22 +104,39 @@ export const STORAGE_ANSWERS = "n-menashe:qa-answers";
 // ── storage helpers (safe on server: return defaults) ──────
 
 export function loadQuestions(): Question[] {
-  if (typeof window === "undefined") return INITIAL_QUESTIONS;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_Q);
-    if (!raw) return INITIAL_QUESTIONS;
-    const parsed = JSON.parse(raw) as Question[];
-    // Tolerate older stored shapes missing newer fields.
-    return parsed.map((q) => ({
-      ...q,
-      answers: q.answers ?? 0,
-      views: q.views ?? 0,
-      tags: q.tags ?? [],
-      createdAtTs: q.createdAtTs ?? Date.now(),
-    }));
-  } catch {
-    return INITIAL_QUESTIONS;
+  let base: Question[];
+
+  if (typeof window === "undefined") {
+    base = INITIAL_QUESTIONS;
+  } else {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_Q);
+      if (!raw) {
+        base = INITIAL_QUESTIONS;
+      } else {
+        const parsed = JSON.parse(raw) as Question[];
+        // Tolerate older stored shapes missing newer fields.
+        base = parsed.map((q) => ({
+          ...q,
+          answers: q.answers ?? 0,
+          views: q.views ?? 0,
+          tags: q.tags ?? [],
+          createdAtTs: q.createdAtTs ?? Date.now(),
+        }));
+      }
+    } catch {
+      base = INITIAL_QUESTIONS;
+    }
   }
+
+  // The answers store is the source of truth; `answers` is only a cached
+  // count, and older stored question lists may have stale values.
+  const answers = loadAnswers();
+  return base.map((q) => ({
+    ...q,
+    tags: [...q.tags],
+    answers: answers[q.id]?.length ?? 0,
+  }));
 }
 
 export function saveQuestions(questions: Question[]): void {
@@ -145,13 +167,59 @@ export function saveVoted(voted: Set<string>): void {
 
 export type AnswersStore = Record<string, Answer[]>;
 
+export const INITIAL_ANSWERS: AnswersStore = {
+  "1": [
+    {
+      id: "seed-1-a",
+      author: "Rabbi A. Levi",
+      body: "Terumah records the command and Vayakhel records the execution. The repetition celebrates that the work was actually completed exactly as instructed — the second telling is the satisfaction of the first.",
+      createdAtTs: minutesAgo(24 * 60),
+    },
+    {
+      id: "seed-1-b",
+      author: "Chana S.",
+      body: "The midrash compares it to a bride and groom: the command is the engagement, the execution is the wedding. The Torah repeats the details because the fulfillment deserves its own telling.",
+      createdAtTs: minutesAgo(20 * 60),
+    },
+  ],
+  "2": [
+    {
+      id: "seed-2-a",
+      author: "David L.",
+      body: "An olah is entirely consumed on the altar, while a chatat is eaten by the kohanim in the courtyard. The olah expresses complete dedication; the chatat addresses an inadvertent sin and is partly shared.",
+      createdAtTs: minutesAgo(4 * 60),
+    },
+  ],
+  "3": [],
+  "4": [
+    {
+      id: "seed-4-a",
+      author: "Miriam K.",
+      body: "I learned them by pairing each parasha with its opening scene. The middle of Bereshit is easier once you anchor Vayera, Chayei Sarah, and Toldot to their stories.",
+      createdAtTs: minutesAgo(30),
+    },
+  ],
+};
+
+function cloneAnswers(store: AnswersStore): AnswersStore {
+  return Object.fromEntries(
+    Object.entries(store).map(([id, list]) => [
+      id,
+      Array.isArray(list) ? [...list] : [],
+    ]),
+  );
+}
+
 export function loadAnswers(): AnswersStore {
-  if (typeof window === "undefined") return {};
+  if (typeof window === "undefined") return cloneAnswers(INITIAL_ANSWERS);
   try {
     const raw = window.localStorage.getItem(STORAGE_ANSWERS);
-    return raw ? (JSON.parse(raw) as AnswersStore) : {};
+    if (!raw) return cloneAnswers(INITIAL_ANSWERS);
+    const parsed = JSON.parse(raw) as AnswersStore;
+    // Keep the seeded demo threads and merge in anything the user added.
+    return cloneAnswers({ ...INITIAL_ANSWERS, ...parsed });
   } catch {
-    return {};
+    return cloneAnswers(INITIAL_ANSWERS);
   }
 }
 

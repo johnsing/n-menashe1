@@ -7,9 +7,11 @@ export default function NotFound() {
       <header className="hero">
         <h1>404 — Page not found</h1>
         <p className="muted">The page you&apos;re looking for doesn&apos;t exist.</p>
-        <Link href="/" className="btn" style={{ marginTop: "1.25rem", display: "inline-flex" }}>
-          Back to home
-        </Link>
+        <div className="page-actions">
+          <Link href="/" className="btn">
+            Back to home
+          </Link>
+        </div>
       </header>
     </main>
   );
