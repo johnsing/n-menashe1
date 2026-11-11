@@ -1,0 +1,246 @@
+/* app/audio/player.css — Temple Spotify styles */
+
+.audio-wrap {
+  /* room for the fixed player bar + tab bar */
+  padding-bottom: 9.5rem;
+}
+
+/* ---------- Track rows ---------- */
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  transition: background 0.15s ease;
+}
+
+.track-row:hover {
+  background: var(--surface-hover);
+}
+
+.track-row.is-current {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.track-index {
+  width: 1.6rem;
+  display: inline-flex;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-row .idx-play { display: none; }
+.track-row:hover .idx-num { display: none; }
+.track-row:hover .idx-play { display: inline; }
+.track-row.is-current:hover .idx-play { display: none; } /* keep EQ while playing */
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.track-info strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+}
+
+.track-dur {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 3rem;
+  text-align: right;
+}
+
+.cover-tile {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.05rem;
+}
+
+/* ---------- Equalizer bars (now playing) ---------- */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+
+.eq i {
+  width: 3px;
+  background: var(--accent);
+  border-radius: 1px;
+  height: 30%;
+}
+
+.eq.eq-on i { animation: eq-bounce 0.9s ease-in-out infinite; }
+.eq.eq-on i:nth-child(2) { animation-delay: 0.25s; }
+.eq.eq-on i:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes eq-bounce {
+  0%, 100% { height: 30%; }
+  50%      { height: 100%; }
+}
+
+/* ---------- Sections ---------- */
+.audio-section { margin-bottom: 2.25rem; }
+
+.recent-grid {
+  display: grid;
+  gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .recent-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---------- Player bar ---------- */
+.player-bar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px) + 0.4rem);
+  z-index: 30;
+
+  width: min(720px, calc(100vw - 1.5rem));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 0.8fr);
+  align-items: center;
+  gap: 1rem;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.6rem 1rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+}
+
+.pb-track {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.pb-track .cover-tile { width: 40px; height: 40px; }
+
+.pb-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pb-meta strong {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pb-meta small { font-size: 0.72rem; }
+
+.pb-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.pb-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.pb-buttons button {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: inline-flex;
+  transition: color 0.15s ease;
+}
+
+.pb-buttons button:hover { color: var(--accent); }
+
+.pb-play {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--fg) !important;
+  color: var(--bg) !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem !important;
+}
+
+.pb-seek {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.pb-time {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.4rem;
+  text-align: center;
+}
+
+.pb-volume {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  justify-self: end;
+}
+
+/* ---------- Range sliders ---------- */
+.player-bar input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.pb-volume input[type="range"] { width: 80px; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 560px) {
+  .player-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+  }
+  .pb-volume { display: none; }
+  .pb-seek { grid-column: 1 / -1; order: 3; }
+  .player-bar { padding-bottom: 0.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq.eq-on i { animation: none; height: 70%; }
+}
