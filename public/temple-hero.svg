@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" fill="none">
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#f5c518" stop-opacity=".2" />
+      <stop offset="55%" stop-color="#f5c518" stop-opacity=".06" />
+      <stop offset="100%" stop-color="#f5c518" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="stone" x1="600" y1="300" x2="600" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5c518" stop-opacity=".1" />
+      <stop offset="1" stop-color="#f5c518" stop-opacity=".015" />
+    </linearGradient>
+    <linearGradient id="door" x1="600" y1="500" x2="600" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe9a8" stop-opacity=".95" />
+      <stop offset=".55" stop-color="#f5c518" stop-opacity=".5" />
+      <stop offset="1" stop-color="#f5c518" stop-opacity=".05" />
+    </linearGradient>
+    <filter id="blur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="18" />
+    </filter>
+  </defs>
+
+  <!-- glow -->
+  <circle cx="600" cy="370" r="340" fill="url(#halo)" />
+  <ellipse cx="600" cy="560" rx="90" ry="110" fill="#f5c518" opacity=".22" filter="url(#blur)" />
+
+  <!-- distant city -->
+  <g stroke="#f5c518" stroke-opacity=".14" fill="#f5c518" fill-opacity=".035">
+    <path d="M0 640h110l16-26 22 26h72v-42l22 8 16-24 22 24 28-12v46h52v40H0z" />
+    <path d="M960 640h48v-40l24-12 18 20 24-8 20 26 26-8v62h80v40H940v-40z" />
+  </g>
+
+  <!-- courtyard walls -->
+  <g stroke="#f5c518" stroke-opacity=".3" fill="#f5c518" fill-opacity=".02">
+    <path d="M54 640h252v34H54z" />
+    <path d="M894 640h252v34H894z" />
+    <path d="M66 640v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18" />
+    <path d="M906 640v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18m16 0v-18h22v18" />
+  </g>
+
+  <!-- platform -->
+  <g stroke="#f5c518" stroke-opacity=".4" fill="#0c0c0d" fill-opacity=".6">
+    <rect x="150" y="656" width="900" height="22" rx="3" />
+    <rect x="200" y="678" width="800" height="20" rx="3" />
+    <rect x="250" y="698" width="700" height="18" rx="3" />
+  </g>
+  <g stroke="#f5c518" stroke-opacity=".35" fill="#f5c518" fill-opacity=".04">
+    <rect x="520" y="616" width="160" height="10" rx="2" />
+    <rect x="500" y="626" width="200" height="10" rx="2" />
+    <rect x="480" y="636" width="240" height="10" rx="2" />
+    <rect x="460" y="646" width="280" height="10" rx="2" />
+  </g>
+
+  <!-- side wings -->
+  <g stroke="#f5c518" stroke-opacity=".45" fill="url(#stone)">
+    <rect x="285" y="470" width="120" height="176" rx="2" />
+    <rect x="795" y="470" width="120" height="176" rx="2" />
+  </g>
+  <g stroke="#f5c518" stroke-opacity=".3">
+    <path d="M300 646V520m22 0v126m22-126v126m22-126v126m22-126v126" />
+    <path d="M810 646V520m22 0v126m22-126v126m22-126v126m22-126v126" />
+  </g>
+
+  <!-- sanctuary -->
+  <rect x="405" y="330" width="390" height="316" fill="url(#stone)" stroke="#f5c518" stroke-opacity=".55" stroke-width="1.5" />
+
+  <!-- roof and parapet -->
+  <g>
+    <rect x="388" y="312" width="424" height="18" rx="2" fill="#0c0c0d" stroke="#f5c518" stroke-opacity=".6" />
+    <rect x="380" y="300" width="440" height="12" rx="2" fill="#0c0c0d" stroke="#f5c518" stroke-opacity=".45" />
+    <path d="M392 300v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14m14 0v-14h20v14" stroke="#f5c518" stroke-opacity=".4" />
+  </g>
+
+  <!-- entablature -->
+  <g>
+    <rect x="405" y="348" width="390" height="34" fill="#0c0c0d" stroke="#f5c518" stroke-opacity=".35" />
+    <path d="M425 360h350" stroke="#f5c518" stroke-opacity=".3" />
+  </g>
+
+  <!-- columns -->
+  <g fill="#0c0c0d" stroke="#f5c518" stroke-opacity=".5">
+    <rect x="425" y="392" width="20" height="254" />
+    <rect x="480" y="392" width="20" height="254" />
+    <rect x="535" y="392" width="20" height="254" />
+    <rect x="645" y="392" width="20" height="254" />
+    <rect x="700" y="392" width="20" height="254" />
+    <rect x="755" y="392" width="20" height="254" />
+    <rect x="418" y="384" width="34" height="10" />
+    <rect x="473" y="384" width="34" height="10" />
+    <rect x="528" y="384" width="34" height="10" />
+    <rect x="638" y="384" width="34" height="10" />
+    <rect x="693" y="384" width="34" height="10" />
+    <rect x="748" y="384" width="34" height="10" />
+  </g>
+
+  <!-- door -->
+  <circle cx="600" cy="560" r="46" fill="#f5c518" opacity=".28" filter="url(#blur)" />
+  <path d="M572 646V530a28 28 0 0 1 56 0v116z" fill="url(#door)" stroke="#ffe08a" stroke-opacity=".8" />
+  <path d="M585 646V532a15 15 0 0 1 30 0v114z" fill="#ffe9a8" opacity=".35" />
+
+  <!-- windows -->
+  <g fill="#f5c518" fill-opacity=".25" stroke="#f5c518" stroke-opacity=".4">
+    <rect x="450" y="430" width="14" height="28" rx="7" />
+    <rect x="500" y="430" width="14" height="28" rx="7" />
+    <rect x="686" y="430" width="14" height="28" rx="7" />
+    <rect x="736" y="430" width="14" height="28" rx="7" />
+  </g>
+
+  <!-- lamps -->
+  <g fill="#ffdf80">
+    <circle cx="330" cy="640" r="2.5" />
+    <circle cx="360" cy="640" r="2.5" />
+    <circle cx="390" cy="640" r="2.5" />
+    <circle cx="810" cy="640" r="2.5" />
+    <circle cx="840" cy="640" r="2.5" />
+    <circle cx="870" cy="640" r="2.5" />
+    <circle cx="210" cy="648" r="2" />
+    <circle cx="250" cy="648" r="2" />
+    <circle cx="950" cy="648" r="2" />
+    <circle cx="990" cy="648" r="2" />
+  </g>
+
+  <!-- foreground -->
+  <path d="M0 760h1200" stroke="#f5c518" stroke-opacity=".12" />
+</svg>
