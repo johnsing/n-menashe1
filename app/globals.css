@@ -14,7 +14,6 @@
   --radius-sm: 10px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   --max-width: 680px;
-  --max-width-wide: 1080px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -139,16 +138,8 @@ audio {
 }
 
 
-/* ---------- Page content & footer ---------- */
 .site-content {
   min-height: 60vh; /* pushes footer down on short pages */
-}
-
-.footer {
-  text-align: center;
-  padding: 1.5rem 1rem;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
 }
 
 /* ---------- Layout ---------- */
@@ -164,9 +155,6 @@ audio {
   }
 }
 
-.container-wide {
-  max-width: var(--max-width-wide);
-}
 
 .hero {
   text-align: center;
@@ -230,18 +218,6 @@ a.card:active {
   padding: 0.85rem 1rem;
 }
 
-/* ---------- Videos page ---------- */
-.grid-videos {
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
-}
-
-.video-card {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-  padding: 0;
-  overflow: hidden; /* keeps iframe corners rounded */
-}
 
 .video-embed {
   display: block;
@@ -251,14 +227,6 @@ a.card:active {
   height: auto;
 }
 
-.video-info {
-  padding: 1rem;
-}
-
-.video-info h3 {
-  font-size: 0.95rem;
-}
-
 /* ---------- Audio page ---------- */
 .stack {
   display: flex;
@@ -266,16 +234,6 @@ a.card:active {
   gap: 1rem;
 }
 
-.audio-card {
-  gap: 0.75rem;
-}
-
-.audio-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
 
 /* ---------- Q&A page ---------- */
 .qa-form {
