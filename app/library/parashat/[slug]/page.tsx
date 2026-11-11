@@ -9,7 +9,6 @@ import {
   parashaIndex,
 } from "@/app/data/parashat-data";
 import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
-import "@/app/library/css/reader.css";
 
 export const revalidate = 86400; // ISR
 

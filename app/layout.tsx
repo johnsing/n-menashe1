@@ -5,7 +5,6 @@ import TabBar from "./components/Header/TabBar";
 import PlayerBar from "./components/audio/PlayerBar";
 import SmoothScroll from "./components/providers/SmoothScroll";
 import "./globals.css";
-import "./audio/player.css";
 
 export const metadata: Metadata = {
   title: {

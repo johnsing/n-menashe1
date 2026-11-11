@@ -22,7 +22,7 @@ export default function Error({
         <p className="muted">
           {error.message || "An unexpected error occurred."}
         </p>
-        <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+        <div className="page-actions">
           <button className="btn" onClick={reset}>
             Try again
           </button>

@@ -13,8 +13,6 @@ import {
   FiCheckCircle,
   FiX,
 } from "react-icons/fi";
-import "@/app/qa/qa.css";
-import "@/app/qa/qa-extras.css";
 
 import {
   INITIAL_QUESTIONS,
