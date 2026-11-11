@@ -1,7 +1,6 @@
 "use client";
-// app/audio/AudioLibrary.tsx — category sections + track rows + player bar.
+// app/audio/AudioLibrary.tsx — category sections + track rows.
 import { FiMusic, FiPlay } from "react-icons/fi";
-import PlayerBar from "@/app/components/audio/PlayerBar";
 import { usePlayerStore, useCurrentTrack } from "./player-store";
 import { CATEGORIES, TRACKS, tracksByCategory, type Track } from "./tracks";
 
@@ -130,8 +129,6 @@ export default function AudioLibrary() {
           );
         })}
       </main>
-
-      <PlayerBar />
     </div>
   );
 }

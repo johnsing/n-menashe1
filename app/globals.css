@@ -218,13 +218,70 @@ a.card:active {
   padding: 0.85rem 1rem;
 }
 
+/* ---------- Library section tabs ---------- */
+.library-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.library-tab {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.library-tab:hover {
+  background: var(--surface-hover);
+  color: var(--fg);
+}
+
+.library-tab.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  box-shadow: var(--shadow);
+}
+
 
 .video-embed {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9; /* keeps the player proportioned at any width */
   border: 0;
+  border-radius: var(--radius-sm);
   height: auto;
+}
+
+.video-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 0.75rem 0.75rem 1rem;
+}
+
+.video-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.video-card small {
+  margin-top: -0.25rem;
 }
 
 /* ---------- Audio page ---------- */

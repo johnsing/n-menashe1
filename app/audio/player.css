@@ -1,8 +1,14 @@
 /* app/audio/player.css — Temple Spotify styles */
 
+/* The bar is fixed; this class only needs a little breathing room. Body
+   padding below handles the space taken by the bar and tab bar. */
 .audio-wrap {
-  /* room for the fixed player bar + tab bar */
-  padding-bottom: 9.5rem;
+  padding-bottom: 1rem;
+}
+
+/* Reserve room for the player bar only while a track is loaded. */
+body:has(.player-bar) {
+  padding-bottom: calc(11rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* ---------- Track rows ---------- */
@@ -160,6 +166,14 @@
 
 .pb-meta small { font-size: 0.72rem; }
 
+.pb-error {
+  color: #ef4444;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pb-controls {
   display: flex;
   flex-direction: column;
@@ -239,6 +253,9 @@
   .pb-volume { display: none; }
   .pb-seek { grid-column: 1 / -1; order: 3; }
   .player-bar { padding-bottom: 0.4rem; }
+  body:has(.player-bar) {
+    padding-bottom: calc(13.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

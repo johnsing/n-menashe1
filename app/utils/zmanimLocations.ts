@@ -4,31 +4,32 @@ export interface ZmanimLocation {
   id: string;
   label: string;
   params: string;
+  tzid: string; // IANA zone used for dates and displayed times
 }
 
 export const PRESET_LOCATIONS: { group: string; locations: ZmanimLocation[] }[] = [
   {
     group: "Jerusalem",
-    locations: [{ id: "jerusalem", label: "Jerusalem", params: "geonameid=281184" }],
+    locations: [{ id: "jerusalem", label: "Jerusalem", params: "geonameid=281184", tzid: "Asia/Jerusalem" }],
   },
   {
     group: "North",
     locations: [
-      { id: "haifa", label: "Haifa", params: "geonameid=294801" },
-      { id: "tiberias", label: "Tiberias", params: "geonameid=293322" },
-      { id: "tzfat", label: "Tzfat (Safed)", params: "geonameid=293100" },
-      { id: "akko", label: "Akko (Acre)", params: "geonameid=295721" },
-      { id: "nazareth", label: "Nazareth", params: "geonameid=294098" },
-      { id: "maalot tarshīhā", label: "Maalot Tarshīhā", params: "geonameid=293420" },
-      { id: "karmiel", label: "Karmiel", params: "geonameid=294577" },
-      { id: "bet she’an", label: "Bet She’an", params: "geonameid=295435" },
+      { id: "haifa", label: "Haifa", params: "geonameid=294801", tzid: "Asia/Jerusalem" },
+      { id: "tiberias", label: "Tiberias", params: "geonameid=293322", tzid: "Asia/Jerusalem" },
+      { id: "tzfat", label: "Tzfat (Safed)", params: "geonameid=293100", tzid: "Asia/Jerusalem" },
+      { id: "akko", label: "Akko (Acre)", params: "geonameid=295721", tzid: "Asia/Jerusalem" },
+      { id: "nazareth", label: "Nazareth", params: "geonameid=294098", tzid: "Asia/Jerusalem" },
+      { id: "maalot tarshīhā", label: "Maalot Tarshīhā", params: "geonameid=293420", tzid: "Asia/Jerusalem" },
+      { id: "karmiel", label: "Karmiel", params: "geonameid=294577", tzid: "Asia/Jerusalem" },
+      { id: "bet she’an", label: "Bet She’an", params: "geonameid=295435", tzid: "Asia/Jerusalem" },
 
     ],
   },
   {
     group: "South",
     locations: [
-      { id: "sderot", label: "Sderot", params: "geonameid=293619" },
+      { id: "sderot", label: "Sderot", params: "geonameid=293619", tzid: "Asia/Jerusalem" },
     ],
   },
 ];
@@ -57,8 +58,14 @@ let cachedLocation: ZmanimLocation = DEFAULT_LOCATION;
 function parseSavedLocation(raw: string | null): ZmanimLocation {
   if (!raw) return DEFAULT_LOCATION;
   try {
-    const parsed = JSON.parse(raw) as ZmanimLocation;
-    return parsed && typeof parsed.params === "string" ? parsed : DEFAULT_LOCATION;
+    const parsed = JSON.parse(raw) as Partial<ZmanimLocation>;
+    if (!parsed || typeof parsed.params !== "string") return DEFAULT_LOCATION;
+    return {
+      id: parsed.id ?? "saved",
+      label: parsed.label ?? "Saved location",
+      params: parsed.params,
+      tzid: parsed.tzid ?? "Asia/Jerusalem",
+    };
   } catch {
     return DEFAULT_LOCATION;
   }
@@ -108,6 +115,7 @@ export function locationFromCoords(lat: number, lon: number): ZmanimLocation {
     id: "current",
     label: "Current location",
     params: `latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}`,
+    tzid: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   };
 }
 

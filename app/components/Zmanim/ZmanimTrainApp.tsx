@@ -77,22 +77,23 @@ export default function ZmanimTrainApp() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  const dateKey = now ? toApiDate(now) : "";
+  const dateKey = now ? toApiDate(now, location.tzid) : "";
 
   // Single source of fetching: date / location / retry changes.
   // Shabbat info is fetched alongside; if it fails, the board still loads.
   useEffect(() => {
     if (!dateKey) return;
     let active = true;
-    const date = new Date(`${dateKey}T00:00:00`);
 
     (async () => {
-      const shabbatPromise = fetchShabbat(location.params, date).catch(
-        () => EMPTY_SHABBAT,
-      );
+      const shabbatPromise = fetchShabbat(
+        location.params,
+        dateKey,
+        location.tzid,
+      ).catch(() => EMPTY_SHABBAT);
       try {
         const [result, shabbatResult] = await Promise.all([
-          fetchZmanim(date, location.params, location.label),
+          fetchZmanim(dateKey, location.params, location.label),
           shabbatPromise,
         ]);
         if (!active) return;
@@ -182,6 +183,7 @@ export default function ZmanimTrainApp() {
         location={locationTitle || location.label}
         nextStation={now ? nextStation : null}
         parasha={shabbat.parasha}
+        timeZone={location.tzid}
       />
 
       <main className="zt-content">
@@ -259,6 +261,7 @@ export default function ZmanimTrainApp() {
             stations={visible}
             now={now ?? new Date()}
             nextId={nextStation?.id}
+            timeZone={location.tzid}
           />
         )}
       </main>

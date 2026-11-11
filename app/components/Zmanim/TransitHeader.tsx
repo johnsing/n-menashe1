@@ -10,10 +10,12 @@ export default function TransitHeader({
   location,
   nextStation,
   parasha,
+  timeZone,
 }: {
   location: string;
   nextStation: Station | null;
   parasha?: string | null;
+  timeZone: string;
 }) {
   const [now, setNow] = useState<Date | null>(null);
 
@@ -25,6 +27,7 @@ export default function TransitHeader({
   const timeStr = now?.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone,
   });
 
   return (

@@ -45,7 +45,7 @@ export default function VideosPage() {
 
       <div className="grid">
         {videos.map((v) => (
-          <article key={v.id} className="card">
+          <article key={v.id} className="card video-card">
             <iframe
               className="video-embed"
               src={`https://www.youtube-nocookie.com/embed/${v.id}`}

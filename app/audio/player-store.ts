@@ -13,6 +13,7 @@ interface PlayerState {
   currentTime: number;
   duration: number;
   volume: number;
+  error: string | null;
   history: string[]; // track ids, most recent first
 
   playQueue: (tracks: Track[], startIndex: number) => void;
@@ -40,8 +41,14 @@ function ensureAudio(
   audio.addEventListener("loadedmetadata", () =>
     set({ duration: audio?.duration ?? 0 }),
   );
-  audio.addEventListener("play", () => set({ isPlaying: true }));
+  audio.addEventListener("play", () => set({ isPlaying: true, error: null }));
   audio.addEventListener("pause", () => set({ isPlaying: false }));
+  audio.addEventListener("error", () =>
+    set({
+      isPlaying: false,
+      error: "This track could not be loaded.",
+    }),
+  );
   audio.addEventListener("ended", () => get().next());
 }
 
@@ -52,13 +59,24 @@ function loadAndPlay(
 ) {
   ensureAudio(set, get);
   if (!audio) return;
+  if (!src) {
+    set({
+      isPlaying: false,
+      error: "This track has no audio source yet.",
+    });
+    return;
+  }
   if (audio.src !== src) {
     audio.src = src;
     audio.currentTime = 0;
-    set({ currentTime: 0, duration: 0 });
+    set({ currentTime: 0, duration: 0, error: null });
   }
   audio.volume = get().volume;
-  void audio.play().catch(() => set({ isPlaying: false }));
+  void audio
+    .play()
+    .catch(() =>
+      set({ isPlaying: false, error: "Playback was blocked or failed." }),
+    );
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -68,6 +86,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTime: 0,
   duration: 0,
   volume: 0.9,
+  error: null,
   history: [],
 
   playQueue: (tracks, startIndex) => {
@@ -84,12 +103,22 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   toggle: () => {
     const { queue, index, isPlaying } = get();
     if (queue.length === 0) return;
+    const track = queue[index];
+    if (!track?.src) {
+      set({ isPlaying: false, error: "This track has no audio source yet." });
+      return;
+    }
     ensureAudio(set, get);
     if (isPlaying) {
       audio?.pause();
     } else {
-      if (!audio?.src) loadAndPlay(set, get, queue[index].src);
-      else void audio.play().catch(() => set({ isPlaying: false }));
+      if (!audio?.src) loadAndPlay(set, get, track.src);
+      else
+        void audio
+          .play()
+          .catch(() =>
+            set({ isPlaying: false, error: "Playback was blocked or failed." }),
+          );
     }
   },
 

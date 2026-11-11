@@ -14,16 +14,13 @@ export default function LibraryPage() {
       </header>
 
       {/* Tabs Navigation (Sections Only) */}
-      <div className="flex gap-2 border-b border-gray-200 pb-4 mb-8 overflow-x-auto">
+      <div className="library-tabs" role="group" aria-label="Tanakh sections">
         {SECTIONS.map((section) => (
           <button
             key={section}
             onClick={() => setActiveTab(section)}
-            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
-              activeTab === section
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
+            aria-pressed={activeTab === section}
+            className={`library-tab${activeTab === section ? " is-active" : ""}`}
           >
             {section}
           </button>
