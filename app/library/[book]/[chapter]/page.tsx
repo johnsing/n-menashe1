@@ -1,9 +1,11 @@
-// app/library/[book]/[chapter]/page.tsx — read one chapter, Hebrew only
-// Text comes from the free Sefaria API (no key required), cached 24h.
+// app/library/[book]/[chapter]/page.tsx — read one chapter, Hebrew only.
+// Text comes from the free Sefaria API (no key required), cached for 24h.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { getBook } from "@/app/data/data";
+import { bookPalette, SECTION_HEBREW } from "@/app/lib/bookDesign";
 import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
 
 export const revalidate = 86400; // ISR
@@ -39,7 +41,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { book: slug, chapter } = await params;
   const book = getBook(slug);
-  return { title: book ? `${book.name} ${chapter}` : "Library" };
+  const n = Number(chapter);
+
+  if (!book || !Number.isInteger(n) || n < 1 || n > book.chapters) {
+    return { title: "Library" };
+  }
+
+  return {
+    title: `${book.name} ${n}`,
+    description: `${book.name} chapter ${n} — read the Hebrew text from Sefaria.`,
+  };
+}
+
+interface CoverVars extends CSSProperties {
+  "--cover-bg": string;
+  "--cover-fg": string;
+  "--cover-accent": string;
 }
 
 export default async function ChapterPage({
@@ -56,70 +73,212 @@ export default async function ChapterPage({
   }
 
   const content = await fetchText(`${book.sefaria}.${n}`);
-  const verses = content?.hebrew.length ?? 0;
+  const verses = content?.hebrew ?? [];
+  const verseCount = verses.length;
+  const verseWord = verseCount === 1 ? "verse" : "verses";
 
   const prev = n > 1 ? n - 1 : null;
   const next = n < book.chapters ? n + 1 : null;
+  const progress = Math.round((n / book.chapters) * 100);
+
+  const palette = bookPalette(book.slug);
+  const coverVars: CoverVars = {
+    "--cover-bg": palette.bg,
+    "--cover-fg": palette.fg,
+    "--cover-accent": palette.accent,
+  };
+
+  const sefariaUrl = `https://www.sefaria.org/${book.sefaria.replace(
+    / /g,
+    "_",
+  )}.${n}`;
 
   return (
-    <main className="container">
-      <header className="hero">
-        <p className="muted">
-          <Link href="/library">Library</Link> /{" "}
-          <Link href={`/library/${book.slug}`}>{book.name}</Link>
-        </p>
-        <h1>
-          {book.name} {n}
-        </h1>
+    <main id="top" className="container chapter-page" style={coverVars}>
+      <nav className="book-breadcrumb" aria-label="Breadcrumb">
+        <Link href="/library">Library</Link>
+        <span className="book-breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <Link href={`/library/${book.slug}`}>{book.name}</Link>
+        <span className="book-breadcrumb-sep" aria-hidden="true">
+          /
+        </span>
+        <span className="book-breadcrumb-current" aria-current="page">
+          Chapter {n}
+        </span>
+      </nav>
+
+      <header className="chapter-hero">
+        <div className="chapter-hero-copy">
+          <p className="chapter-kicker">
+            <Link href={`/library/${book.slug}`}>{book.name}</Link>
+            <span className="chapter-kicker-sep" aria-hidden="true">
+              ·
+            </span>
+            {book.section}
+            <span className="chapter-kicker-sep" aria-hidden="true">
+              ·
+            </span>
+            <span lang="he">{SECTION_HEBREW[book.section]}</span>
+          </p>
+
+          <h1 className="chapter-title" id="chapter-heading">
+            <span className="chapter-title-word">Chapter</span>{" "}
+            <span className="chapter-title-num">{n}</span>
+          </h1>
+
+          <p className="chapter-meta">
+            {verseCount > 0 ? `${verseCount} ${verseWord}` : "Text unavailable"}
+            <span aria-hidden="true"> · </span>
+            Hebrew text
+          </p>
+        </div>
+
+        <div className="chapter-progress">
+          <span className="chapter-progress-label">
+            <span>
+              Chapter {n} of {book.chapters}
+            </span>
+            <span>{progress}%</span>
+          </span>
+          <div
+            className="chapter-progress-track"
+            role="progressbar"
+            aria-label="Chapter progress"
+            aria-valuemin={1}
+            aria-valuemax={book.chapters}
+            aria-valuenow={n}
+            aria-valuetext={`Chapter ${n} of ${book.chapters}`}
+          >
+            <span
+              className="chapter-progress-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
       </header>
 
-      {!content || verses === 0 ? (
-        <div className="card">
-          <p className="muted">
-            Couldn&apos;t load this chapter right now.{" "}
+      <article className="manuscript" aria-labelledby="chapter-heading">
+        <span className="manuscript-ribbon" aria-hidden="true">
+          {n}
+        </span>
+
+        <header className="manuscript-head">
+          <span className="manuscript-book">{book.name}</span>
+          <span className="manuscript-dot" aria-hidden="true">
+            ·
+          </span>
+          <span className="manuscript-he" lang="he" dir="rtl">
+            פרק {n}
+          </span>
+        </header>
+
+        {verseCount > 0 ? (
+          <>
+            <ol className="chapter-reader" role="list">
+              {verses.map((verse, index) => (
+                <li
+                  className="chapter-verse"
+                  key={index}
+                  id={`verse-${index + 1}`}
+                >
+                  <span
+                    className="chapter-verse-num"
+                    aria-label={`Verse ${index + 1}`}
+                  >
+                    {index + 1}
+                  </span>
+                  <p
+                    className="chapter-verse-text"
+                    dir="rtl"
+                    lang="he"
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeSefariaHtml(verse),
+                    }}
+                  />
+                </li>
+              ))}
+            </ol>
+
+            <footer className="manuscript-foot">
+              <span>End of chapter {n}</span>
+            </footer>
+          </>
+        ) : (
+          <div className="chapter-error">
+            <p className="chapter-error-title">
+              This chapter couldn&apos;t be loaded.
+            </p>
+            <p className="chapter-error-text">
+              The text service may be temporarily unavailable.
+            </p>
             <a
-              href={`https://www.sefaria.org/${book.sefaria}.${n}`}
+              className="chapter-error-link"
+              href={sefariaUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open it on Sefaria ↗
+              Open it on Sefaria <span aria-hidden="true">↗</span>
             </a>
-          </p>
-        </div>
-      ) : (
-        <article className="reader">
-          {Array.from({ length: verses }, (_, i) => (
-            <div key={i} className="verse">
-              <span className="verse-num">{i + 1}</span>
-              <p
-                className="verse-he"
-                dir="rtl"
-                lang="he"
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeSefariaHtml(content.hebrew[i] ?? ""),
-                }}
-              />
-            </div>
-          ))}
-        </article>
-      )}
-
-      <nav className="reader-nav">
-        {prev ? (
-          <Link className="btn" href={`/library/${book.slug}/${prev}`}>
-            ← Ch. {prev}
-          </Link>
-        ) : (
-          <Link className="btn" href={`/library/${book.slug}`}>
-            ← All chapters
-          </Link>
+          </div>
         )}
-        {next && (
-          <Link className="btn" href={`/library/${book.slug}/${next}`}>
-            Ch. {next} →
+      </article>
+
+      <nav
+        className={`book-pager chapter-pager${
+          book.chapters === 1 ? " chapter-pager-single" : ""
+        }`}
+        aria-label="Chapter navigation"
+      >
+        <Link
+          href={
+            prev
+              ? `/library/${book.slug}/${prev}`
+              : `/library/${book.slug}`
+          }
+          className="book-pager-link book-pager-prev"
+        >
+          <span className="book-pager-dir" aria-hidden="true">
+            ←
+          </span>
+          <span className="book-pager-text">
+            <small>{prev ? "Previous chapter" : "Book contents"}</small>
+            <strong>{prev ? `Chapter ${prev}` : "All chapters"}</strong>
+          </span>
+        </Link>
+
+        {book.chapters > 1 && (
+          <Link
+            href={
+              next
+                ? `/library/${book.slug}/${next}`
+                : `/library/${book.slug}`
+            }
+            className="book-pager-link book-pager-next"
+          >
+            <span className="book-pager-text">
+              <small>{next ? "Next chapter" : "Book contents"}</small>
+              <strong>{next ? `Chapter ${next}` : "All chapters"}</strong>
+            </span>
+            <span className="book-pager-dir" aria-hidden="true">
+              →
+            </span>
           </Link>
         )}
       </nav>
+
+      <footer className="chapter-foot">
+        <a className="chapter-top-link" href="#top">
+          ↑ Back to top
+        </a>
+        <p className="chapter-source">
+          Hebrew text from{" "}
+          <a href={sefariaUrl} target="_blank" rel="noopener noreferrer">
+            Sefaria <span aria-hidden="true">↗</span>
+          </a>
+        </p>
+      </footer>
     </main>
   );
 }

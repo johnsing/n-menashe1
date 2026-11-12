@@ -218,45 +218,1356 @@ a.card:active {
   padding: 0.85rem 1rem;
 }
 
-/* ---------- Library section tabs ---------- */
-.library-tabs {
-  display: flex;
-  gap: 0.5rem;
+/* ---------- Library bookcase ---------- */
+.library-page {
   padding-bottom: 1rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
 }
 
-.library-tab {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
+.library-hero {
+  padding-bottom: 1.75rem;
+}
+
+.library-hero h1 {
+  font-size: clamp(1.9rem, 1.4rem + 2vw, 2.5rem);
+  letter-spacing: 0.01em;
+}
+
+.library-hero p {
+  max-width: 46ch;
+  margin: 0.35rem auto 0;
+}
+
+/* Walnut case: grain, rails and a deep drop shadow. */
+.bookcase {
+  position: relative;
+  padding: 0 16px 16px;
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.1) 0 1px,
+      transparent 1px 8px
+    ),
+    linear-gradient(
+      90deg,
+      #3a2314 0%,
+      #6b452a 9%,
+      #7a4f2f 50%,
+      #6b452a 91%,
+      #3a2314 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 219, 170, 0.28),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.55),
+    0 30px 50px -24px rgba(0, 0, 0, 0.6);
+}
+
+.bookcase-crown {
+  height: 18px;
+  margin: 0 -16px 14px;
+  border-radius: 16px 16px 4px 4px;
+  background: linear-gradient(180deg, #9a663d 0%, #74492a 45%, #4e2e16 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 226, 180, 0.5),
+    0 6px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* One recessed bay per section (Torah / Nevi'im / Ketuvim). */
+.bookcase-bay {
+  position: relative;
+  margin-bottom: 14px;
+  padding: 10px 12px 0;
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    #1d1108 0%,
+    #120a04 55%,
+    #1d1108 100%
+  );
+  box-shadow:
+    inset 0 14px 24px rgba(0, 0, 0, 0.75),
+    inset 0 -1px 0 rgba(255, 205, 150, 0.07);
+}
+
+/* Brass label plate screwed to the top of each bay. */
+.bookcase-plaque {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.55rem;
+  width: fit-content;
+  margin: 0 auto 6px;
+  padding: 0.22rem 0.95rem 0.26rem;
+  border: 1px solid #7c5e1f;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #e6c982 0%, #c3a04f 48%, #9a7930 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 3px 6px rgba(0, 0, 0, 0.55);
+  color: #2b1d07;
+}
+
+.bookcase-plaque h2 {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bookcase-plaque-he {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.72;
+}
+
+.bookcase-plaque-count {
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.shelf {
+  position: relative;
+}
+
+/* The row of spines sits on the plank below it. */
+.shelf-books {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 196px;
+  margin: 0;
+  padding: 0 6px;
+  list-style: none;
+}
+
+.shelf-books > li {
+  display: flex;
+  flex: var(--spine-grow, 1) 1 0;
+  min-width: 0;
+  max-width: 92px;
+  height: var(--spine-height, 84%);
+  min-height: 140px;
+}
+
+/* A single bound volume. */
+.spine {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 2px;
+  border-radius: 3px 3px 2px 2px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.5) 0%,
+      rgba(255, 255, 255, 0.09) 12%,
+      rgba(255, 255, 255, 0.02) 50%,
+      rgba(0, 0, 0, 0.35) 88%,
+      rgba(0, 0, 0, 0.55) 100%
+    ),
+    var(--spine-bg, #4a3350);
+  color: var(--spine-fg, #efe2c2);
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    1px 0 2px rgba(0, 0, 0, 0.55),
+    0 4px 6px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+/* Double foil rules near the head and tail of the spine. */
+.spine::before {
+  content: "";
+  position: absolute;
+  inset: 8px 5px;
+  background:
+    linear-gradient(var(--spine-accent), var(--spine-accent)) top left / 100%
+      1px no-repeat,
+    linear-gradient(var(--spine-accent), var(--spine-accent)) 0 6px / 100% 1px
+      no-repeat,
+    linear-gradient(var(--spine-accent), var(--spine-accent)) bottom left / 100%
+      1px no-repeat,
+    linear-gradient(var(--spine-accent), var(--spine-accent)) 0
+      calc(100% - 6px) / 100% 1px no-repeat;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.spine-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  max-height: 100%;
+  padding: 12px 0;
+  overflow: hidden;
+  font-size: clamp(0.58rem, 1.9vw, 0.74rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.05em;
   white-space: nowrap;
-  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Pull the volume off the shelf on hover / keyboard focus. */
+.spine:hover,
+.spine:focus-visible {
+  z-index: 2;
+  transform: translateY(-8px);
+  filter: brightness(1.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    2px 0 4px rgba(0, 0, 0, 0.5),
+    0 14px 18px -6px rgba(0, 0, 0, 0.55);
+}
+
+.spine:active {
+  transform: translateY(-4px) scale(0.99);
+}
+
+/* Brass bookend supporting the last volume on a short row. */
+.shelf-books > .shelf-bookend {
+  align-self: flex-end;
+  flex: 0 0 10px;
+  width: 10px;
+  max-width: 10px;
+  height: 42%;
+  min-height: 56px;
+  margin-left: 3px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, #d9bd76 0%, #a8863e 55%, #7c6224 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    1px 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.shelf-plank {
+  height: 14px;
+  margin: 0 -12px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #9a6a41 0%, #774a29 38%, #4c2c15 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.4),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.4),
+    0 5px 10px rgba(0, 0, 0, 0.55);
+}
+
+.bookcase-base {
+  height: 20px;
+  margin: 6px -16px -16px;
+  border-radius: 4px 4px 16px 16px;
+  background: linear-gradient(180deg, #74492a 0%, #4e2e16 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 226, 180, 0.35),
+    0 14px 22px -8px rgba(0, 0, 0, 0.5);
+}
+
+/* Parashat entry — styled like a brass plaque under the case. */
+.parashat-plaque {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.6rem 0 0;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid #7c5e1f;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.28),
+      transparent 18%,
+      transparent 82%,
+      rgba(0, 0, 0, 0.28)
+    ),
+    linear-gradient(180deg, #5a3a20 0%, #452a13 100%);
+  color: #f0d9a8;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.25),
+    var(--shadow);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.parashat-plaque:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.3),
+    0 10px 20px -10px rgba(0, 0, 0, 0.6);
+}
+
+.parashat-plaque-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e8cd8a, #b18c3f 70%);
+  color: #3a2810;
+  font-size: 1rem;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.parashat-plaque-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.parashat-plaque-text strong {
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+}
+
+.parashat-plaque-text small {
+  color: #cdb083;
+  font-size: 0.75rem;
+}
+
+.parashat-plaque-arrow {
+  margin-left: auto;
+  color: #cdb083;
+  transition: transform 0.18s ease;
+}
+
+.parashat-plaque:hover .parashat-plaque-arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 560px) {
+  .bookcase {
+    padding: 0 10px 12px;
+    border-radius: 12px;
+  }
+
+  .bookcase-crown {
+    height: 14px;
+    margin: 0 -10px 10px;
+    border-radius: 12px 12px 4px 4px;
+  }
+
+  .bookcase-bay {
+    padding: 8px 8px 0;
+    margin-bottom: 10px;
+  }
+
+  .bookcase-plaque {
+    gap: 0.4rem;
+    padding: 0.18rem 0.7rem 0.2rem;
+  }
+
+  .bookcase-plaque h2 {
+    font-size: 0.62rem;
+  }
+
+  .bookcase-plaque-he,
+  .bookcase-plaque-count {
+    font-size: 0.55rem;
+  }
+
+  .shelf-books {
+    height: 170px;
+    gap: 3px;
+    padding: 0 2px;
+  }
+
+  .shelf-books > li {
+    max-width: 64px;
+    min-height: 118px;
+  }
+
+  .spine::before {
+    inset: 6px 4px;
+  }
+
+  .spine-title {
+    padding: 9px 0;
+    font-size: 0.56rem;
+    letter-spacing: 0.02em;
+  }
+
+  .shelf-plank {
+    height: 12px;
+    margin: 0 -8px;
+  }
+
+  .bookcase-base {
+    height: 16px;
+    margin: 4px -10px -12px;
+  }
+
+  .parashat-plaque {
+    padding: 0.8rem;
+    gap: 0.7rem;
+  }
+
+  .parashat-plaque-text strong {
+    font-size: 0.88rem;
+  }
+
+  .parashat-plaque-text small {
+    font-size: 0.7rem;
+  }
+}
+
+/* ---------- Book page (chapter list) ---------- */
+.book-page {
+  padding-bottom: 2rem;
+}
+
+.book-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.book-breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.book-breadcrumb a:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.book-breadcrumb-sep {
+  opacity: 0.45;
+}
+
+.book-breadcrumb-current {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* Cover on the left, details on the right (stacked on phones). */
+.book-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.35rem;
+  align-items: center;
+  margin-bottom: 1.75rem;
+}
+
+@media (min-width: 560px) {
+  .book-hero {
+    grid-template-columns: minmax(0, 190px) minmax(0, 1fr);
+    gap: 1.6rem;
+  }
+}
+
+/* Leather-bound cover, coloured like the book's spine. */
+.book-cover {
+  position: relative;
+  width: min(58vw, 190px);
+  aspect-ratio: 3 / 4.05;
+  margin: 0 auto;
+  border-radius: 4px 10px 10px 4px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.12) 7%,
+      rgba(255, 255, 255, 0.04) 13%,
+      transparent 30%
+    ),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.12) 0%, transparent 42%),
+    var(--cover-bg, #4a3350);
+  color: var(--cover-fg, #efe2c2);
+  box-shadow:
+    inset -2px 0 6px rgba(255, 255, 255, 0.1),
+    inset 2px 0 8px rgba(0, 0, 0, 0.35),
+    0 18px 30px -16px rgba(0, 0, 0, 0.6),
+    0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Stack of page edges peeking out from under the cover. */
+.book-cover::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: -7px;
+  bottom: 6px;
+  width: 8px;
+  border-radius: 0 5px 5px 0;
+  background: repeating-linear-gradient(
+    180deg,
+    #f2ead3 0 2px,
+    #cdbf9f 2px 3px
+  );
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 560px) {
+  .book-cover {
+    width: 100%;
+  }
+}
+
+/* Double gold rule framing the cover face. */
+.book-cover-frame {
+  position: absolute;
+  inset: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.85rem 0.6rem;
+  border: 1px solid var(--cover-accent, #c9a75c);
+  border-radius: 2px 6px 6px 2px;
+  text-align: center;
+}
+
+.book-cover-frame::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.book-cover-section {
+  color: var(--cover-accent, #c9a75c);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.book-cover-title {
+  max-width: 100%;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.15rem, 1rem + 1.3vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+.book-cover-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 72%;
+  color: var(--cover-accent, #c9a75c);
+  font-size: 0.68rem;
+}
+
+.book-cover-ornament::before,
+.book-cover-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.book-cover-meta {
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.book-info {
+  text-align: center;
+}
+
+@media (min-width: 560px) {
+  .book-info {
+    text-align: left;
+  }
+}
+
+.book-kicker {
+  margin: 0 0 0.3rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.book-title {
+  margin: 0 0 0.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.85rem, 1.4rem + 2.4vw, 2.65rem);
+  line-height: 1.1;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+.book-blurb {
+  max-width: 42ch;
+  margin: 0 auto 1rem;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+@media (min-width: 560px) {
+  .book-blurb {
+    margin-left: 0;
+  }
+}
+
+.book-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 0.95rem;
+}
+
+@media (min-width: 560px) {
+  .book-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* Gilt primary action — 46px tall for comfortable tapping. */
+.book-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0.7rem 1.3rem;
+  border: 1px solid #a8863e;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #f0d795 0%, #d3ae5d 55%, #b8923f 100%);
+  color: #2b1d07;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 6px 14px -8px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.16s ease,
+    filter 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.book-cta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 10px 18px -9px rgba(0, 0, 0, 0.55);
+}
+
+.book-cta:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.book-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.4rem 0.2rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+
+.book-secondary:hover {
+  color: var(--fg);
+  text-decoration-color: var(--muted);
+}
+
+.book-note {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+/* Parchment table of contents. */
+.book-toc {
+  position: relative;
+  margin: 0 0 1.4rem;
+  padding: 1.15rem 1.15rem 1.35rem 1.6rem;
+  border: 1px solid #d9c9a3;
+  border-radius: 3px 12px 12px 3px;
+  background:
+    radial-gradient(
+      120% 80% at 50% -20%,
+      rgba(255, 255, 255, 0.85),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      92deg,
+      rgba(118, 88, 38, 0.05) 0 1px,
+      transparent 1px 24px
+    ),
+    linear-gradient(180deg, #f9f1dd 0%, #efe2c4 100%);
+  color: #352714;
+  box-shadow:
+    inset 26px 0 22px -26px rgba(74, 50, 18, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 16px 32px -22px rgba(0, 0, 0, 0.6);
+}
+
+/* Dashed stitch line along the binding edge. */
+.book-toc::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 10px;
+  border-left: 1px dashed rgba(107, 79, 33, 0.42);
+  pointer-events: none;
+}
+
+.book-toc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px double rgba(90, 65, 30, 0.45);
+}
+
+.book-toc-head h2 {
+  margin: 0;
+  color: #3b2b15;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.18rem;
+  letter-spacing: 0.01em;
+}
+
+.book-toc-count {
+  color: #6b552b;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(112px, 100%), 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chapter-link {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: end;
+  gap: 0 0.3rem;
+  min-height: 52px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(120, 90, 40, 0.26);
+  border-radius: 5px;
+  background: rgba(255, 252, 243, 0.5);
+  color: #3b2b15;
+  text-decoration: none;
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    color 0.15s ease;
+    transform 0.15s ease;
 }
 
-.library-tab:hover {
-  background: var(--surface-hover);
+.chapter-link:hover {
+  border-color: rgba(120, 90, 40, 0.55);
+  background: #fffaf0;
+  transform: translateY(-1px);
+}
+
+.chapter-link:focus-visible {
+  outline: 2px solid #6b4f21;
+  outline-offset: 2px;
+}
+
+.chapter-label {
+  grid-column: 1;
+  grid-row: 1;
+  color: #6b552b;
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.chapter-num {
+  grid-column: 1;
+  grid-row: 2;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.chapter-arrow {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: #7c6236;
+  font-size: 0.85rem;
+  opacity: 0.45;
+  transform: translateX(-3px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.chapter-link:hover .chapter-arrow,
+.chapter-link:focus-visible .chapter-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Previous / next book. */
+.book-pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+.book-pager-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  min-height: 58px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--fg);
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.library-tab.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-fg);
-  box-shadow: var(--shadow);
+.book-pager-link:hover {
+  border-color: var(--muted);
+  background: var(--surface-hover);
 }
 
+.book-pager-next {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.book-pager-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.book-pager-text small {
+  color: var(--muted);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.book-pager-text strong {
+  overflow: hidden;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-pager-dir {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+@media (max-width: 420px) {
+  .book-pager {
+    grid-template-columns: 1fr;
+  }
+
+  .book-pager-next {
+    justify-content: space-between;
+  }
+}
+
+/* ---------- Chapter reader (single chapter) ---------- */
+.chapter-page {
+  padding-bottom: 2rem;
+  scroll-margin-top: 5rem;
+}
+
+/* Leather title band, tinted with the book's binding colour. */
+.chapter-hero {
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  padding: clamp(1.15rem, 6vw, 1.65rem) clamp(1.15rem, 6vw, 1.8rem);
+  border-radius: 14px;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.13), transparent 42%),
+    var(--cover-bg, #4a3350);
+  color: var(--cover-fg, #efe2c2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.35),
+    0 18px 32px -22px rgba(0, 0, 0, 0.65);
+}
+
+.chapter-hero::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid var(--cover-accent, #c9a75c);
+  border-radius: 9px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.chapter-hero-copy {
+  position: relative;
+}
+
+@media (min-width: 560px) {
+  .chapter-hero {
+    grid-template-columns: minmax(0, 1fr) 180px;
+    align-items: end;
+    gap: 1.5rem;
+  }
+}
+
+.chapter-kicker {
+  margin: 0 0 0.4rem;
+  color: var(--cover-fg, #efe2c2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.chapter-kicker a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.chapter-kicker a:hover {
+  border-color: currentColor;
+}
+
+.chapter-kicker-sep {
+  margin: 0 0.4rem;
+  opacity: 0.55;
+}
+
+.chapter-title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 1.3rem + 2vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.chapter-title-word {
+  font-size: 0.56em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.chapter-title-num {
+  display: grid;
+  place-items: center;
+  width: clamp(2.6rem, 8vw, 3.3rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f0d795 0%, #d3ae5d 55%, #b8923f 100%);
+  color: #2b1d07;
+  font-size: clamp(1.3rem, 1rem + 1.4vw, 1.8rem);
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 10px -4px rgba(0, 0, 0, 0.5);
+}
+
+.chapter-meta {
+  margin: 0.55rem 0 0;
+  color: var(--cover-fg, #efe2c2);
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.chapter-progress {
+  position: relative;
+}
+
+.chapter-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  color: var(--cover-fg, #efe2c2);
+  font-size: 0.64rem;
+  letter-spacing: 0.1em;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.chapter-progress-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.chapter-progress-fill {
+  display: block;
+  min-width: 5px;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cover-accent, #c9a75c), #f2dd9a);
+  box-shadow: 0 0 8px rgba(255, 221, 150, 0.5);
+}
+
+/* Parchment leaf, bound on the right for Hebrew. */
+.manuscript {
+  position: relative;
+  margin: 1.5rem 0 1.4rem;
+  padding: clamp(1.5rem, 5.5vw, 2.4rem) clamp(1.15rem, 5.5vw, 2.6rem);
+  border: 1px solid #d9c9a3;
+  border-radius: 12px 3px 3px 12px;
+  background:
+    radial-gradient(
+      120% 70% at 50% -10%,
+      rgba(255, 255, 255, 0.85),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      92deg,
+      rgba(118, 88, 38, 0.035) 0 1px,
+      transparent 1px 24px
+    ),
+    linear-gradient(180deg, #fbf5e6 0%, #f2e7cd 100%);
+  color: #2d2212;
+  box-shadow:
+    inset -26px 0 22px -26px rgba(74, 50, 18, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 18px 34px -24px rgba(0, 0, 0, 0.6);
+}
+
+/* Dashed stitch line along the binding edge. */
+.manuscript::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  bottom: 10px;
+  border-right: 1px dashed rgba(107, 79, 33, 0.4);
+  pointer-events: none;
+}
+
+/* Bookmark ribbon in the volume's binding colour. */
+.manuscript-ribbon {
+  position: absolute;
+  top: -9px;
+  right: clamp(20px, 8%, 54px);
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  width: 26px;
+  height: 56px;
+  padding-top: 9px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 45%),
+    linear-gradient(rgba(20, 12, 4, 0.24), rgba(20, 12, 4, 0.24)),
+    var(--cover-bg, #4a3350);
+  color: var(--cover-fg, #efe2c2);
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.35));
+}
+
+.manuscript-ribbon::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  bottom: 10px;
+  left: 5px;
+  border-right: 1px solid var(--cover-accent, #c9a75c);
+  border-left: 1px solid var(--cover-accent, #c9a75c);
+  opacity: 0.65;
+}
+
+.manuscript-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 1.25rem;
+  padding: 0 2.2rem 0.7rem;
+  border-bottom: 3px double rgba(90, 65, 30, 0.4);
+  color: #6b552b;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.manuscript-book {
+  font-weight: 700;
+}
+
+.manuscript-dot {
+  opacity: 0.5;
+}
+
+.manuscript-he {
+  color: #4a3619;
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.chapter-reader {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Number in the right-hand margin, text flowing right-to-left. */
+.chapter-verse {
+  display: grid;
+  grid-template-columns: 1.7rem minmax(0, 1fr);
+  gap: 0.15rem 0.7rem;
+  direction: rtl;
+  padding: 0.35rem 0;
+  scroll-margin-top: 5rem;
+}
+
+.chapter-verse-num {
+  grid-column: 1;
+  grid-row: 1;
+  padding-top: 0.55rem;
+  color: #6b552b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  text-align: center;
+  direction: ltr;
+}
+
+.chapter-verse-text {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  color: #2d2212;
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: clamp(1.14rem, 1.02rem + 0.6vw, 1.38rem);
+  line-height: 1.95;
+  text-align: right;
+  overflow-wrap: break-word;
+}
+
+.chapter-verse-text sup {
+  color: #6b552b;
+  font-size: 0.62em;
+}
+
+.manuscript-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+  color: #6b552b;
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.manuscript-foot::before,
+.manuscript-foot::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(120, 90, 40, 0.3);
+}
+
+.chapter-error {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+}
+
+.chapter-error-title {
+  margin: 0 0 0.35rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+}
+
+.chapter-error-text {
+  margin: 0 0 1rem;
+  color: #6b552b;
+  font-size: 0.9rem;
+}
+
+.chapter-error-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  color: #4a3619;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(107, 79, 33, 0.45);
+  text-underline-offset: 3px;
+}
+
+.chapter-error-link:hover {
+  text-decoration-color: #4a3619;
+}
+
+.chapter-pager {
+  margin-top: 1.4rem;
+}
+
+/* A one-chapter book only needs a single "back to contents" card. */
+.chapter-pager-single {
+  grid-template-columns: 1fr;
+}
+
+.chapter-pager .book-pager-text strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.98rem;
+}
+
+.chapter-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.chapter-top-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.chapter-top-link:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.chapter-source {
+  margin: 0;
+}
+
+.chapter-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+
+.chapter-source a:hover {
+  color: var(--fg);
+  text-decoration-color: var(--muted);
+}
+
+@media (max-width: 480px) {
+  .chapter-foot {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .chapter-verse {
+    grid-template-columns: 1.45rem minmax(0, 1fr);
+    gap: 0.1rem 0.5rem;
+  }
+
+  .chapter-verse-num {
+    font-size: 0.64rem;
+  }
+
+  .manuscript {
+    padding: 1.4rem 1rem 1.5rem;
+    border-radius: 10px 3px 3px 10px;
+  }
+
+  .manuscript-head {
+    padding: 0 1.9rem 0.65rem;
+    font-size: 0.62rem;
+  }
+
+  .manuscript-he {
+    font-size: 0.9rem;
+  }
+
+  .manuscript-ribbon {
+    right: 18px;
+    width: 23px;
+    height: 50px;
+    font-size: 0.62rem;
+  }
+}
 
 .video-embed {
   display: block;
