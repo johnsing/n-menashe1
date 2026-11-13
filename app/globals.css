@@ -1569,6 +1569,1096 @@ a.card:active {
   }
 }
 
+/* ---------- Parashat index (54 weekly portions) ---------- */
+.parashat-page {
+  padding-bottom: 2rem;
+}
+
+/* Screen-reader-only text for line labels. */
+.parashat-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Walnut-and-brass title band, with a large "54" watermark. */
+.parashat-hero {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.1rem;
+  padding: clamp(1.4rem, 6vw, 2.2rem) clamp(1.2rem, 6vw, 2rem);
+  border: 1px solid #7c5e1f;
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      110% 140% at 100% 0%,
+      rgba(232, 205, 138, 0.16),
+      transparent 48%
+    ),
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.025) 0 2px,
+      transparent 2px 7px
+    ),
+    linear-gradient(135deg, #5a3a20 0%, #452a13 52%, #2f1c0c 100%);
+  color: #f3e2bd;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.25),
+    0 18px 32px -22px rgba(0, 0, 0, 0.7);
+}
+
+.parashat-hero::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(226, 195, 124, 0.42);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.parashat-hero::after {
+  content: "54";
+  position: absolute;
+  right: clamp(0.6rem, 4vw, 1.8rem);
+  bottom: -0.22em;
+  z-index: 0;
+  color: rgba(240, 217, 168, 0.08);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(6rem, 24vw, 10rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 0.8;
+  pointer-events: none;
+  user-select: none;
+}
+
+.parashat-hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 44ch;
+}
+
+.parashat-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
+  color: #e2c37c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.parashat-kicker-sep {
+  opacity: 0.55;
+}
+
+.parashat-kicker [lang="he"] {
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.82rem;
+  letter-spacing: 0;
+}
+
+.parashat-title {
+  margin: 0;
+  color: #f7ead0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 1.4rem + 3.6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.parashat-hebrew {
+  margin: 0.4rem 0 0;
+  color: #e2c37c;
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: clamp(1.1rem, 0.95rem + 0.8vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
+.parashat-blurb {
+  max-width: 46ch;
+  margin: 0.8rem 0 0;
+  color: #e3d0a8;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.parashat-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  margin: 1rem 0 0;
+  color: #ecd7a6;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.parashat-meta span[aria-hidden] {
+  opacity: 0.5;
+}
+
+/* Book-coloured jump tabs. */
+.parashat-jump {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+}
+
+@media (min-width: 480px) {
+  .parashat-jump {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 620px) {
+  .parashat-jump {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.parashat-jump-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.parashat-jump-link:hover {
+  border-color: var(--parashat-accent);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+
+.parashat-jump-top {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  min-width: 0;
+}
+
+.parashat-jump-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--parashat-accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.parashat-jump-name {
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parashat-jump-sub {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.parashat-jump-he {
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.parashat-jump-count {
+  padding-left: 0.4rem;
+  border-left: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+/* One continuous parchment index, bound on the left like the book TOC. */
+.parashat-index {
+  position: relative;
+  margin: 0 0 1.4rem;
+  padding: clamp(1rem, 4.5vw, 1.45rem) clamp(1rem, 4.5vw, 1.5rem)
+    clamp(1.2rem, 5vw, 1.6rem) clamp(1.25rem, 5.5vw, 1.9rem);
+  border: 1px solid #d9c9a3;
+  border-radius: 3px 12px 12px 3px;
+  background:
+    radial-gradient(
+      120% 80% at 50% -20%,
+      rgba(255, 255, 255, 0.85),
+      transparent 60%
+    ),
+    repeating-linear-gradient(
+      92deg,
+      rgba(118, 88, 38, 0.05) 0 1px,
+      transparent 1px 24px
+    ),
+    linear-gradient(180deg, #f9f1dd 0%, #efe2c4 100%);
+  color: #352714;
+  box-shadow:
+    inset 26px 0 22px -26px rgba(74, 50, 18, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 16px 32px -22px rgba(0, 0, 0, 0.6);
+}
+
+.parashat-index::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 10px;
+  border-left: 1px dashed rgba(107, 79, 33, 0.42);
+  pointer-events: none;
+}
+
+.parashat-index-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 3px double rgba(90, 65, 30, 0.45);
+}
+
+.parashat-index-title {
+  margin: 0;
+  color: #3b2b15;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.01em;
+}
+
+.parashat-index-sub {
+  margin: 0.15rem 0 0;
+  color: #6b552b;
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.parashat-index-count {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border: 1px solid rgba(107, 79, 33, 0.4);
+  border-radius: 50%;
+  color: #6b552b;
+  line-height: 1;
+}
+
+.parashat-index-count strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+}
+
+.parashat-index-count span {
+  margin-top: 2px;
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.parashat-book {
+  scroll-margin-top: 5rem;
+}
+
+.parashat-book + .parashat-book {
+  margin-top: 1.4rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid rgba(120, 90, 40, 0.25);
+}
+
+.parashat-book-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.parashat-book-chip {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 48px;
+  min-height: 42px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--parashat-accent);
+  border-radius: 4px;
+  background: var(--parashat-bg);
+  color: var(--parashat-fg);
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 4px rgba(0, 0, 0, 0.18);
+}
+
+.parashat-book-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.02rem;
+  min-width: 0;
+}
+
+.parashat-book-heading h3 {
+  margin: 0;
+  color: #3b2b15;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.parashat-book-heading p {
+  margin: 0;
+  color: #6b552b;
+  font-size: 0.62rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.parashat-book-rule {
+  flex: 1;
+  min-width: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(120, 90, 40, 0.32), transparent);
+}
+
+.parashat-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 600px) {
+  .parashat-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.parashat-portion {
+  display: grid;
+  grid-template-columns: 1.55rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 60px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(120, 90, 40, 0.24);
+  border-radius: 6px;
+  background: rgba(255, 252, 243, 0.5);
+  color: #3b2b15;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.parashat-portion:hover {
+  border-color: var(--parashat-accent);
+  background: #fffaf0;
+  transform: translateY(-1px);
+}
+
+.parashat-portion:focus-visible {
+  outline: 2px solid #6b4f21;
+  outline-offset: 2px;
+}
+
+.parashat-portion-num {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  aspect-ratio: 1;
+  border: 1px solid rgba(107, 79, 33, 0.35);
+  border-radius: 50%;
+  color: #6b552b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.64rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.parashat-portion:hover .parashat-portion-num {
+  border-color: var(--parashat-accent);
+  background: var(--parashat-bg);
+  color: var(--parashat-fg);
+}
+
+.parashat-portion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
+.parashat-portion-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.05rem 0.4rem;
+  min-width: 0;
+}
+
+.parashat-portion-name {
+  color: #3b2b15;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+
+.parashat-portion-he {
+  flex: none;
+  color: #4a3619;
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.parashat-portion-range {
+  color: #6b552b;
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+.parashat-portion-arrow {
+  color: #7c6236;
+  font-size: 0.8rem;
+  opacity: 0.4;
+  transform: translateX(-3px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.parashat-portion:hover .parashat-portion-arrow,
+.parashat-portion:focus-visible .parashat-portion-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.parashat-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.parashat-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.parashat-back:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.parashat-note {
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .parashat-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+}
+
+/* ---------- Parashat reader (one portion as an open scroll) ---------- */
+.parashat-reader-page {
+  padding-bottom: 2rem;
+  scroll-margin-top: 1rem;
+}
+
+/* Leather title band in the portion's Chumash binding colour. */
+.parashat-reader-hero {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 1.1rem;
+  margin-bottom: 0.9rem;
+  padding: clamp(1.15rem, 5vw, 1.8rem) clamp(1rem, 5vw, 1.7rem);
+  border: 1px solid var(--cover-accent);
+  border-radius: 12px;
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      rgba(255, 255, 255, 0.14),
+      transparent 52%
+    ),
+    repeating-linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.03) 0 2px,
+      transparent 2px 7px
+    ),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.38)),
+    var(--cover-bg);
+  color: var(--cover-fg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 16px 30px -22px rgba(0, 0, 0, 0.65);
+}
+
+.parashat-reader-hero::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid var(--cover-accent);
+  border-radius: 8px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.parashat-reader-hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.parashat-reader-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.4rem;
+  margin: 0 0 0.55rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.parashat-reader-kicker a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--cover-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: opacity 0.15s ease;
+}
+
+.parashat-reader-kicker a:hover {
+  opacity: 0.78;
+}
+
+.parashat-reader-kicker [lang="he"] {
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.86rem;
+  letter-spacing: 0;
+}
+
+.parashat-reader-kicker-sep {
+  color: var(--cover-accent);
+}
+
+.parashat-reader-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.85rem;
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.parashat-reader-name {
+  font-size: clamp(1.85rem, 1.2rem + 3.4vw, 2.9rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.parashat-reader-he {
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: clamp(1.15rem, 0.95rem + 1vw, 1.6rem);
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.parashat-reader-meta {
+  margin: 0.65rem 0 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.parashat-reader-progress {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  align-self: end;
+}
+
+.parashat-reader-progress-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.parashat-reader-progress-track {
+  position: relative;
+  overflow: hidden;
+  height: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.34);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.parashat-reader-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--cover-accent),
+    #f3dfa8
+  );
+  box-shadow: 0 0 6px rgba(255, 230, 170, 0.5);
+  transition: width 0.3s ease;
+}
+
+@media (min-width: 720px) {
+  .parashat-reader-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+    align-items: end;
+    gap: 1.5rem;
+  }
+}
+
+/* Wooden rollers above and below the parchment leaf. */
+.parashat-scroll {
+  position: relative;
+  margin: 0 0 0.8rem;
+}
+
+.parashat-roller {
+  position: relative;
+  z-index: 2;
+  height: clamp(15px, 2.4vw, 20px);
+  margin: 0 clamp(2px, 0.6vw, 6px);
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      #9a6730 0%,
+      #6b3f17 38%,
+      #3f230c 74%,
+      #241305 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 170, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.5),
+    0 3px 7px -2px rgba(0, 0, 0, 0.45);
+}
+
+.parashat-roller::before,
+.parashat-roller::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: clamp(24px, 4vw, 32px);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 34% 28%,
+    #c08a4a 0%,
+    #7b4a1c 48%,
+    #3a1f09 100%
+  );
+  box-shadow:
+    inset 0 1px 1px rgba(255, 230, 180, 0.45),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.45),
+    0 2px 5px rgba(0, 0, 0, 0.35);
+}
+
+.parashat-roller::before {
+  left: -4px;
+}
+
+.parashat-roller::after {
+  right: -4px;
+}
+
+.parashat-roller-top {
+  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.parashat-roller-bottom {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+/* Continuous parchment leaf. */
+.parashat-leaf {
+  position: relative;
+  margin: 0;
+  padding: clamp(1.6rem, 5vw, 2.4rem) clamp(1rem, 5vw, 2.1rem)
+    clamp(1.2rem, 4vw, 1.8rem);
+  border-right: 1px solid #d9c9a3;
+  border-left: 1px solid #d9c9a3;
+  background:
+    radial-gradient(
+      120% 70% at 50% -10%,
+      rgba(255, 255, 255, 0.85),
+      transparent 62%
+    ),
+    repeating-linear-gradient(
+      92deg,
+      rgba(118, 88, 38, 0.045) 0 1px,
+      transparent 1px 26px
+    ),
+    linear-gradient(180deg, #fbf4e3 0%, #f1e4c8 100%);
+  color: #352714;
+  box-shadow:
+    inset 22px 0 26px -28px rgba(74, 50, 18, 0.5),
+    inset -22px 0 26px -28px rgba(74, 50, 18, 0.5),
+    inset 0 0 60px rgba(120, 88, 38, 0.06);
+}
+
+/* Cycle-number ribbon hanging from the top of the leaf. */
+.parashat-leaf-ribbon {
+  position: absolute;
+  top: 0;
+  right: clamp(0.85rem, 4vw, 1.5rem);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 56px;
+  padding-bottom: 7px;
+  border: 1px solid var(--cover-accent);
+  border-top: 0;
+  background: var(--cover-bg);
+  color: var(--cover-fg);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+  box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.45);
+}
+
+.parashat-leaf-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.45rem;
+  min-width: 0;
+  padding-right: 2.9rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 3px double rgba(90, 65, 30, 0.4);
+  color: #6b552b;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.parashat-leaf-dot {
+  opacity: 0.55;
+}
+
+.parashat-leaf-name {
+  color: #4a3619;
+}
+
+.parashat-leaf-he {
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.parashat-verse-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.8vw, 0.8rem);
+  margin: clamp(1rem, 3.5vw, 1.4rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parashat-verse {
+  display: grid;
+  grid-template-columns: clamp(1.45rem, 4.4vw, 2rem) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(0.5rem, 2vw, 0.85rem);
+  min-width: 0;
+  padding-bottom: clamp(0.5rem, 1.8vw, 0.75rem);
+  border-bottom: 1px solid rgba(120, 90, 40, 0.16);
+}
+
+.parashat-verse:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.parashat-verse-num {
+  display: grid;
+  place-items: center;
+  width: clamp(1.45rem, 4.4vw, 2rem);
+  min-height: clamp(1.45rem, 4.4vw, 2rem);
+  margin-top: 0.32rem;
+  border: 1px solid rgba(107, 79, 33, 0.34);
+  border-radius: 50%;
+  color: #6b552b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.56rem, 1.8vw, 0.64rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.parashat-verse-text {
+  min-width: 0;
+  margin: 0;
+  color: #2f2414;
+  font-family:
+    "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
+  font-size: clamp(1.06rem, 0.98rem + 0.42vw, 1.28rem);
+  line-height: 1.95;
+  overflow-wrap: break-word;
+  text-align: right;
+}
+
+.parashat-verse-text small {
+  font-size: 0.72em;
+}
+
+.parashat-verse-text sup {
+  font-size: 0.62em;
+  line-height: 0;
+}
+
+.parashat-leaf-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: clamp(1rem, 4vw, 1.5rem);
+  padding-top: 0.7rem;
+  border-top: 3px double rgba(90, 65, 30, 0.4);
+  color: #6b552b;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.parashat-leaf-foot::before,
+.parashat-leaf-foot::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(120, 90, 40, 0.25);
+}
+
+/* Error state inside the same parchment leaf. */
+.parashat-reader-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: clamp(1rem, 4vw, 1.5rem) 0 0.2rem;
+}
+
+.parashat-reader-error-title {
+  margin: 0;
+  color: #3b2b15;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.parashat-reader-error-text {
+  margin: 0;
+  color: #6b552b;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.parashat-reader-error-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 44px;
+  color: #6b4f21;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.parashat-reader-pager {
+  margin-top: 0.2rem;
+}
+
+.parashat-reader-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem 1rem;
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.parashat-reader-top-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.parashat-reader-top-link:hover {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.parashat-reader-source {
+  margin: 0;
+}
+
+.parashat-reader-source a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.parashat-reader-source a:hover {
+  color: var(--fg);
+}
+
+@media (max-width: 420px) {
+  .parashat-reader-hero {
+    padding: 1rem 0.9rem 1.1rem;
+  }
+
+  .parashat-reader-kicker {
+    font-size: 0.6rem;
+  }
+
+  .parashat-reader-meta {
+    font-size: 0.64rem;
+  }
+
+  .parashat-leaf {
+    padding: 1.4rem 0.85rem 1.1rem;
+  }
+
+  .parashat-leaf-ribbon {
+    right: 0.7rem;
+    width: 26px;
+    height: 50px;
+    font-size: 0.66rem;
+  }
+
+  .parashat-leaf-head {
+    padding-right: 2.5rem;
+    font-size: 0.6rem;
+  }
+
+  .parashat-verse {
+    gap: 0.45rem;
+  }
+
+  .parashat-verse-text {
+    font-size: 1.04rem;
+    line-height: 1.9;
+  }
+
+  .parashat-reader-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.05rem;
+  }
+}
+
 .video-embed {
   display: block;
   width: 100%;

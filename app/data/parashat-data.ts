@@ -9,6 +9,23 @@ export interface Parasha {
   range: string;    // display: "Genesis 1:1–6:8"
 }
 
+/** English and Hebrew names for the five books of the Torah. */
+export const CHUMASH_LABELS: Record<string, string> = {
+  genesis: "Genesis",
+  exodus: "Exodus",
+  leviticus: "Leviticus",
+  numbers: "Numbers",
+  deuteronomy: "Deuteronomy",
+};
+
+export const CHUMASH_HEBREW: Record<string, string> = {
+  genesis: "בראשית",
+  exodus: "שמות",
+  leviticus: "ויקרא",
+  numbers: "במדבר",
+  deuteronomy: "דברים",
+};
+
 export const PARASHIYOT: Parasha[] = [
   // ── Genesis / Bereshit (12) ──
   { slug: "bereshit",      name: "Bereshit",       hebrew: "בראשית",     book: "genesis", ref: "Genesis.1.1-6.8",      range: "Genesis 1:1-6:8" },
@@ -73,7 +90,6 @@ export const PARASHIYOT: Parasha[] = [
 
 export const getParasha = (slug: string) =>
   PARASHIYOT.find((p) => p.slug === slug);
-
 
 export const parashaIndex = (slug: string) =>
   PARASHIYOT.findIndex((p) => p.slug === slug);

@@ -29,8 +29,8 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library` | Static | Bookshelf index (redesigned 2026-11-12) |
 | `/library/[book]` | SSG | Chapter list, 39 paths |
 | `/library/[book]/[chapter]` | Dynamic + ISR | Sefaria text, 24h revalidate (reader redesigned 2026-11-12) |
-| `/library/parashat` | Static | 54 parashiyot index |
-| `/library/parashat/[slug]` | SSG | Sefaria range reader |
+| `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
+| `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
 | `/videos` | Static | Curated embeds |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
@@ -46,6 +46,8 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Dev dependency audit | ⚠️ 7 moderate (eslint/@typescript-eslint tooling only) |
 | Browser console (`/library`) | ✅ No errors |
 | Lighthouse (`/library/genesis/1`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/library/parashat`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/library/parashat/bereshit`) | ✅ 100 accessibility, best practices, SEO |
 
 ## Strengths
 
@@ -125,7 +127,7 @@ The app uses the classic model (`export const revalidate`,
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12)
+## Recent changes (2026-11-12–13)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -144,10 +146,23 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   Hebrew verses and a bookmark ribbon, a chapter pager, and a Sefaria credit.
   Single-chapter books collapse the pager to one contents card. Stays a
   dynamic ISR route; all Sefaria fetching, sanitizing and 404 validation kept.
+- `app/library/parashat/page.tsx` redesigned as the annual reading scroll:
+  a walnut-and-brass title band with a "54" watermark, binding-coloured jump
+  tabs for the five Chumashim, and one parchment index of all 54 portions with
+  their Hebrew names, transliterations, ranges and cycle numbers. Remains a
+  static Server Component with 44px+ tap targets.
+- `app/library/parashat/[slug]/page.tsx` redesigned as an open Torah scroll:
+  a binding-coloured leather title band with annual-cycle progress, wooden
+  rollers and a parchment leaf, a cycle-number ribbon, right-to-left Hebrew
+  verses with a numbered gutter, adjacent-portion pager, back-to-top link and
+  Sefaria credit. Keeps the 24h ISR fetch, HTML sanitizing, 404 validation and
+  all 54 SSG paths. Shared Chumash labels now live in
+  `app/data/parashat-data.ts`.
 - `app/globals.css`: replaced unused `.library-tabs`/`.library-tab` styles with
-  the "Library bookcase" section, and added the "Book page (chapter list)" and
-  "Chapter reader" sections. Verified at 320/390/768/1280px in light and dark
-  themes; Lighthouse 100 for accessibility, best practices and SEO.
+  the "Library bookcase" section, and added the "Book page (chapter list)",
+  "Chapter reader", "Parashat index" and "Parashat reader" sections. Verified
+  at 320/390/768/1280px in light and dark themes; Lighthouse 100 for
+  accessibility, best practices and SEO.
 
 ## Suggested next steps
 
