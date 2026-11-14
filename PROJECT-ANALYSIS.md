@@ -48,6 +48,9 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Lighthouse (`/library/genesis/1`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/library/parashat`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/library/parashat/bereshit`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/calendar`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/qa`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/qa/[id]`) | ✅ 100 accessibility, best practices, SEO |
 
 ## Strengths
 
@@ -98,15 +101,11 @@ before hydration. A real community feed needs route handlers + a database.
   is never used (videos are iframes)
 - `components.json` (shadcn) is unused; its `@/lib/utils` alias doesn't exist
 
-### 6. Modal accessibility
-`app/qa/page.tsx`: the Ask modal closes on Escape and locks page scroll, but
-has no focus trap, no initial focus, and no focus restore.
-
-### 7. No tests / CI / LICENSE
+### 6. No tests / CI / LICENSE
 No test script or framework. Good first candidates: `getWifiStatus`,
 `formatCountdown`, `toApiDate` (pure functions). No CI workflows. No LICENSE.
 
-### 8. Minor performance / polish
+### 7. Minor performance / polish
 - `PlayerBar` subscribes to the whole zustand store → re-renders on every
   `timeupdate` tick; select individual slices instead
 - `@hebcal/core` is bundled into the client only to format one date;
@@ -116,18 +115,18 @@ No test script or framework. Good first candidates: `getWifiStatus`,
 - `/library` is now a Server Component (good); `/qa` and `/qa/[id]` remain
   fully client-rendered
 
-### 9. Security notes (low risk)
+### 8. Security notes (low risk)
 The regex sanitizer in `app/utils/sefaria.ts` uses a narrow allowlist and a
 trusted source, so risk is small. A parser-based sanitizer
 (`sanitize-html`/DOMPurify) is more robust if sources ever change.
 
-### 10. Next.js 16 forward-looking note
+### 9. Next.js 16 forward-looking note
 The app uses the classic model (`export const revalidate`,
 `fetch(..., { next: { revalidate } })`). This is valid while
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12–13)
+## Recent changes (2026-11-12–14)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -163,6 +162,36 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   "Chapter reader", "Parashat index" and "Parashat reader" sections. Verified
   at 320/390/768/1280px in light and dark themes; Lighthouse 100 for
   accessibility, best practices and SEO.
+- `/calendar` (Zmanim Train) rebuilt as a responsive live departure board:
+  a station header with a second-by-second clock, timezone label, full date,
+  next-zman time/countdown and parasha chip; a visible Location field with a
+  geolocation button; a semantic `<ol>` timetable with icon rail, Hebrew name,
+  countdown pill and status column; skeleton, empty and friendly error states;
+  and a theme-aware `--zt-*` stylesheet with light/dark tokens. Verified at
+  320/360/390/768/1024/1280/1920px and in dark mode with no horizontal
+  overflow; offline fetch at 320px shows "Times unavailable" and a 44px retry
+  button; Lighthouse 100 accessibility, best practices and SEO.
+- `/qa` redesigned as a responsive community study-hall feed: a hero with
+  live question/answer/resolved totals and an always-visible ask action; a
+  search field with a clear control; wrapped topic chips and a segmented sort;
+  a results summary; question cards with a vote rail, wrapped titles, tags and
+  metadata; and a skeleton-free empty state with a reset action. The ask
+  dialog now traps focus, restores it on close, locks background scroll and
+  becomes a bottom sheet on phones, with 44px+ controls and 16px inputs to
+  prevent iOS zoom. Verified from 280px through 1920px plus dark mode and
+  extreme zoom with no document overflow; Lighthouse 100 accessibility, best
+  practices and SEO.
+- `/qa/[id]` redesigned as a readable question page: a breadcrumb, a featured
+  question card with vote rail and gold accent, a larger title and excerpt,
+  wrapped tags and metadata; an answers header with count and live response
+  note, article-style answer cards that preserve line breaks, a friendly
+  no-answers state, and a labeled answer form. View counting, voting, answer
+  posting and `localStorage` persistence are unchanged. The header date wrapper
+  was simplified so the date ellipsizes instead of overflowing at extreme zoom.
+  Verified from 280px through 1920px, dark mode, 195px zoom and long unbroken
+  content with no overflow; keyboard focus order and focus rings checked;
+  Lighthouse 100 accessibility, best practices and SEO on answered and
+  unanswered questions.
 
 ## Suggested next steps
 
@@ -170,5 +199,4 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 2. Delete the 5 dead CSS files
 3. Refresh README and add a LICENSE
 4. Add Vitest unit tests for time logic
-5. Add focus management to the Q&A modal
-6. Decide on a real Q&A backend (or label it clearly as a local demo)
+5. Decide on a real Q&A backend (or label it clearly as a local demo)
