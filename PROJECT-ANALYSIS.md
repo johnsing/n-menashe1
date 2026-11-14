@@ -9,7 +9,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 - **Zmanim Train** — daily prayer times presented as a live transit-departure board
 - **Library** — the full Tanakh (39 books / 929 chapters) with a chapter reader powered by the Sefaria API
 - **Parashat** — weekly Torah portion pages, read by aliyah
-- **Videos** — privacy-enhanced YouTube embeds
+- **Videos** — privacy-enhanced YouTube + AnonMP4 embeds, plus add-by-ID in the browser
 - **Audio** — shiurim with a persistent Spotify-style player
 - **Q&A** — community question feed (browser-local demo)
 
@@ -31,7 +31,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library/[book]/[chapter]` | Dynamic + ISR | Sefaria text, 24h revalidate (reader redesigned 2026-11-12) |
 | `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
 | `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
-| `/videos` | Static | Curated embeds |
+| `/videos` | Static | Curated YouTube/AnonMP4 embeds + local add-by-ID |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
 | `/qa/[id]` | Dynamic (client data) | Question + answers |
@@ -51,6 +51,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Lighthouse (`/calendar`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/qa`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/qa/[id]`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/videos`) | ✅ 100 accessibility, best practices, SEO |
 
 ## Strengths
 
@@ -192,6 +193,22 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   content with no overflow; keyboard focus order and focus rings checked;
   Lighthouse 100 accessibility, best practices and SEO on answered and
   unanswered questions.
+- `/videos` rebuilt as a responsive screening room with a featured lesson, a
+  three-column teaching grid, provider-aware watch links and a padding-based
+  16:9 player frame that reserves space before the iframe loads. The page now
+  supports AnonMP4 embeds (`https://anonmp4.art/embed/<id>`, uploaded at
+  `https://anonmp4.to/`) alongside the
+  existing `youtube-nocookie.com` embeds; the curated list lives in
+  `app/videos/video-data.ts`. An **Add video** button opens an accessible
+  dialog that accepts a YouTube or AnonMP4 **ID only** (full links are
+  rejected with guidance), a required title and an optional speaker. Additions
+  are validated, stored in `localStorage` (`n-menashe-videos-v1`), merged with
+  the curated list, and can be removed from their tile; they persist per
+  browser and do not change the static build. Verified at
+  280/320/360/390/768/1024/1280/1920px plus dark mode and 195px zoom with no
+  overflow, correct iframe ratios, 44px controls, lazy-loaded tiles and an
+  eager featured player; add/reload/duplicate/remove and focus-trap flows
+  passed at 195px; Lighthouse 100 accessibility, best practices and SEO.
 
 ## Suggested next steps
 
