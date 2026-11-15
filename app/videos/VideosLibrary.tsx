@@ -6,10 +6,16 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type FormEvent,
 } from "react";
-import { FiExternalLink, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import Link from "next/link";
+import {
+  FiExternalLink,
+  FiPlayCircle,
+  FiPlus,
+  FiTrash2,
+  FiX,
+} from "react-icons/fi";
 
 import {
   ANONMP4_UPLOAD_URL,
@@ -20,17 +26,13 @@ import {
   embedUrl,
   validateVideoId,
   videoKey,
+  videoPath,
   watchUrl,
   type Video,
   type VideoProvider,
 } from "./video-data";
-import {
-  addVideo,
-  getAddedVideosSnapshot,
-  getServerAddedVideosSnapshot,
-  removeVideo,
-  subscribeToAddedVideos,
-} from "./video-store";
+import { addVideo, removeVideo } from "./video-store";
+import { useVideoLibrary } from "./use-video-library";
 
 const PROVIDERS: VideoProvider[] = ["youtube", "anonmp4"];
 
@@ -50,23 +52,7 @@ interface VideosLibraryProps {
 export default function VideosLibrary({
   initialVideos,
 }: VideosLibraryProps) {
-  const addedVideos = useSyncExternalStore(
-    subscribeToAddedVideos,
-    getAddedVideosSnapshot,
-    getServerAddedVideosSnapshot,
-  );
-
-  // Ignore a stored copy if the same video has since been added to the
-  // curated seed list in code.
-  const localVideos = useMemo(() => {
-    const seedKeys = new Set(initialVideos.map(videoKey));
-    return addedVideos.filter((video) => !seedKeys.has(videoKey(video)));
-  }, [addedVideos, initialVideos]);
-
-  const videos = useMemo(
-    () => [...initialVideos, ...localVideos],
-    [initialVideos, localVideos],
-  );
+  const { videos, localVideos } = useVideoLibrary(initialVideos);
 
   const removableKeys = useMemo(
     () => new Set(localVideos.map(videoKey)),
@@ -300,21 +286,40 @@ export default function VideosLibrary({
           <div className="video-feature-meta">
             <div className="video-feature-copy">
               <p className="videos-kicker">Featured teaching</p>
-              <h2 id="featured-video-title">{featured.title}</h2>
+              <h2 id="featured-video-title">
+                <Link
+                  className="video-title-link"
+                  href={videoPath(featured)}
+                >
+                  {featured.title}
+                </Link>
+              </h2>
               {featured.speaker && (
                 <p className="video-speaker">{featured.speaker}</p>
               )}
             </div>
 
-            <a
-              className="video-watch-link"
-              href={watchUrl(featured)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Watch on {PROVIDER_LABEL[featured.provider]}
-              <FiExternalLink aria-hidden="true" />
-            </a>
+            <div className="video-feature-actions">
+              <Link
+                className="video-open-link"
+                href={videoPath(featured)}
+                aria-label={`Open video page for ${featured.title}`}
+              >
+                <FiPlayCircle aria-hidden="true" />
+                Open video
+              </Link>
+
+              <a
+                className="video-watch-link"
+                href={watchUrl(featured)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Watch on ${PROVIDER_LABEL[featured.provider]}: ${featured.title}`}
+              >
+                Watch on {PROVIDER_LABEL[featured.provider]}
+                <FiExternalLink aria-hidden="true" />
+              </a>
+            </div>
           </div>
         </section>
       )}
@@ -348,17 +353,29 @@ export default function VideosLibrary({
                   </div>
 
                   <div className="video-tile-body">
-                    <h3>{video.title}</h3>
-                    {video.speaker && (
-                      <p className="video-speaker">{video.speaker}</p>
-                    )}
+                    <Link className="video-tile-link" href={videoPath(video)}>
+                      <h3>{video.title}</h3>
+                      {video.speaker && (
+                        <p className="video-speaker">{video.speaker}</p>
+                      )}
+                    </Link>
 
                     <div className="video-tile-actions">
+                      <Link
+                        className="video-open-link"
+                        href={videoPath(video)}
+                        aria-label={`Open video page for ${video.title}`}
+                      >
+                        <FiPlayCircle aria-hidden="true" />
+                        Open video
+                      </Link>
+
                       <a
                         className="video-watch-link"
                         href={watchUrl(video)}
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label={`Watch on ${PROVIDER_LABEL[video.provider]}: ${video.title}`}
                       >
                         Watch on {PROVIDER_LABEL[video.provider]}
                         <FiExternalLink aria-hidden="true" />

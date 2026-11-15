@@ -2875,6 +2875,79 @@ a.card:active {
   outline-offset: 2px;
 }
 
+.video-title-link,
+.video-tile-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.video-title-link:hover,
+.video-tile-link:hover {
+  color: var(--video-gold);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.video-title-link:focus-visible,
+.video-tile-link:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid var(--video-gold);
+  outline-offset: 3px;
+}
+
+.video-tile-link {
+  display: block;
+  min-width: 0;
+}
+
+.video-feature-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.video-open-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--video-gold-line);
+  border-radius: 999px;
+  background: var(--video-gold-soft);
+  color: var(--video-gold);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.video-open-link svg {
+  flex: none;
+}
+
+.video-open-link:hover {
+  border-color: var(--video-gold);
+  background: var(--video-gold);
+  color: #fff;
+}
+
+.video-open-link:focus-visible {
+  outline: 2px solid var(--video-gold);
+  outline-offset: 2px;
+}
+
 .videos-more {
   min-width: 0;
 }
@@ -3450,6 +3523,341 @@ a.card:active {
 
   .video-watch-link {
     font-size: 0.7rem;
+  }
+}
+
+/* ---------- Video watch page ---------- */
+.video-watch-page {
+  max-width: 1180px;
+}
+
+.video-watch-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 clamp(0.9rem, 3vw, 1.25rem);
+}
+
+.video-watch-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--fg);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.video-watch-back svg {
+  flex: none;
+}
+
+.video-watch-back:hover {
+  border-color: var(--video-gold-line);
+  background: var(--video-gold-soft);
+  color: var(--video-gold);
+}
+
+.video-watch-back:focus-visible {
+  outline: 2px solid var(--video-gold);
+  outline-offset: 2px;
+}
+
+.video-watch-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface);
+  box-shadow: var(--video-shadow);
+}
+
+.video-watch-media {
+  min-width: 0;
+  background: #000;
+}
+
+.video-watch-body {
+  padding: clamp(1rem, 3.5vw, 1.6rem);
+}
+
+.video-watch-body .videos-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.video-watch-kicker-sep {
+  color: var(--border);
+}
+
+.video-watch-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 1.15rem + 1vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.video-watch-speaker {
+  margin-top: 0.5rem;
+  font-size: clamp(0.82rem, 0.78rem + 0.18vw, 0.92rem);
+}
+
+.video-watch-id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  max-width: 100%;
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.video-watch-id code {
+  max-width: 100%;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-transform: none;
+}
+
+.video-watch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.video-watch-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.video-watch-primary:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  filter: brightness(0.96);
+}
+
+.video-watch-note {
+  max-width: 72ch;
+  margin: 0.95rem 0 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.video-watch-more {
+  margin-top: clamp(1.4rem, 4vw, 2rem);
+}
+
+.video-more-grid {
+  display: grid;
+  gap: clamp(0.65rem, 2vw, 0.85rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  min-width: 0;
+}
+
+.video-more-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.85rem 0.95rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.video-more-card:hover {
+  border-color: var(--video-gold-line);
+  box-shadow: 0 0 0 1px var(--video-gold-line), var(--shadow);
+  transform: translateY(-1px);
+}
+
+.video-more-card:focus-visible {
+  outline: 2px solid var(--video-gold);
+  outline-offset: 2px;
+}
+
+.video-more-provider {
+  color: var(--video-gold);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.video-more-title {
+  margin-top: 0.1rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.video-more-speaker {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.video-more-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
+  color: var(--video-gold);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.video-more-open svg {
+  flex: none;
+}
+
+/* Desktop watch layout: player and details side by side, so the floating
+   tab bar cannot cover the primary actions. */
+@media (min-width: 900px) {
+  .video-watch-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(300px, 1fr);
+    align-items: stretch;
+  }
+
+  .video-watch-media {
+    display: flex;
+    align-items: center;
+  }
+
+  .video-watch-frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .video-watch-frame::before {
+    display: none;
+  }
+
+  .video-watch-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .video-watch-body {
+    padding: 0.95rem 0.9rem 1.05rem;
+  }
+
+  .video-watch-title {
+    font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.55rem);
+  }
+
+  .video-watch-actions .video-watch-link {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .video-feature-actions {
+    width: 100%;
+  }
+
+  .videos-feature .video-open-link {
+    width: 100%;
+  }
+
+  .video-watch-body {
+    padding: 0.9rem 0.85rem 1rem;
+  }
+
+  .video-watch-title {
+    font-size: 1.2rem;
+  }
+
+  .video-watch-id {
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 300px) {
+  .video-watch-body {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  .video-watch-title {
+    font-size: 1.1rem;
+  }
+
+  .video-watch-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .video-watch-actions .video-watch-link {
+    width: 100%;
+  }
+
+  .video-open-link,
+  .video-watch-back {
+    font-size: 0.7rem;
+  }
+
+  .video-more-card {
+    padding-right: 0.8rem;
+    padding-left: 0.8rem;
   }
 }
 

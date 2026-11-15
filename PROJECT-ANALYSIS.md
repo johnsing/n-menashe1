@@ -9,7 +9,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 - **Zmanim Train** — daily prayer times presented as a live transit-departure board
 - **Library** — the full Tanakh (39 books / 929 chapters) with a chapter reader powered by the Sefaria API
 - **Parashat** — weekly Torah portion pages, read by aliyah
-- **Videos** — privacy-enhanced YouTube + AnonMP4 embeds, plus add-by-ID in the browser
+- **Videos** — privacy-enhanced YouTube + AnonMP4 embeds, per-video watch pages, plus add-by-ID in the browser
 - **Audio** — shiurim with a persistent Spotify-style player
 - **Q&A** — community question feed (browser-local demo)
 
@@ -32,6 +32,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
 | `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
 | `/videos` | Static | Curated YouTube/AnonMP4 embeds + local add-by-ID |
+| `/videos/watch/[provider]/[id]` | SSG + dynamic fallback | Full-page player; curated IDs pre-rendered, browser-local IDs render on demand |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
 | `/qa/[id]` | Dynamic (client data) | Question + answers |
@@ -41,7 +42,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Check | Result |
 |---|---|
 | `npm run lint` | ✅ Pass, 0 errors |
-| `npm run build` | ✅ Pass — 103 pages generated |
+| `npm run build` | ✅ Pass — 106 pages generated |
 | Production dependency audit | ✅ 0 vulnerabilities |
 | Dev dependency audit | ⚠️ 7 moderate (eslint/@typescript-eslint tooling only) |
 | Browser console (`/library`) | ✅ No errors |
@@ -52,6 +53,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Lighthouse (`/qa`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/qa/[id]`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/videos`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/videos/watch/youtube/JHeBK-2JDz0`) | ✅ 100 accessibility & SEO · 96 best practices (YouTube embed cookie notice) |
 
 ## Strengths
 
@@ -127,7 +129,7 @@ The app uses the classic model (`export const revalidate`,
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12–14)
+## Recent changes (2026-11-12–15)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -198,17 +200,35 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   16:9 player frame that reserves space before the iframe loads. The page now
   supports AnonMP4 embeds (`https://anonmp4.art/embed/<id>`, uploaded at
   `https://anonmp4.to/`) alongside the
-  existing `youtube-nocookie.com` embeds; the curated list lives in
+  existing `youtube-nocookie.com` embeds. `anonmp4.to/embed/<id>` currently
+  returns a 404 page, so playback uses the `.art` player host; AnonMP4's
+  one-time playback ticket/session can still fail on their side, in which case
+  the tile's watch link is the fallback. The curated list lives in
   `app/videos/video-data.ts`. An **Add video** button opens an accessible
   dialog that accepts a YouTube or AnonMP4 **ID only** (full links are
   rejected with guidance), a required title and an optional speaker. Additions
   are validated, stored in `localStorage` (`n-menashe-videos-v1`), merged with
   the curated list, and can be removed from their tile; they persist per
   browser and do not change the static build. Verified at
-  280/320/360/390/768/1024/1280/1920px plus dark mode and 195px zoom with no
-  overflow, correct iframe ratios, 44px controls, lazy-loaded tiles and an
-  eager featured player; add/reload/duplicate/remove and focus-trap flows
-  passed at 195px; Lighthouse 100 accessibility, best practices and SEO.
+  195/280/320/390/768/1280/1920px plus dark mode with no overflow, correct
+  iframe ratios, 44px controls, lazy-loaded tiles and an eager featured player;
+  add/reload/duplicate/remove and focus-trap flows passed at 195px and 390px;
+  Lighthouse 100 accessibility, best practices and SEO.
+- `/videos/watch/[provider]/[id]` added as a shareable player page. Featured
+  and tile titles now link to it, and each card has a 44px "Open video" action;
+  provider watch links still open the source site. The route validates the
+  provider and ID, pre-renders the three curated IDs at build time and allows
+  any other valid ID to render on demand. Browser-local videos therefore play
+  from a direct URL even when their title was saved in another browser, using a
+  generic title until local metadata resolves; a `MutationObserver` keeps the
+  tab title in sync once it does. The page uses an eager, provider-aware 16:9
+  iframe, shows the provider/ID, an external fallback, an AnonMP4 single-use
+  ticket note, and "More teachings" cards. At 900px and up the player and
+  details sit side by side so the floating tab bar cannot cover the primary
+  actions. Verified at 195/280/320/390/768/1280/1920px plus dark mode with no
+  overflow, 44px controls and no console errors; invalid provider/ID paths
+  return 404; Lighthouse 100 accessibility and SEO, 96 best practices from
+  YouTube's iframe cookie notice.
 
 ## Suggested next steps
 

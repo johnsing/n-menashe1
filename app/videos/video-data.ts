@@ -79,6 +79,22 @@ export const watchUrl = (video: Video) =>
 export const videoKey = (video: Pick<Video, "provider" | "id">) =>
   `${video.provider}:${video.id}`;
 
+// The video ID is part of the URL, so a shared link opens the same player.
+export const videoPath = (video: Pick<Video, "provider" | "id">) =>
+  `/videos/watch/${video.provider}/${encodeURIComponent(video.id)}`;
+
+export function isVideoProvider(value: string): value is VideoProvider {
+  return value === "youtube" || value === "anonmp4";
+}
+
+export function findSeedVideo(provider: VideoProvider, id: string) {
+  return (
+    SEED_VIDEOS.find(
+      (video) => video.provider === provider && video.id === id,
+    ) ?? null
+  );
+}
+
 const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 const ANONMP4_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
 
