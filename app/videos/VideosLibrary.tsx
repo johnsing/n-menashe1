@@ -8,6 +8,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   FiExternalLink,
@@ -19,11 +20,10 @@ import {
 
 import {
   ANONMP4_UPLOAD_URL,
-  IFRAME_ALLOW,
   PROVIDER_HINT,
   PROVIDER_LABEL,
   PROVIDER_PLACEHOLDER,
-  embedUrl,
+  thumbnailUrl,
   validateVideoId,
   videoKey,
   videoPath,
@@ -49,6 +49,47 @@ interface VideosLibraryProps {
   initialVideos: Video[];
 }
 
+function VideoPoster({
+  video,
+  eager = false,
+  sizes,
+}: {
+  video: Video;
+  eager?: boolean;
+  sizes: string;
+}) {
+  const thumbnail = thumbnailUrl(video);
+
+  return (
+    <div className="video-frame video-poster">
+      <Link
+        className="video-poster-link"
+        href={videoPath(video)}
+        aria-label={`Open video page for ${video.title}`}
+      >
+        {thumbnail ? (
+          <Image
+            className="video-poster-img"
+            src={thumbnail}
+            alt=""
+            fill
+            sizes={sizes}
+            loading={eager ? "eager" : "lazy"}
+          />
+        ) : (
+          <span className="video-poster-fallback" aria-hidden="true">
+            <span>{PROVIDER_LABEL[video.provider]}</span>
+            <code>{video.id}</code>
+          </span>
+        )}
+        <span className="video-poster-play" aria-hidden="true">
+          <FiPlayCircle />
+        </span>
+      </Link>
+    </div>
+  );
+}
+
 export default function VideosLibrary({
   initialVideos,
 }: VideosLibraryProps) {
@@ -60,9 +101,6 @@ export default function VideosLibrary({
   );
 
   const [featured, ...moreVideos] = videos;
-  const videoCountLabel = `${videos.length} ${
-    videos.length === 1 ? "video" : "videos"
-  }`;
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [provider, setProvider] = useState<VideoProvider>("youtube");
@@ -237,17 +275,12 @@ export default function VideosLibrary({
           <p className="videos-kicker">Video library</p>
           <h1>Videos</h1>
           <p className="videos-sub">
-            Torah &amp; holiday teachings — watch the lessons here or open them
-            in a full player.
+            Torah &amp; holiday teachings — browse the lessons and open one to
+            watch it in the full player.
           </p>
         </div>
 
         <div className="videos-hero-actions">
-          <p className="videos-count" aria-label={videoCountLabel}>
-            <strong>{videos.length}</strong>
-            <span>{videos.length === 1 ? "Video" : "Videos"}</span>
-          </p>
-
           <button
             ref={addButtonRef}
             type="button"
@@ -271,17 +304,11 @@ export default function VideosLibrary({
           className="videos-feature"
           aria-labelledby="featured-video-title"
         >
-          <div className="video-frame">
-            <iframe
-              className="video-embed"
-              src={embedUrl(featured)}
-              title={featured.title}
-              loading="eager"
-              allow={IFRAME_ALLOW}
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
+          <VideoPoster
+            video={featured}
+            eager
+            sizes="(max-width: 900px) 100vw, 900px"
+          />
 
           <div className="video-feature-meta">
             <div className="video-feature-copy">
@@ -340,17 +367,10 @@ export default function VideosLibrary({
 
               return (
                 <article key={key} className="video-tile">
-                  <div className="video-frame">
-                    <iframe
-                      className="video-embed"
-                      src={embedUrl(video)}
-                      title={video.title}
-                      loading="lazy"
-                      allow={IFRAME_ALLOW}
-                      allowFullScreen
-                      referrerPolicy="strict-origin-when-cross-origin"
-                    />
-                  </div>
+                  <VideoPoster
+                    video={video}
+                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
+                  />
 
                   <div className="video-tile-body">
                     <Link className="video-tile-link" href={videoPath(video)}>

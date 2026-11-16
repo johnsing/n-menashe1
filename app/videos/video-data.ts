@@ -59,6 +59,14 @@ export const IFRAME_ALLOW = "picture-in-picture; fullscreen";
 export const embedUrl = (video: Video) =>
   `${EMBED_BASE[video.provider]}${encodeURIComponent(video.id)}`;
 
+// Library cards show a still image, never an inline player. YouTube exposes a
+// predictable thumbnail for every video; AnonMP4 has no public thumbnail API,
+// so those cards use a styled placeholder with the provider and ID.
+export const thumbnailUrl = (video: Pick<Video, "provider" | "id">) =>
+  video.provider === "youtube"
+    ? `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/hqdefault.jpg`
+    : null;
+
 export const watchUrl = (video: Video) =>
   `${WATCH_BASE[video.provider]}${encodeURIComponent(video.id)}`;
 

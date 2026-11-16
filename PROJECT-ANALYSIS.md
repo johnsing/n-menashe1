@@ -9,7 +9,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 - **Zmanim Train** — daily prayer times presented as a live transit-departure board
 - **Library** — the full Tanakh (39 books / 929 chapters) with a chapter reader powered by the Sefaria API
 - **Parashat** — weekly Torah portion pages, read by aliyah
-- **Videos** — privacy-enhanced YouTube + AnonMP4 embeds, per-video watch pages, plus add-by-ID in the browser
+- **Videos** — thumbnail lesson library, privacy-enhanced YouTube + AnonMP4 playback on `/watch`, plus add-by-ID in the browser
 - **Audio** — shiurim with a persistent Spotify-style player
 - **Q&A** — community question feed (browser-local demo)
 
@@ -31,7 +31,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library/[book]/[chapter]` | Dynamic + ISR | Sefaria text, 24h revalidate (reader redesigned 2026-11-12) |
 | `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
 | `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
-| `/videos` | Static | Curated YouTube/AnonMP4 embeds + local add-by-ID |
+| `/videos` | Static | Thumbnail lesson library + local add-by-ID; playback only on `/watch` |
 | `/watch?v=<id>` | Dynamic | Full-page player; YouTube uses the bare query, AnonMP4 adds `&provider=anonmp4`; invalid IDs/providers return 404 |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
@@ -198,24 +198,27 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   content with no overflow; keyboard focus order and focus rings checked;
   Lighthouse 100 accessibility, best practices and SEO on answered and
   unanswered questions.
-- `/videos` rebuilt as a responsive screening room with a featured lesson, a
-  three-column teaching grid, provider-aware watch links and a padding-based
-  16:9 player frame that reserves space before the iframe loads. The page now
-  supports AnonMP4 embeds (`https://anonmp4.art/embed/<id>`, uploaded at
-  `https://anonmp4.to/`) alongside the
-  existing `youtube-nocookie.com` embeds. `anonmp4.to/embed/<id>` currently
-  returns a 404 page, so playback uses the `.art` player host; AnonMP4's
-  one-time playback ticket/session can still fail on their side, in which case
-  the tile's watch link is the fallback. The curated list lives in
-  `app/videos/video-data.ts`. An **Add video** button opens an accessible
-  dialog that accepts a YouTube or AnonMP4 **ID only** (full links are
-  rejected with guidance), a required title and an optional speaker. Additions
-  are validated, stored in `localStorage` (`n-menashe-videos-v1`), merged with
-  the curated list, and can be removed from their tile; they persist per
-  browser and do not change the static build. Verified at
-  195/280/320/390/768/1280/1920px plus dark mode with no overflow, correct
-  iframe ratios, 44px controls, lazy-loaded tiles and an eager featured player;
-  add/reload/duplicate/remove and focus-trap flows passed at 195px and 390px;
+- `/videos` rebuilt as a responsive screening library with a featured lesson
+  and a three-column teaching grid. Cards are still thumbnails, never inline
+  players: YouTube uses `i.ytimg.com/vi/<id>/hqdefault.jpg` through
+  `next/image`, while AnonMP4 uses a styled provider/ID fallback because it
+  exposes no public thumbnail. Every poster and title links to `/watch`, the
+  only page that loads a player. The hero video-count badge and all card
+  iframes were removed, so no video loads or plays on `/videos`. AnonMP4
+  playback uses `https://anonmp4.art/embed/<id>` (uploaded at
+  `https://anonmp4.to/`); `anonmp4.to/embed/<id>` currently returns a 404
+  page, and AnonMP4's one-time playback ticket/session can still fail on their
+  side, in which case the watch page's external fallback remains available. The
+  curated list lives in `app/videos/video-data.ts`. An **Add video** button
+  opens an accessible dialog that accepts a YouTube or AnonMP4 **ID only**
+  (full links are rejected with guidance), a required title and an optional
+  speaker. Additions are validated, stored in `localStorage`
+  (`n-menashe-videos-v1`), merged with the curated list, and can be removed
+  from their tile; they persist per browser and do not change the static
+  build. Verified at 320/390/768/1280px in light and dark themes with zero
+  iframes, 16:9 posters, 44px controls and no horizontal overflow;
+  poster/title and AnonMP4 fallback clicks open the matching `/watch` URL.
+  Add/reload/duplicate/remove and focus-trap flows passed at 195px and 390px;
   Lighthouse 100 accessibility, best practices and SEO.
 - The shareable player moved from `/videos/watch/[provider]/[id]` to the
   canonical `/watch?v=<id>` URL (YouTube IDs need no provider; AnonMP4 links
