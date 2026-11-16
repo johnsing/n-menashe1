@@ -39,37 +39,6 @@ Open http://localhost:3000.
 | `npm start` | Serve the production build |
 | `npm run lint` | Run ESLint |
 
-## Project Structure
-
-```javascript
-app/
-├── page.tsx                 # Home
-├── layout.tsx               # Root layout (nav, tab bar, providers)
-├── calendar/                # Zmanim Train timetable
-├── library/                 # Tanakh index → book → chapter reader
-│   ├── data.ts              # All 39 books (slugs, Sefaria names, chapter counts)
-│   ├── [book]/page.tsx      # Chapter list
-│   ├── [book]/[chapter]/    # Bilingual chapter reader (Sefaria API)
-│   └── parashat/            # Weekly parasha pages
-├── parashat/                # Parasha index
-├── videos/                  # Video teachings
-├── audio/                   # Audio library + persistent player
-│   ├── AudioLibrary.tsx
-│   ├── tracks.ts
-│   └── player-store.ts      # zustand player state
-├── qa/                      # Community Q&A (+ [id] detail pages)
-├── components/
-│   ├── Header/              # Nav, HebrewDate, TabBar
-│   ├── Zmanim/              # Transit board (app, header, stations)
-│   ├── icons/               # Animated WiFi status icon
-│   ├── audio/               # PlayerBar (global)
-│   └── library/             # AliyahReader
-├── lib/
-│   └── zmanim.ts            # Hebcal zmanim + shabbat API client
-├── data/                    # Shared data (parashat, Q&A seed, etc.)
-└── utils/                   # zmanimLocations, wifiStatus, sefaria, ParashaThisWeek
-```
-
 ## Data Sources
 
 - [Hebcal](https://www.hebcal.com/) — zmanim, shabbat times, Hebrew calendar

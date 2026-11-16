@@ -237,7 +237,11 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   YouTube" chrome out of the initial view. The iframe then autoplays with
   `rel=0&playsinline=1&enablejsapi=1`; YouTube's own player UI is still shown
   during playback because its embed terms do not allow covering or restyling
-  it. The page also shows the provider/ID, a secondary **Open on ...** source
+  it. That includes the **More videos** pause overlay
+  (`ytp-pause-overlay`): `rel=0` only limits suggestions to the same channel,
+  and a tested `controls=0` variant still showed the overlay while removing
+  the playback controls, so the overlay is left untouched. The page also
+  shows the provider/ID, a secondary **Open on ...** source
   link, an AnonMP4 single-use ticket note, and "More teachings" cards. At
   900px and up the player and details sit side by side so the floating tab bar
   cannot cover the primary actions. Verified at 320/390/768/1280px in light
