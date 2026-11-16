@@ -1,18 +1,21 @@
 // app/videos/VideoWatch.tsx — full-page player for one video.
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   FiArrowLeft,
   FiArrowRight,
   FiExternalLink,
+  FiPlay,
 } from "react-icons/fi";
 
 import {
   IFRAME_ALLOW,
   PROVIDER_LABEL,
   embedUrl,
+  thumbnailUrl,
   videoKey,
   videoPath,
   watchUrl,
@@ -25,6 +28,63 @@ interface VideoWatchProps {
   id: string;
   initialVideos: Video[];
   provider: VideoProvider;
+}
+
+function VideoMedia({
+  video,
+  id,
+  provider,
+  title,
+}: {
+  video: Video;
+  id: string;
+  provider: VideoProvider;
+  title: string;
+}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const thumbnail = thumbnailUrl(video);
+
+  return (
+    <div className="video-frame video-watch-frame">
+      {isPlaying ? (
+        <iframe
+          className="video-embed"
+          src={`${embedUrl(video)}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`}
+          title={title}
+          loading="eager"
+          allow={IFRAME_ALLOW}
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      ) : (
+        <button
+          type="button"
+          className="video-watch-poster"
+          onClick={() => setIsPlaying(true)}
+          aria-label={`Play ${title}`}
+        >
+          {thumbnail ? (
+            <Image
+              className="video-watch-poster-img"
+              src={thumbnail}
+              alt=""
+              fill
+              sizes="(max-width: 900px) 100vw, 900px"
+              priority
+            />
+          ) : (
+            <span className="video-poster-fallback" aria-hidden="true">
+              <span>{PROVIDER_LABEL[provider]}</span>
+              <code>{id}</code>
+            </span>
+          )}
+          <span className="video-watch-play" aria-hidden="true">
+            <FiPlay />
+          </span>
+        </button>
+      )}
+    </div>
+  );
 }
 
 export default function VideoWatch({
@@ -83,23 +143,18 @@ export default function VideoWatch({
 
       <article className="video-watch-card" aria-labelledby="video-watch-title">
         <div className="video-watch-media">
-          <div className="video-frame video-watch-frame">
-            <iframe
-              key={targetKey}
-              className="video-embed"
-              src={embedUrl(video)}
-              title={video.title || `${PROVIDER_LABEL[provider]} video ${id}`}
-              loading="eager"
-              allow={IFRAME_ALLOW}
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          </div>
+          <VideoMedia
+            key={targetKey}
+            video={video}
+            id={id}
+            provider={provider}
+            title={title}
+          />
         </div>
 
         <div className="video-watch-body">
           <p className="videos-kicker">
-            Now playing
+            Video
             <span className="video-watch-kicker-sep" aria-hidden="true">
               ·
             </span>
@@ -118,13 +173,13 @@ export default function VideoWatch({
 
           <div className="video-watch-actions">
             <a
-              className="video-watch-link video-watch-primary"
+              className="video-watch-link"
               href={watchUrl(video)}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Watch on ${PROVIDER_LABEL[provider]}: ${title}`}
+              aria-label={`Open on ${PROVIDER_LABEL[provider]}: ${title}`}
             >
-              Watch on {PROVIDER_LABEL[provider]}
+              Open on {PROVIDER_LABEL[provider]}
               <FiExternalLink aria-hidden="true" />
             </a>
 
@@ -140,8 +195,8 @@ export default function VideoWatch({
           </p>
 
           <p className="video-watch-note">
-            Playback is embedded from {PROVIDER_LABEL[provider]}. If the player
-            does not load, use the watch link above to open it in a new tab.
+            Press play to load the {PROVIDER_LABEL[provider]} player. If it does
+            not load, use the source link above to open it in a new tab.
             {provider === "anonmp4" &&
               " AnonMP4 players are single-use; if this one has expired, the watch link opens a fresh player."}
             {!video.title &&

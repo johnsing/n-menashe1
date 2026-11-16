@@ -54,7 +54,8 @@ export const ANONMP4_UPLOAD_URL = "https://anonmp4.to/#upload";
 // names accelerometer, autoplay, clipboard-write, encrypted-media and gyroscope;
 // Firefox warns for each unsupported name, and standard teaching videos do not
 // need them. Fullscreen and picture-in-picture remain available.
-export const IFRAME_ALLOW = "picture-in-picture; fullscreen";
+export const IFRAME_ALLOW =
+  "autoplay; picture-in-picture; fullscreen";
 
 export const embedUrl = (video: Video) =>
   `${EMBED_BASE[video.provider]}${encodeURIComponent(video.id)}`;

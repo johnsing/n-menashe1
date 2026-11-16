@@ -103,8 +103,6 @@ never shared between users, and `/qa/[id]` server-renders a "Loading…" state
 before hydration. A real community feed needs route handlers + a database.
 
 ### 5. Unused config leftovers
-- `next.config.ts` defines an `i.ytimg.com` image pattern, but `next/image`
-  is never used (videos are iframes)
 - `components.json` (shadcn) is unused; its `@/lib/utils` alias doesn't exist
 
 ### 6. No tests / CI / LICENSE
@@ -198,50 +196,60 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   content with no overflow; keyboard focus order and focus rings checked;
   Lighthouse 100 accessibility, best practices and SEO on answered and
   unanswered questions.
-- `/videos` rebuilt as a responsive screening library with a featured lesson
-  and a three-column teaching grid. Cards are still thumbnails, never inline
-  players: YouTube uses `i.ytimg.com/vi/<id>/hqdefault.jpg` through
-  `next/image`, while AnonMP4 uses a styled provider/ID fallback because it
-  exposes no public thumbnail. Every poster and title links to `/watch`, the
-  only page that loads a player. The hero video-count badge and all card
-  iframes were removed, so no video loads or plays on `/videos`. AnonMP4
-  playback uses `https://anonmp4.art/embed/<id>` (uploaded at
+- `/videos` rebuilt as a YouTube-style thumbnail grid. The old featured card
+  and separate "More teachings" block were removed, so every lesson uses the
+  same card: a 16:9 still, a two-line title, speaker, and a provider chip.
+  The grid is four columns at 1280px, three at 1024px, two at 768px, and one
+  at phone widths. Cards are thumbnails, never inline players: YouTube uses
+  `i.ytimg.com/vi/<id>/hqdefault.jpg` through `next/image`, while AnonMP4 uses
+  a styled provider/ID fallback because it exposes no public thumbnail. Every
+  poster and title links to `/watch`, the only page that loads a player. The
+  hero video-count badge and all card iframes were removed, so no video loads
+  or plays on `/videos`; a dashed empty state appears when the library has no
+  entries. AnonMP4 playback uses `https://anonmp4.art/embed/<id>` (uploaded at
   `https://anonmp4.to/`); `anonmp4.to/embed/<id>` currently returns a 404
   page, and AnonMP4's one-time playback ticket/session can still fail on their
-  side, in which case the watch page's external fallback remains available. The
-  curated list lives in `app/videos/video-data.ts`. An **Add video** button
-  opens an accessible dialog that accepts a YouTube or AnonMP4 **ID only**
-  (full links are rejected with guidance), a required title and an optional
-  speaker. Additions are validated, stored in `localStorage`
+  side, in which case the watch page's external fallback remains available.
+  The curated list lives in `app/videos/video-data.ts`. An **Add video**
+  button opens an accessible dialog that accepts a YouTube or AnonMP4 **ID
+  only** (full links are rejected with guidance), a required title and an
+  optional speaker. Additions are validated, stored in `localStorage`
   (`n-menashe-videos-v1`), merged with the curated list, and can be removed
   from their tile; they persist per browser and do not change the static
   build. Verified at 320/390/768/1280px in light and dark themes with zero
-  iframes, 16:9 posters, 44px controls and no horizontal overflow;
-  poster/title and AnonMP4 fallback clicks open the matching `/watch` URL.
-  Add/reload/duplicate/remove and focus-trap flows passed at 195px and 390px;
-  Lighthouse 100 accessibility, best practices and SEO.
+  iframes, 16:9 posters, 44px remove buttons, 4/3/2/1 grid columns and no
+  horizontal overflow; poster/title and AnonMP4 fallback clicks open the
+  matching `/watch` URL. Add/reload/duplicate/remove and focus-trap flows
+  passed at 195px and 390px.
 - The shareable player moved from `/videos/watch/[provider]/[id]` to the
   canonical `/watch?v=<id>` URL (YouTube IDs need no provider; AnonMP4 links
-  add `&provider=anonmp4`). Featured and tile titles plus each 44px "Open
-  video" action now use the new URL; provider watch links still open the
-  source site. The old route was removed, and `next.config.ts` 307-redirects
-  both legacy shapes so existing bookmarks keep working. `proxy.ts` validates
-  the query before rendering, which lets invalid IDs and providers return a
-  real 404 even though the page reads `searchParams`; the page repeats the
-  check. Any valid ID renders on demand, so browser-local videos play from a
-  direct URL even when their title was saved in another browser, using a
-  generic title until local metadata resolves; a `MutationObserver` keeps the
-  tab title in sync once it does. The page uses an eager, provider-aware 16:9
-  iframe, shows the provider/ID, an external fallback, an AnonMP4 single-use
-  ticket note, and "More teachings" cards. At 900px and up the player and
-  details sit side by side so the floating tab bar cannot cover the primary
-  actions. Verified at 320/390/768/1280px in light and dark themes with no
-  overflow, 44px controls, local title sync and no application console errors;
-  Lighthouse 100 accessibility, best practices and SEO.
-- Embed permissions were trimmed to `picture-in-picture; fullscreen` in
-  `app/videos/video-data.ts`. Firefox warns for each unsupported feature name
-  in YouTube's stock `allow` list; the library does not use those features,
-  and the trimmed list loads the embeds cleanly with no page errors.
+  add `&provider=anonmp4`). Card titles and posters now use the new URL. The
+  old route was removed, and `next.config.ts` 307-redirects both legacy shapes
+  so existing bookmarks keep working. `proxy.ts` validates the query before
+  rendering, which lets invalid IDs and providers return a real 404 even
+  though the page reads `searchParams`; the page repeats the check. Any valid
+  ID renders on demand, so browser-local videos play from a direct URL even
+  when their title was saved in another browser, using a generic title until
+  local metadata resolves; a `MutationObserver` keeps the tab title in sync
+  once it does. The page now opens on a clean custom poster with a 68px play
+  button; the provider iframe is only created after that click, which keeps
+  YouTube's title chip, red play button, copy-link control and "Watch on
+  YouTube" chrome out of the initial view. The iframe then autoplays with
+  `rel=0&playsinline=1&enablejsapi=1`; YouTube's own player UI is still shown
+  during playback because its embed terms do not allow covering or restyling
+  it. The page also shows the provider/ID, a secondary **Open on ...** source
+  link, an AnonMP4 single-use ticket note, and "More teachings" cards. At
+  900px and up the player and details sit side by side so the floating tab bar
+  cannot cover the primary actions. Verified at 320/390/768/1280px in light
+  and dark themes with zero iframes before play, a 16:9 poster, no overflow,
+  local title sync and no application console errors; Chromium autoplay after
+  the poster click advanced playback, while headless Firefox left the player
+  cued because its autoplay policy blocks audible start.
+- Embed permissions now include `autoplay` alongside `picture-in-picture` and
+  `fullscreen` in `app/videos/video-data.ts`, because the poster click loads
+  an autoplaying player. Firefox warns for each unsupported feature name in
+  YouTube's stock `allow` list; the trimmed list loads the embeds cleanly with
+  no page errors.
 
 ## Suggested next steps
 

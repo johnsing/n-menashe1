@@ -12,7 +12,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   FiExternalLink,
-  FiPlayCircle,
   FiPlus,
   FiTrash2,
   FiX,
@@ -27,7 +26,6 @@ import {
   validateVideoId,
   videoKey,
   videoPath,
-  watchUrl,
   type Video,
   type VideoProvider,
 } from "./video-data";
@@ -59,13 +57,18 @@ function VideoPoster({
   sizes: string;
 }) {
   const thumbnail = thumbnailUrl(video);
+  // Keep the provider (and, for the text fallback, the ID) in the link's
+  // accessible name so it matches the visible thumbnail badge.
+  const accessibleLabel = thumbnail
+    ? `Open video page for ${video.title} on ${PROVIDER_LABEL[video.provider]}`
+    : `Open video page for ${video.title} (${PROVIDER_LABEL[video.provider]} ${video.id})`;
 
   return (
     <div className="video-frame video-poster">
       <Link
         className="video-poster-link"
         href={videoPath(video)}
-        aria-label={`Open video page for ${video.title}`}
+        aria-label={accessibleLabel}
       >
         {thumbnail ? (
           <Image
@@ -82,9 +85,11 @@ function VideoPoster({
             <code>{video.id}</code>
           </span>
         )}
-        <span className="video-poster-play" aria-hidden="true">
-          <FiPlayCircle />
-        </span>
+        {thumbnail && (
+          <span className="video-poster-provider" aria-hidden="true">
+            {PROVIDER_LABEL[video.provider]}
+          </span>
+        )}
       </Link>
     </div>
   );
@@ -99,8 +104,6 @@ export default function VideosLibrary({
     () => new Set(localVideos.map(videoKey)),
     [localVideos],
   );
-
-  const [featured, ...moreVideos] = videos;
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [provider, setProvider] = useState<VideoProvider>("youtube");
@@ -299,130 +302,54 @@ export default function VideosLibrary({
         {statusMessage}
       </p>
 
-      {featured && (
-        <section
-          className="videos-feature"
-          aria-labelledby="featured-video-title"
-        >
-          <VideoPoster
-            video={featured}
-            eager
-            sizes="(max-width: 900px) 100vw, 900px"
-          />
+      {videos.length > 0 ? (
+        <div className="videos-grid">
+          {videos.map((video, index) => {
+            const key = videoKey(video);
 
-          <div className="video-feature-meta">
-            <div className="video-feature-copy">
-              <p className="videos-kicker">Featured teaching</p>
-              <h2 id="featured-video-title">
-                <Link
-                  className="video-title-link"
-                  href={videoPath(featured)}
-                >
-                  {featured.title}
-                </Link>
-              </h2>
-              {featured.speaker && (
-                <p className="video-speaker">{featured.speaker}</p>
-              )}
-            </div>
+            return (
+              <article key={key} className="video-tile">
+                <VideoPoster
+                  video={video}
+                  eager={index === 0}
+                  sizes="(max-width: 560px) 100vw, (max-width: 820px) 50vw, (max-width: 1100px) 33vw, 25vw"
+                />
 
-            <div className="video-feature-actions">
-              <Link
-                className="video-open-link"
-                href={videoPath(featured)}
-                aria-label={`Open video page for ${featured.title}`}
-              >
-                <FiPlayCircle aria-hidden="true" />
-                Open video
-              </Link>
-
-              <a
-                className="video-watch-link"
-                href={watchUrl(featured)}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Watch on ${PROVIDER_LABEL[featured.provider]}: ${featured.title}`}
-              >
-                Watch on {PROVIDER_LABEL[featured.provider]}
-                <FiExternalLink aria-hidden="true" />
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {moreVideos.length > 0 && (
-        <section className="videos-more" aria-labelledby="more-videos-title">
-          <div className="videos-section-head">
-            <h2 id="more-videos-title">More teachings</h2>
-            <span className="videos-section-count">
-              {moreVideos.length}{" "}
-              {moreVideos.length === 1 ? "video" : "videos"}
-            </span>
-          </div>
-
-          <div className="videos-grid">
-            {moreVideos.map((video) => {
-              const key = videoKey(video);
-
-              return (
-                <article key={key} className="video-tile">
-                  <VideoPoster
-                    video={video}
-                    sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
-                  />
-
-                  <div className="video-tile-body">
+                <div className="video-tile-body">
+                  <div className="video-tile-copy">
                     <Link className="video-tile-link" href={videoPath(video)}>
-                      <h3>{video.title}</h3>
-                      {video.speaker && (
-                        <p className="video-speaker">{video.speaker}</p>
-                      )}
+                      <h2>{video.title}</h2>
                     </Link>
-
-                    <div className="video-tile-actions">
-                      <Link
-                        className="video-open-link"
-                        href={videoPath(video)}
-                        aria-label={`Open video page for ${video.title}`}
-                      >
-                        <FiPlayCircle aria-hidden="true" />
-                        Open video
-                      </Link>
-
-                      <a
-                        className="video-watch-link"
-                        href={watchUrl(video)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Watch on ${PROVIDER_LABEL[video.provider]}: ${video.title}`}
-                      >
-                        Watch on {PROVIDER_LABEL[video.provider]}
-                        <FiExternalLink aria-hidden="true" />
-                      </a>
-
-                      {removableKeys.has(key) && (
-                        <button
-                          ref={(node) => {
-                            if (node) removeButtonRefs.current.set(key, node);
-                            else removeButtonRefs.current.delete(key);
-                          }}
-                          type="button"
-                          className="video-remove"
-                          onClick={() => handleRemove(video)}
-                          aria-label={`Remove ${video.title}`}
-                          title="Remove"
-                        >
-                          <FiTrash2 aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
+                    {video.speaker && (
+                      <p className="video-speaker">{video.speaker}</p>
+                    )}
                   </div>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+
+                  {removableKeys.has(key) && (
+                    <button
+                      ref={(node) => {
+                        if (node) removeButtonRefs.current.set(key, node);
+                        else removeButtonRefs.current.delete(key);
+                      }}
+                      type="button"
+                      className="video-remove"
+                      onClick={() => handleRemove(video)}
+                      aria-label={`Remove ${video.title}`}
+                      title="Remove"
+                    >
+                      <FiTrash2 aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="videos-empty">
+          <p className="videos-kicker">No videos yet</p>
+          <p>Add a YouTube or AnonMP4 video to start the library.</p>
+        </div>
       )}
 
       {/* Add video dialog */}
