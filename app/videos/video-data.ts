@@ -18,24 +18,7 @@ export interface Video {
 }
 
 export const SEED_VIDEOS: Video[] = [
-  {
-    id: "JHeBK-2JDz0",
-    title: "The Jewish Holiday of Sukkot, What is It?",
-    speaker: "Jewish Learning Institute",
-    provider: "youtube",
-  },
-  {
-    id: "wVw6_c2el2M",
-    title: "Sukkot: What Does This Jewish Holiday Mean?",
-    speaker: "Rabbi Jason Sobel Official",
-    provider: "youtube",
-  },
-  {
-    id: "RhbCrWsft0Q",
-    title: "Every Jewish Holiday, Explained",
-    speaker: "People Of The Book",
-    provider: "youtube",
-  },
+  
 ];
 
 export const EMBED_BASE: Record<VideoProvider, string> = {
@@ -67,8 +50,11 @@ export const PROVIDER_HINT: Record<VideoProvider, string> = {
 
 export const ANONMP4_UPLOAD_URL = "https://anonmp4.to/#upload";
 
-export const IFRAME_ALLOW =
-  "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
+// Delegate only the permissions this library uses. YouTube's stock list also
+// names accelerometer, autoplay, clipboard-write, encrypted-media and gyroscope;
+// Firefox warns for each unsupported name, and standard teaching videos do not
+// need them. Fullscreen and picture-in-picture remain available.
+export const IFRAME_ALLOW = "picture-in-picture; fullscreen";
 
 export const embedUrl = (video: Video) =>
   `${EMBED_BASE[video.provider]}${encodeURIComponent(video.id)}`;
@@ -79,9 +65,14 @@ export const watchUrl = (video: Video) =>
 export const videoKey = (video: Pick<Video, "provider" | "id">) =>
   `${video.provider}:${video.id}`;
 
-// The video ID is part of the URL, so a shared link opens the same player.
+// Keep the common YouTube URL clean (`/watch?v=ID`); AnonMP4 needs the
+// provider because its IDs are not distinguishable from YouTube IDs.
 export const videoPath = (video: Pick<Video, "provider" | "id">) =>
-  `/videos/watch/${video.provider}/${encodeURIComponent(video.id)}`;
+  `/watch?v=${encodeURIComponent(video.id)}${
+    video.provider === "youtube"
+      ? ""
+      : `&provider=${encodeURIComponent(video.provider)}`
+  }`;
 
 export function isVideoProvider(value: string): value is VideoProvider {
   return value === "youtube" || value === "anonmp4";

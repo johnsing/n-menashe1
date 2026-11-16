@@ -32,17 +32,20 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
 | `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
 | `/videos` | Static | Curated YouTube/AnonMP4 embeds + local add-by-ID |
-| `/videos/watch/[provider]/[id]` | SSG + dynamic fallback | Full-page player; curated IDs pre-rendered, browser-local IDs render on demand |
+| `/watch?v=<id>` | Dynamic | Full-page player; YouTube uses the bare query, AnonMP4 adds `&provider=anonmp4`; invalid IDs/providers return 404 |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
 | `/qa/[id]` | Dynamic (client data) | Question + answers |
+
+Legacy `/videos/watch/youtube/:id` and `/videos/watch/:provider/:id` links
+307-redirect to the canonical `/watch` URL.
 
 ## Health check (measured)
 
 | Check | Result |
 |---|---|
 | `npm run lint` | ✅ Pass, 0 errors |
-| `npm run build` | ✅ Pass — 106 pages generated |
+| `npm run build` | ✅ Pass — 104 pages generated |
 | Production dependency audit | ✅ 0 vulnerabilities |
 | Dev dependency audit | ⚠️ 7 moderate (eslint/@typescript-eslint tooling only) |
 | Browser console (`/library`) | ✅ No errors |
@@ -53,7 +56,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 | Lighthouse (`/qa`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/qa/[id]`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/videos`) | ✅ 100 accessibility, best practices, SEO |
-| Lighthouse (`/videos/watch/youtube/JHeBK-2JDz0`) | ✅ 100 accessibility & SEO · 96 best practices (YouTube embed cookie notice) |
+| Lighthouse (`/watch?v=JHeBK-2JDz0`) | ✅ 100 accessibility, best practices, SEO |
 
 ## Strengths
 
@@ -129,7 +132,7 @@ The app uses the classic model (`export const revalidate`,
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12–15)
+## Recent changes (2026-11-12–16)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -214,21 +217,28 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   iframe ratios, 44px controls, lazy-loaded tiles and an eager featured player;
   add/reload/duplicate/remove and focus-trap flows passed at 195px and 390px;
   Lighthouse 100 accessibility, best practices and SEO.
-- `/videos/watch/[provider]/[id]` added as a shareable player page. Featured
-  and tile titles now link to it, and each card has a 44px "Open video" action;
-  provider watch links still open the source site. The route validates the
-  provider and ID, pre-renders the three curated IDs at build time and allows
-  any other valid ID to render on demand. Browser-local videos therefore play
-  from a direct URL even when their title was saved in another browser, using a
+- The shareable player moved from `/videos/watch/[provider]/[id]` to the
+  canonical `/watch?v=<id>` URL (YouTube IDs need no provider; AnonMP4 links
+  add `&provider=anonmp4`). Featured and tile titles plus each 44px "Open
+  video" action now use the new URL; provider watch links still open the
+  source site. The old route was removed, and `next.config.ts` 307-redirects
+  both legacy shapes so existing bookmarks keep working. `proxy.ts` validates
+  the query before rendering, which lets invalid IDs and providers return a
+  real 404 even though the page reads `searchParams`; the page repeats the
+  check. Any valid ID renders on demand, so browser-local videos play from a
+  direct URL even when their title was saved in another browser, using a
   generic title until local metadata resolves; a `MutationObserver` keeps the
   tab title in sync once it does. The page uses an eager, provider-aware 16:9
   iframe, shows the provider/ID, an external fallback, an AnonMP4 single-use
   ticket note, and "More teachings" cards. At 900px and up the player and
   details sit side by side so the floating tab bar cannot cover the primary
-  actions. Verified at 195/280/320/390/768/1280/1920px plus dark mode with no
-  overflow, 44px controls and no console errors; invalid provider/ID paths
-  return 404; Lighthouse 100 accessibility and SEO, 96 best practices from
-  YouTube's iframe cookie notice.
+  actions. Verified at 320/390/768/1280px in light and dark themes with no
+  overflow, 44px controls, local title sync and no application console errors;
+  Lighthouse 100 accessibility, best practices and SEO.
+- Embed permissions were trimmed to `picture-in-picture; fullscreen` in
+  `app/videos/video-data.ts`. Firefox warns for each unsupported feature name
+  in YouTube's stock `allow` list; the library does not use those features,
+  and the trimmed list loads the embeds cleanly with no page errors.
 
 ## Suggested next steps
 
