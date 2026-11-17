@@ -1,8 +1,6 @@
 // app/watch/page.tsx — one shareable player page.
 //
-// The canonical URL is `/watch?v=<id>`. Videos stored only in the browser
-// still play by ID; the client component upgrades the title when it finds the
-// video in localStorage.
+// The canonical URL is `/watch?v=<id>`. Shared titles come from Supabase.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -14,6 +12,7 @@ import {
   isValidVideoId,
   videoPath,
 } from "@/app/videos/video-data";
+import { fetchSharedVideo } from "@/app/videos/video-store";
 
 interface WatchPageProps {
   searchParams: Promise<{
@@ -54,9 +53,11 @@ export async function generateMetadata({
     notFound();
   }
 
-  const seed = findSeedVideo(target.id);
+  const video =
+    findSeedVideo(target.id) ??
+    (await fetchSharedVideo(target.id).catch(() => null));
 
-  if (!seed) {
+  if (!video) {
     return {
       title: "Watch video",
       description: "Watch this YouTube video on N-MENASHE.",
@@ -65,11 +66,11 @@ export async function generateMetadata({
   }
 
   return {
-    title: seed.title,
-    description: `${seed.title}${
-      seed.speaker ? ` — ${seed.speaker}` : ""
+    title: video.title,
+    description: `${video.title}${
+      video.speaker ? ` — ${video.speaker}` : ""
     }. Watch this YouTube teaching on N-MENASHE.`,
-    alternates: { canonical: videoPath(seed) },
+    alternates: { canonical: videoPath(video) },
   };
 }
 

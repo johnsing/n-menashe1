@@ -1,118 +1,90 @@
-// app/videos/video-store.ts — browser-local additions to the video library.
+// app/videos/video-store.ts — Supabase persistence for the video library.
 //
-// Only videos added through the "Add video" dialog are stored here; the
-// curated seed list stays in code. This mirrors the Q&A page's localStorage
-// approach: additions survive reloads in this browser.
+// Every video added through the library lives in the shared `videos` table.
+// There is no browser-local fallback: the `videos` table must exist in the
+// Supabase project, and both NEXT_PUBLIC_SUPABASE_* variables must be set.
 
-import {
-  SEED_VIDEOS,
-  normalizeVideo,
-  videoKey,
-  type Video,
-} from "./video-data";
+import { normalizeVideo, videoKey, type Video } from "./video-data";
+import { getSupabaseClient } from "./supabase";
 
-const STORAGE_KEY = "n-menashe-videos-v1";
-const STORAGE_CHANGE = "videos-storage-change";
-const EMPTY_ADDED_VIDEOS: Video[] = [];
-
-let cachedSnapshot: Video[] = EMPTY_ADDED_VIDEOS;
-let cachedSnapshotKey = "";
-
-function readStoredVideos(): Video[] {
-  if (typeof window === "undefined") return EMPTY_ADDED_VIDEOS;
-
-  let raw: string | null = null;
-  try {
-    raw = window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return EMPTY_ADDED_VIDEOS;
-  }
-
-  if (!raw) return EMPTY_ADDED_VIDEOS;
-
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return EMPTY_ADDED_VIDEOS;
-
-    const seen = new Set<string>();
-    const videos: Video[] = [];
-
-    for (const item of parsed) {
-      const video = normalizeVideo(item);
-      if (!video) continue;
-
-      const key = videoKey(video);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      videos.push(video);
-    }
-
-    return videos;
-  } catch {
-    return EMPTY_ADDED_VIDEOS;
-  }
-}
-
-// useSyncExternalStore needs a stable reference between reads.
-export function getAddedVideosSnapshot(): Video[] {
-  const videos = readStoredVideos();
-  const key = JSON.stringify(videos);
-
-  if (key !== cachedSnapshotKey) {
-    cachedSnapshotKey = key;
-    cachedSnapshot = videos;
-  }
-
-  return cachedSnapshot;
-}
-
-export const getServerAddedVideosSnapshot = () => EMPTY_ADDED_VIDEOS;
-
-export function subscribeToAddedVideos(onStoreChange: () => void) {
-  if (typeof window === "undefined") return () => {};
-
-  const onStorage = (event: StorageEvent) => {
-    if (!event.key || event.key === STORAGE_KEY) onStoreChange();
-  };
-
-  window.addEventListener("storage", onStorage);
-  window.addEventListener(STORAGE_CHANGE, onStoreChange);
-
-  return () => {
-    window.removeEventListener("storage", onStorage);
-    window.removeEventListener(STORAGE_CHANGE, onStoreChange);
-  };
-}
-
-function saveAddedVideos(videos: Video[]) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(videos));
-  } catch {
-    return false;
-  }
-
-  window.dispatchEvent(new Event(STORAGE_CHANGE));
-  return true;
-}
+const EMPTY_VIDEOS: Video[] = [];
 
 export type AddVideoResult = "added" | "duplicate" | "unavailable";
 
-export function addVideo(video: Video): AddVideoResult {
-  const current = getAddedVideosSnapshot();
-  const key = videoKey(video);
-  const alreadyExists =
-    current.some((entry) => videoKey(entry) === key) ||
-    SEED_VIDEOS.some((entry) => videoKey(entry) === key);
+function rowsToVideos(data: unknown): Video[] {
+  if (!Array.isArray(data)) return EMPTY_VIDEOS;
 
-  if (alreadyExists) return "duplicate";
+  const seen = new Set<string>();
+  const videos: Video[] = [];
 
-  const saved = saveAddedVideos([...current, video]);
-  return saved ? "added" : "unavailable";
+  for (const item of data) {
+    const video = normalizeVideo(item);
+    if (!video) continue;
+
+    const key = videoKey(video);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    videos.push(video);
+  }
+
+  return videos;
 }
 
-export function removeVideo(video: Video) {
-  const key = videoKey(video);
-  return saveAddedVideos(
-    getAddedVideosSnapshot().filter((entry) => videoKey(entry) !== key),
-  );
+export async function fetchSharedVideos(): Promise<Video[]> {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Video storage is not configured.");
+
+  const { data, error } = await supabase
+    .from("videos")
+    .select("id, title, speaker")
+    .order("created_at", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return rowsToVideos(data);
+}
+
+// Used by the watch page's server metadata. A missing configuration should
+// only produce a generic title, not break the page.
+export async function fetchSharedVideo(id: string): Promise<Video | null> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("videos")
+    .select("id, title, speaker")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? normalizeVideo(data) : null;
+}
+
+export async function addSharedVideo(video: Video): Promise<AddVideoResult> {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Video storage is not configured.");
+
+  const { error } = await supabase.from("videos").insert({
+    id: video.id,
+    title: video.title,
+    speaker: video.speaker,
+  });
+
+  if (!error) return "added";
+
+  // The YouTube ID is the primary key, so a duplicate returns 23505.
+  if (error.code === "23505") return "duplicate";
+
+  throw new Error(error.message);
+}
+
+export async function removeSharedVideo(video: Video): Promise<void> {
+  const supabase = getSupabaseClient();
+  if (!supabase) throw new Error("Video storage is not configured.");
+
+  const { error } = await supabase
+    .from("videos")
+    .delete()
+    .eq("id", video.id);
+
+  if (error) throw new Error(error.message);
 }

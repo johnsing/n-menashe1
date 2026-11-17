@@ -61,17 +61,11 @@ export function validateVideoId(raw: string) {
   return null;
 }
 
-// Validate a value loaded from localStorage before it reaches an iframe.
+// Validate a row loaded from Supabase before it reaches an iframe.
 export function normalizeVideo(value: unknown): Video | null {
   if (!value || typeof value !== "object") return null;
 
   const record = value as Record<string, unknown>;
-
-  // Entries saved before the YouTube-only cleanup carried a provider field.
-  // Keep older YouTube rows and drop anything else from storage.
-  if (record.provider !== undefined && record.provider !== "youtube") {
-    return null;
-  }
 
   const id = record.id;
   if (typeof id !== "string" || !isValidVideoId(id)) return null;

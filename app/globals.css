@@ -2924,6 +2924,10 @@ a.card:active {
   line-height: 1.55;
 }
 
+.videos-load-error {
+  margin: 0 0 1rem;
+}
+
 @media (max-width: 1100px) {
   .videos-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2976,6 +2980,14 @@ a.card:active {
   filter: brightness(0.96);
 }
 
+.videos-add-btn:disabled,
+.videos-add-btn:disabled:hover {
+  opacity: 0.55;
+  filter: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .videos-add-btn:active {
   transform: scale(0.97);
 }
@@ -3014,6 +3026,14 @@ a.card:active {
 .video-remove:focus-visible {
   outline: 2px solid var(--video-gold);
   outline-offset: 2px;
+}
+
+.video-remove:disabled,
+.video-add-submit:disabled,
+.video-add-cancel:disabled,
+.video-add-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .video-sr-only {

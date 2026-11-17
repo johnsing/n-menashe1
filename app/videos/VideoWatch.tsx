@@ -71,8 +71,8 @@ export default function VideoWatch({
 }: VideoWatchProps) {
   const { videos } = useVideoLibrary(initialVideos);
 
-  // A valid ID can always play, even when its title was saved in another
-  // browser. The generic fallback upgrades as soon as local data is available.
+  // A valid ID can always play, even if its title is not in the shared library.
+  // The generic fallback upgrades as soon as the row loads.
   const video: Video =
     videos.find((entry) => entry.id === id) ?? {
       id,
@@ -84,8 +84,8 @@ export default function VideoWatch({
 
   const title = video.title || "YouTube video";
 
-  // The browser-local title arrives after hydration; keep the tab label in
-  // sync with what the page is showing. Curated seed pages already match.
+  // The shared title arrives after hydration; keep the tab label in sync with
+  // what the page is showing. Curated seed pages already match.
   useEffect(() => {
     if (!video.title) return;
 

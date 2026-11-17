@@ -23,7 +23,6 @@ import {
   videoPath,
   type Video,
 } from "./video-data";
-import { addVideo, removeVideo } from "./video-store";
 import { useVideoLibrary } from "./use-video-library";
 
 const FOCUSABLE_SELECTOR = [
@@ -74,11 +73,19 @@ function VideoPoster({
 export default function VideosLibrary({
   initialVideos,
 }: VideosLibraryProps) {
-  const { videos, localVideos } = useVideoLibrary(initialVideos);
+  const {
+    videos,
+    storedVideos,
+    isLoading,
+    loadError,
+    isConfigured,
+    addVideo,
+    removeVideo,
+  } = useVideoLibrary(initialVideos);
 
   const removableKeys = useMemo(
-    () => new Set(localVideos.map(videoKey)),
-    [localVideos],
+    () => new Set(storedVideos.map(videoKey)),
+    [storedVideos],
   );
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -87,6 +94,8 @@ export default function VideosLibrary({
   const [speaker, setSpeaker] = useState("");
   const [formError, setFormError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [removingKey, setRemovingKey] = useState("");
 
   const modalRef = useRef<HTMLDivElement>(null);
   const idInputRef = useRef<HTMLInputElement>(null);
@@ -169,8 +178,9 @@ export default function VideosLibrary({
     setIsAddOpen(false);
   }
 
-  function handleAddSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleAddSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving) return;
 
     const id = videoId.trim();
     const idError = validateVideoId(id);
@@ -201,48 +211,71 @@ export default function VideosLibrary({
       return;
     }
 
-    const result = addVideo(video);
-
-    if (result === "duplicate") {
-      setFormError("That video is already in the library.");
-      idInputRef.current?.focus();
-      return;
-    }
-
-    if (result === "unavailable") {
-      setFormError(
-        "Could not save in this browser. Check that storage is enabled.",
-      );
-      return;
-    }
-
-    setStatusMessage(`Added “${video.title}”.`);
-    setVideoId("");
-    setTitle("");
-    setSpeaker("");
+    setIsSaving(true);
     setFormError("");
-    setIsAddOpen(false);
+
+    try {
+      const result = await addVideo(video);
+
+      if (result === "duplicate") {
+        setFormError("That video is already in the library.");
+        idInputRef.current?.focus();
+        return;
+      }
+
+      if (result === "unavailable") {
+        setFormError(
+          "Could not save to the shared library. Check your connection and try again.",
+        );
+        return;
+      }
+
+      setStatusMessage(`Added “${video.title}”.`);
+      setVideoId("");
+      setTitle("");
+      setSpeaker("");
+      setFormError("");
+      setIsAddOpen(false);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function handleRemove(video: Video) {
+  async function handleRemove(video: Video) {
     const key = videoKey(video);
-    const index = localVideos.findIndex((entry) => videoKey(entry) === key);
-    const neighbor = localVideos[index + 1] ?? localVideos[index - 1] ?? null;
+    if (removingKey === key) return;
 
-    if (!removeVideo(video)) {
-      setStatusMessage("Could not remove the video in this browser.");
+    if (
+      !window.confirm(`Remove “${video.title}” from the shared library?`)
+    ) {
       return;
     }
 
-    setStatusMessage(`Removed “${video.title}”.`);
+    const index = storedVideos.findIndex((entry) => videoKey(entry) === key);
+    const neighbor = storedVideos[index + 1] ?? storedVideos[index - 1] ?? null;
 
-    // Keep keyboard focus in the grid instead of dropping it on <body>.
-    window.requestAnimationFrame(() => {
-      const neighborButton = neighbor
-        ? removeButtonRefs.current.get(videoKey(neighbor))
-        : null;
-      (neighborButton ?? addButtonRef.current)?.focus();
-    });
+    setRemovingKey(key);
+
+    try {
+      if (!(await removeVideo(video))) {
+        setStatusMessage(
+          "Could not remove the shared video. Check your connection and try again.",
+        );
+        return;
+      }
+
+      setStatusMessage(`Removed “${video.title}”.`);
+
+      // Keep keyboard focus in the grid instead of dropping it on <body>.
+      window.requestAnimationFrame(() => {
+        const neighborButton = neighbor
+          ? removeButtonRefs.current.get(videoKey(neighbor))
+          : null;
+        (neighborButton ?? addButtonRef.current)?.focus();
+      });
+    } finally {
+      setRemovingKey("");
+    }
   }
 
   return (
@@ -263,6 +296,12 @@ export default function VideosLibrary({
             type="button"
             className="videos-add-btn"
             onClick={openAddDialog}
+            disabled={!isConfigured}
+            title={
+              isConfigured
+                ? undefined
+                : "Add your Supabase URL and anon key to enable adding videos"
+            }
             aria-haspopup="dialog"
             aria-controls="video-add-dialog"
           >
@@ -276,7 +315,18 @@ export default function VideosLibrary({
         {statusMessage}
       </p>
 
-      {videos.length > 0 ? (
+      {loadError && (
+        <p className="video-add-error videos-load-error" role="alert">
+          {loadError}
+        </p>
+      )}
+
+      {isLoading && videos.length === 0 ? (
+        <div className="videos-empty" role="status">
+          <p className="videos-kicker">Loading videos</p>
+          <p>Fetching the shared library…</p>
+        </div>
+      ) : videos.length > 0 ? (
         <div className="videos-grid">
           {videos.map((video, index) => {
             const key = videoKey(video);
@@ -307,7 +357,9 @@ export default function VideosLibrary({
                       }}
                       type="button"
                       className="video-remove"
-                      onClick={() => handleRemove(video)}
+                      onClick={() => void handleRemove(video)}
+                      disabled={removingKey === key}
+                      aria-busy={removingKey === key}
                       aria-label={`Remove ${video.title}`}
                       title="Remove"
                     >
@@ -322,7 +374,11 @@ export default function VideosLibrary({
       ) : (
         <div className="videos-empty">
           <p className="videos-kicker">No videos yet</p>
-          <p>Add a YouTube video to start the library.</p>
+          <p>
+            {isConfigured
+              ? "Add a YouTube video to start the library."
+              : "Finish the Supabase setup to start the library."}
+          </p>
         </div>
       )}
 
@@ -331,7 +387,9 @@ export default function VideosLibrary({
         <div
           className="video-add-backdrop"
           onClick={(event) => {
-            if (event.target === event.currentTarget) closeAddDialog();
+            if (!isSaving && event.target === event.currentTarget) {
+              closeAddDialog();
+            }
           }}
         >
           <div
@@ -352,6 +410,7 @@ export default function VideosLibrary({
                 type="button"
                 className="video-add-close"
                 onClick={closeAddDialog}
+                disabled={isSaving}
                 aria-label="Close dialog"
               >
                 <FiX aria-hidden="true" />
@@ -360,7 +419,7 @@ export default function VideosLibrary({
 
             <p className="video-add-desc" id="video-add-dialog-desc">
               Paste just the YouTube video ID — no full link needed. Videos you
-              add are saved in this browser.
+              add are saved to the shared library.
             </p>
 
             <form
@@ -450,12 +509,18 @@ export default function VideosLibrary({
                   type="button"
                   className="btn video-add-cancel"
                   onClick={closeAddDialog}
+                  disabled={isSaving}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn video-add-submit">
+                <button
+                  type="submit"
+                  className="btn video-add-submit"
+                  disabled={isSaving}
+                  aria-busy={isSaving}
+                >
                   <FiPlus aria-hidden="true" />
-                  Add video
+                  {isSaving ? "Adding…" : "Add video"}
                 </button>
               </div>
             </form>
