@@ -9,7 +9,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 - **Zmanim Train** — daily prayer times presented as a live transit-departure board
 - **Library** — the full Tanakh (39 books / 929 chapters) with a chapter reader powered by the Sefaria API
 - **Parashat** — weekly Torah portion pages, read by aliyah
-- **Videos** — thumbnail lesson library, privacy-enhanced YouTube + AnonMP4 playback on `/watch`, plus add-by-ID in the browser
+- **Videos** — thumbnail lesson library, privacy-enhanced YouTube playback on `/watch`, plus add-by-ID in the browser
 - **Audio** — shiurim with a persistent Spotify-style player
 - **Q&A** — community question feed (browser-local demo)
 
@@ -32,13 +32,13 @@ A mobile-first Torah web app ("Heritage library & media"):
 | `/library/parashat` | Static | 54 parashiyot index (redesigned 2026-11-13) |
 | `/library/parashat/[slug]` | SSG | Sefaria range reader (redesigned 2026-11-13) |
 | `/videos` | Static | Thumbnail lesson library + local add-by-ID; playback only on `/watch` |
-| `/watch?v=<id>` | Dynamic | Full-page player; YouTube uses the bare query, AnonMP4 adds `&provider=anonmp4`; invalid IDs/providers return 404 |
+| `/watch?v=<id>` | Dynamic | Full-page YouTube player; invalid IDs return 404 |
 | `/audio` | Static | Audio library + persistent player |
 | `/qa` | Static (client data) | localStorage Q&A feed |
 | `/qa/[id]` | Dynamic (client data) | Question + answers |
 
-Legacy `/videos/watch/youtube/:id` and `/videos/watch/:provider/:id` links
-307-redirect to the canonical `/watch` URL.
+Legacy `/videos/watch/youtube/:id` links 307-redirect to the canonical
+`/watch?v=<id>` URL.
 
 ## Health check (measured)
 
@@ -198,57 +198,52 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   unanswered questions.
 - `/videos` rebuilt as a YouTube-style thumbnail grid. The old featured card
   and separate "More teachings" block were removed, so every lesson uses the
-  same card: a 16:9 still, a two-line title, speaker, and a provider chip.
-  The grid is four columns at 1280px, three at 1024px, two at 768px, and one
-  at phone widths. Cards are thumbnails, never inline players: YouTube uses
-  `i.ytimg.com/vi/<id>/hqdefault.jpg` through `next/image`, while AnonMP4 uses
-  a styled provider/ID fallback because it exposes no public thumbnail. Every
-  poster and title links to `/watch`, the only page that loads a player. The
-  hero video-count badge and all card iframes were removed, so no video loads
-  or plays on `/videos`; a dashed empty state appears when the library has no
-  entries. AnonMP4 playback uses `https://anonmp4.art/embed/<id>` (uploaded at
-  `https://anonmp4.to/`); `anonmp4.to/embed/<id>` currently returns a 404
-  page, and AnonMP4's one-time playback ticket/session can still fail on their
-  side, in which case the watch page's external fallback remains available.
-  The curated list lives in `app/videos/video-data.ts`. An **Add video**
-  button opens an accessible dialog that accepts a YouTube or AnonMP4 **ID
-  only** (full links are rejected with guidance), a required title and an
-  optional speaker. Additions are validated, stored in `localStorage`
+  same card: a 16:9 still, a two-line title, speaker, and a YouTube chip.
+  The grid is three columns at desktop widths, two at 768px, and one at phone
+  widths. Cards are thumbnails, never inline players: every card uses
+  `i.ytimg.com/vi/<id>/hqdefault.jpg` through `next/image`. Every poster and
+  title links to `/watch`, the only page that loads a player. The hero
+  video-count badge and all card iframes were removed, so no video loads or
+  plays on `/videos`; a dashed empty state appears when the library has no
+  entries. The curated list lives in `app/videos/video-data.ts`. An **Add
+  video** button opens an accessible dialog that accepts a YouTube **ID only**
+  (full links are rejected with guidance), a required title and an optional
+  speaker. Additions are validated, stored in `localStorage`
   (`n-menashe-videos-v1`), merged with the curated list, and can be removed
   from their tile; they persist per browser and do not change the static
-  build. Verified at 320/390/768/1280px in light and dark themes with zero
-  iframes, 16:9 posters, 44px remove buttons, 4/3/2/1 grid columns and no
-  horizontal overflow; poster/title and AnonMP4 fallback clicks open the
-  matching `/watch` URL. Add/reload/duplicate/remove and focus-trap flows
-  passed at 195px and 390px.
+  build. Older saved rows that still carry a provider field are kept only when
+  the provider is YouTube; non-YouTube rows are ignored. Verified at
+  320/390/768/1280px in light and dark themes with zero iframes, 16:9 posters,
+  44px remove buttons, 3/2/1 grid columns and no horizontal overflow;
+  poster/title clicks open the matching `/watch` URL. Add/reload/duplicate/
+  remove and focus-trap flows passed at 195px and 390px.
 - The shareable player moved from `/videos/watch/[provider]/[id]` to the
-  canonical `/watch?v=<id>` URL (YouTube IDs need no provider; AnonMP4 links
-  add `&provider=anonmp4`). Card titles and posters now use the new URL. The
-  old route was removed, and `next.config.ts` 307-redirects both legacy shapes
-  so existing bookmarks keep working. `proxy.ts` validates the query before
-  rendering, which lets invalid IDs and providers return a real 404 even
-  though the page reads `searchParams`; the page repeats the check. Any valid
-  ID renders on demand, so browser-local videos play from a direct URL even
-  when their title was saved in another browser, using a generic title until
-  local metadata resolves; a `MutationObserver` keeps the tab title in sync
-  once it does. The page now opens on a clean custom poster with a 68px play
-  button; the provider iframe is only created after that click, which keeps
-  YouTube's title chip, red play button, copy-link control and "Watch on
-  YouTube" chrome out of the initial view. The iframe then autoplays with
-  `rel=0&playsinline=1&enablejsapi=1`; YouTube's own player UI is still shown
-  during playback because its embed terms do not allow covering or restyling
-  it. That includes the **More videos** pause overlay
+  canonical `/watch?v=<id>` URL. Card titles and posters now use the new URL.
+  The old YouTube route was removed, and `next.config.ts` 307-redirects it so
+  existing bookmarks keep working. `proxy.ts` validates the ID before
+  rendering, which lets invalid IDs return a real 404 even though the page
+  reads `searchParams`; the page repeats the check. The retired `provider`
+  query is rejected, so old provider-scoped links cannot load a mismatched
+  video. Any valid ID renders on demand, so browser-local videos play from a
+  direct URL even when their title was saved in another browser, using a
+  generic title until local metadata resolves; a `MutationObserver` keeps the
+  tab title in sync once it does. The page now opens on a clean custom poster
+  with a 68px play button; the YouTube iframe is only created after that
+  click, which keeps YouTube's title chip, red play button, copy-link control
+  and "Watch on YouTube" chrome out of the initial view. The iframe then
+  autoplays with `rel=0&playsinline=1&enablejsapi=1`; YouTube's own player UI
+  is still shown during playback because its embed terms do not allow covering
+  or restyling it. That includes the **More videos** pause overlay
   (`ytp-pause-overlay`): `rel=0` only limits suggestions to the same channel,
   and a tested `controls=0` variant still showed the overlay while removing
-  the playback controls, so the overlay is left untouched. The page also
-  shows the provider/ID, a secondary **Open on ...** source
-  link, an AnonMP4 single-use ticket note, and "More teachings" cards. At
-  900px and up the player and details sit side by side so the floating tab bar
-  cannot cover the primary actions. Verified at 320/390/768/1280px in light
-  and dark themes with zero iframes before play, a 16:9 poster, no overflow,
-  local title sync and no application console errors; Chromium autoplay after
-  the poster click advanced playback, while headless Firefox left the player
-  cued because its autoplay policy blocks audible start.
+  the playback controls, so the overlay is left untouched. Below the player,
+  the page lists "More teachings" cards. At 900px and up the player and details
+  sit side by side. Verified at
+  320/390/768/1280px in light and dark themes with zero iframes before play, a
+  16:9 poster, no overflow, local title sync and no application console
+  errors; Chromium autoplay after the poster click advanced playback, while
+  headless Firefox left the player cued because its autoplay policy blocks
+  audible start.
 - Embed permissions now include `autoplay` alongside `picture-in-picture` and
   `fullscreen` in `app/videos/video-data.ts`, because the poster click loads
   an autoplaying player. Firefox warns for each unsupported feature name in

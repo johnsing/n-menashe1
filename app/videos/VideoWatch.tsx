@@ -4,45 +4,30 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FiArrowLeft,
-  FiArrowRight,
-  FiExternalLink,
-  FiPlay,
-} from "react-icons/fi";
+import { FiArrowLeft, FiArrowRight, FiPlay } from "react-icons/fi";
 
 import {
   IFRAME_ALLOW,
-  PROVIDER_LABEL,
   embedUrl,
   thumbnailUrl,
-  videoKey,
   videoPath,
-  watchUrl,
   type Video,
-  type VideoProvider,
 } from "./video-data";
 import { useVideoLibrary } from "./use-video-library";
 
 interface VideoWatchProps {
   id: string;
   initialVideos: Video[];
-  provider: VideoProvider;
 }
 
 function VideoMedia({
   video,
-  id,
-  provider,
   title,
 }: {
   video: Video;
-  id: string;
-  provider: VideoProvider;
   title: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const thumbnail = thumbnailUrl(video);
 
   return (
     <div className="video-frame video-watch-frame">
@@ -63,21 +48,14 @@ function VideoMedia({
           onClick={() => setIsPlaying(true)}
           aria-label={`Play ${title}`}
         >
-          {thumbnail ? (
-            <Image
-              className="video-watch-poster-img"
-              src={thumbnail}
-              alt=""
-              fill
-              sizes="(max-width: 900px) 100vw, 900px"
-              priority
-            />
-          ) : (
-            <span className="video-poster-fallback" aria-hidden="true">
-              <span>{PROVIDER_LABEL[provider]}</span>
-              <code>{id}</code>
-            </span>
-          )}
+          <Image
+            className="video-watch-poster-img"
+            src={thumbnailUrl(video)}
+            alt=""
+            fill
+            sizes="(max-width: 900px) 100vw, 900px"
+            priority
+          />
           <span className="video-watch-play" aria-hidden="true">
             <FiPlay />
           </span>
@@ -90,26 +68,21 @@ function VideoMedia({
 export default function VideoWatch({
   id,
   initialVideos,
-  provider,
 }: VideoWatchProps) {
   const { videos } = useVideoLibrary(initialVideos);
-  const targetKey = videoKey({ provider, id });
 
   // A valid ID can always play, even when its title was saved in another
   // browser. The generic fallback upgrades as soon as local data is available.
   const video: Video =
-    videos.find((entry) => videoKey(entry) === targetKey) ?? {
+    videos.find((entry) => entry.id === id) ?? {
       id,
-      provider,
       title: "",
       speaker: "",
     };
 
-  const moreVideos = videos
-    .filter((entry) => videoKey(entry) !== targetKey)
-    .slice(0, 4);
+  const moreVideos = videos.filter((entry) => entry.id !== id).slice(0, 4);
 
-  const title = video.title || `${PROVIDER_LABEL[provider]} video`;
+  const title = video.title || "YouTube video";
 
   // The browser-local title arrives after hydration; keep the tab label in
   // sync with what the page is showing. Curated seed pages already match.
@@ -143,13 +116,7 @@ export default function VideoWatch({
 
       <article className="video-watch-card" aria-labelledby="video-watch-title">
         <div className="video-watch-media">
-          <VideoMedia
-            key={targetKey}
-            video={video}
-            id={id}
-            provider={provider}
-            title={title}
-          />
+          <VideoMedia key={id} video={video} title={title} />
         </div>
 
         <div className="video-watch-body">
@@ -158,7 +125,7 @@ export default function VideoWatch({
             <span className="video-watch-kicker-sep" aria-hidden="true">
               ·
             </span>
-            {PROVIDER_LABEL[provider]}
+            YouTube
           </p>
 
           <h1 className="video-watch-title" id="video-watch-title">
@@ -170,38 +137,6 @@ export default function VideoWatch({
               {video.speaker}
             </p>
           )}
-
-          <div className="video-watch-actions">
-            <a
-              className="video-watch-link"
-              href={watchUrl(video)}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open on ${PROVIDER_LABEL[provider]}: ${title}`}
-            >
-              Open on {PROVIDER_LABEL[provider]}
-              <FiExternalLink aria-hidden="true" />
-            </a>
-
-            <Link className="video-watch-link" href="/videos">
-              <FiArrowLeft aria-hidden="true" />
-              Back to all videos
-            </Link>
-          </div>
-
-          <p className="video-watch-id">
-            <span>{PROVIDER_LABEL[provider]} ID</span>
-            <code>{id}</code>
-          </p>
-
-          <p className="video-watch-note">
-            Press play to load the {PROVIDER_LABEL[provider]} player. If it does
-            not load, use the source link above to open it in a new tab.
-            {provider === "anonmp4" &&
-              " AnonMP4 players are single-use; if this one has expired, the watch link opens a fresh player."}
-            {!video.title &&
-              " The saved title for this video is not available in this browser, but the player still works by ID."}
-          </p>
         </div>
       </article>
 
@@ -221,13 +156,11 @@ export default function VideoWatch({
           <div className="video-more-grid">
             {moreVideos.map((entry) => (
               <Link
-                key={videoKey(entry)}
+                key={entry.id}
                 className="video-more-card"
                 href={videoPath(entry)}
               >
-                <span className="video-more-provider">
-                  {PROVIDER_LABEL[entry.provider]}
-                </span>
+                <span className="video-more-provider">YouTube</span>
                 <span className="video-more-title">{entry.title}</span>
                 {entry.speaker && (
                   <span className="video-more-speaker">{entry.speaker}</span>

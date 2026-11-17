@@ -2781,39 +2781,6 @@ a.card:active {
   outline-offset: -2px;
 }
 
-.video-poster-fallback {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  width: 100%;
-  height: 100%;
-  padding: 1rem;
-  background:
-    radial-gradient(
-      circle at 50% 0%,
-      rgba(212, 175, 55, 0.22),
-      transparent 65%
-    ),
-    linear-gradient(145deg, #18181b, #09090b);
-  color: var(--video-gold);
-  text-align: center;
-}
-
-.video-poster-fallback > span {
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.video-poster-fallback code {
-  color: #a1a1aa;
-  font-size: 0.7rem;
-  overflow-wrap: anywhere;
-}
-
 /* Small chip in the thumbnail corner, like a YouTube duration badge. */
 .video-poster-provider {
   position: absolute;
@@ -2837,45 +2804,6 @@ a.card:active {
   font-size: 0.8rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
-}
-
-.video-watch-link {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  min-height: 44px;
-  max-width: 100%;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--fg);
-  font-size: 0.76rem;
-  font-weight: 700;
-  line-height: 1.3;
-  text-decoration: none;
-  overflow-wrap: anywhere;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.video-watch-link svg {
-  flex: none;
-}
-
-.video-watch-link:hover {
-  border-color: var(--video-gold-line);
-  background: var(--video-gold-soft);
-  color: var(--video-gold);
-}
-
-.video-watch-link:focus-visible {
-  outline: 2px solid var(--video-gold);
-  outline-offset: 2px;
 }
 
 .video-tile-link {
@@ -3199,17 +3127,6 @@ a.card:active {
   min-width: 0;
 }
 
-.video-add-fieldset {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.video-add-fieldset .video-add-label {
-  padding: 0;
-}
-
 .video-add-label {
   display: flex;
   flex-wrap: wrap;
@@ -3238,68 +3155,6 @@ a.card:active {
   color: var(--muted);
 }
 
-.video-provider-toggle {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
-  margin-top: 0.35rem;
-}
-
-.video-provider-option {
-  position: relative;
-  display: block;
-  min-width: 0;
-}
-
-.video-provider-option input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.video-provider-option span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--bg);
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  line-height: 1.3;
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.video-provider-option span:hover {
-  border-color: var(--muted);
-  color: var(--fg);
-}
-
-.video-provider-option input:checked + span {
-  border-color: var(--video-gold-line);
-  background: var(--video-gold-soft);
-  color: var(--video-gold);
-}
-
-.video-provider-option input:focus-visible + span {
-  outline: 2px solid var(--video-gold);
-  outline-offset: 2px;
-}
-
 .video-add-form .input {
   width: 100%;
   min-height: 46px;
@@ -3326,21 +3181,6 @@ a.card:active {
   font-size: 0.72rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
-}
-
-.video-add-hint a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.2rem;
-  color: var(--video-gold);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.video-add-hint a svg {
-  flex: none;
-  align-self: center;
 }
 
 .video-add-error {
@@ -3389,8 +3229,7 @@ a.card:active {
 
 .video-add-close:focus-visible,
 .video-add-cancel:focus-visible,
-.video-add-submit:focus-visible,
-.video-add-hint a:focus-visible {
+.video-add-submit:focus-visible {
   outline: 2px solid var(--video-gold);
   outline-offset: 2px;
 }
@@ -3458,17 +3297,9 @@ a.card:active {
     padding-left: 0.7rem;
   }
 
-  .video-provider-toggle {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .video-add-modal {
     padding-right: 0.75rem;
     padding-left: 0.75rem;
-  }
-
-  .video-watch-link {
-    font-size: 0.7rem;
   }
 }
 
@@ -3631,55 +3462,6 @@ a.card:active {
   font-size: clamp(0.82rem, 0.78rem + 0.18vw, 0.92rem);
 }
 
-.video-watch-id {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.55rem;
-  max-width: 100%;
-  margin: 0.85rem 0 0;
-  color: var(--muted);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.video-watch-id code {
-  max-width: 100%;
-  padding: 0.2rem 0.45rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--fg);
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  text-transform: none;
-}
-
-.video-watch-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.55rem;
-  margin-top: 1rem;
-}
-
-.video-watch-note {
-  max-width: 72ch;
-  margin: 0.95rem 0 0;
-  color: var(--muted);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
-
 .video-watch-more {
   margin-top: clamp(1.4rem, 4vw, 2rem);
 }
@@ -3800,10 +3582,6 @@ a.card:active {
   .video-watch-title {
     font-size: clamp(1.25rem, 1.1rem + 1.2vw, 1.55rem);
   }
-
-  .video-watch-actions .video-watch-link {
-    width: 100%;
-  }
 }
 
 @media (max-width: 420px) {
@@ -3813,10 +3591,6 @@ a.card:active {
 
   .video-watch-title {
     font-size: 1.2rem;
-  }
-
-  .video-watch-id {
-    font-size: 0.58rem;
   }
 }
 
@@ -3828,15 +3602,6 @@ a.card:active {
 
   .video-watch-title {
     font-size: 1.1rem;
-  }
-
-  .video-watch-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .video-watch-actions .video-watch-link {
-    width: 100%;
   }
 
   .video-watch-back {

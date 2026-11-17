@@ -7,16 +7,15 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 
-import {
-  isVideoProvider,
-  isValidVideoId,
-} from "@/app/videos/video-data";
+import { isValidVideoId } from "@/app/videos/video-data";
 
 export function proxy(request: NextRequest) {
-  const id = request.nextUrl.searchParams.get("v");
-  const provider = request.nextUrl.searchParams.get("provider") ?? "youtube";
+  const params = request.nextUrl.searchParams;
+  const id = params.get("v");
 
-  if (!id || !isVideoProvider(provider) || !isValidVideoId(provider, id)) {
+  // `/watch` now accepts only `?v=<youtube-id>`. Reject the retired provider
+  // query so old shared links cannot load a mismatched video.
+  if (!id || params.has("provider") || !isValidVideoId(id)) {
     return NextResponse.rewrite(new URL("/_not-found", request.url), {
       status: 404,
     });

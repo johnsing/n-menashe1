@@ -11,28 +11,20 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import {
-  FiExternalLink,
   FiPlus,
   FiTrash2,
   FiX,
 } from "react-icons/fi";
 
 import {
-  ANONMP4_UPLOAD_URL,
-  PROVIDER_HINT,
-  PROVIDER_LABEL,
-  PROVIDER_PLACEHOLDER,
   thumbnailUrl,
   validateVideoId,
   videoKey,
   videoPath,
   type Video,
-  type VideoProvider,
 } from "./video-data";
 import { addVideo, removeVideo } from "./video-store";
 import { useVideoLibrary } from "./use-video-library";
-
-const PROVIDERS: VideoProvider[] = ["youtube", "anonmp4"];
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -56,40 +48,24 @@ function VideoPoster({
   eager?: boolean;
   sizes: string;
 }) {
-  const thumbnail = thumbnailUrl(video);
-  // Keep the provider (and, for the text fallback, the ID) in the link's
-  // accessible name so it matches the visible thumbnail badge.
-  const accessibleLabel = thumbnail
-    ? `Open video page for ${video.title} on ${PROVIDER_LABEL[video.provider]}`
-    : `Open video page for ${video.title} (${PROVIDER_LABEL[video.provider]} ${video.id})`;
-
   return (
     <div className="video-frame video-poster">
       <Link
         className="video-poster-link"
         href={videoPath(video)}
-        aria-label={accessibleLabel}
+        aria-label={`Open video page for ${video.title} on YouTube`}
       >
-        {thumbnail ? (
-          <Image
-            className="video-poster-img"
-            src={thumbnail}
-            alt=""
-            fill
-            sizes={sizes}
-            loading={eager ? "eager" : "lazy"}
-          />
-        ) : (
-          <span className="video-poster-fallback" aria-hidden="true">
-            <span>{PROVIDER_LABEL[video.provider]}</span>
-            <code>{video.id}</code>
-          </span>
-        )}
-        {thumbnail && (
-          <span className="video-poster-provider" aria-hidden="true">
-            {PROVIDER_LABEL[video.provider]}
-          </span>
-        )}
+        <Image
+          className="video-poster-img"
+          src={thumbnailUrl(video)}
+          alt=""
+          fill
+          sizes={sizes}
+          loading={eager ? "eager" : "lazy"}
+        />
+        <span className="video-poster-provider" aria-hidden="true">
+          YouTube
+        </span>
       </Link>
     </div>
   );
@@ -106,7 +82,6 @@ export default function VideosLibrary({
   );
 
   const [isAddOpen, setIsAddOpen] = useState(false);
-  const [provider, setProvider] = useState<VideoProvider>("youtube");
   const [videoId, setVideoId] = useState("");
   const [title, setTitle] = useState("");
   const [speaker, setSpeaker] = useState("");
@@ -198,7 +173,7 @@ export default function VideosLibrary({
     event.preventDefault();
 
     const id = videoId.trim();
-    const idError = validateVideoId(provider, id);
+    const idError = validateVideoId(id);
 
     if (idError) {
       setFormError(idError);
@@ -218,7 +193,6 @@ export default function VideosLibrary({
       id,
       title: cleanTitle.slice(0, 140),
       speaker: speaker.trim().slice(0, 80),
-      provider,
     };
 
     if (videos.some((entry) => videoKey(entry) === videoKey(video))) {
@@ -348,7 +322,7 @@ export default function VideosLibrary({
       ) : (
         <div className="videos-empty">
           <p className="videos-kicker">No videos yet</p>
-          <p>Add a YouTube or AnonMP4 video to start the library.</p>
+          <p>Add a YouTube video to start the library.</p>
         </div>
       )}
 
@@ -385,8 +359,8 @@ export default function VideosLibrary({
             </div>
 
             <p className="video-add-desc" id="video-add-dialog-desc">
-              Paste just the video ID — no full link needed. Videos you add are
-              saved in this browser.
+              Paste just the YouTube video ID — no full link needed. Videos you
+              add are saved in this browser.
             </p>
 
             <form
@@ -394,31 +368,9 @@ export default function VideosLibrary({
               onSubmit={handleAddSubmit}
               noValidate
             >
-              <fieldset className="video-add-fieldset">
-                <legend className="video-add-label">Source</legend>
-
-                <div className="video-provider-toggle">
-                  {PROVIDERS.map((option) => (
-                    <label key={option} className="video-provider-option">
-                      <input
-                        type="radio"
-                        name="video-provider"
-                        value={option}
-                        checked={provider === option}
-                        onChange={() => {
-                          setProvider(option);
-                          setFormError("");
-                        }}
-                      />
-                      <span>{PROVIDER_LABEL[option]}</span>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-
               <div className="video-add-field">
                 <label className="video-add-label" htmlFor="video-id">
-                  {PROVIDER_LABEL[provider]} video ID
+                  YouTube video ID
                   <span className="video-add-required">Required</span>
                 </label>
                 <input
@@ -426,7 +378,7 @@ export default function VideosLibrary({
                   id="video-id"
                   className="input video-id-input"
                   type="text"
-                  placeholder={PROVIDER_PLACEHOLDER[provider]}
+                  placeholder="JHeBK-2JDz0"
                   value={videoId}
                   onChange={(event) => {
                     setVideoId(event.target.value);
@@ -440,20 +392,8 @@ export default function VideosLibrary({
                   aria-describedby="video-id-hint"
                 />
                 <p className="video-add-hint" id="video-id-hint">
-                  {PROVIDER_HINT[provider]}
-                  {provider === "anonmp4" && (
-                    <>
-                      {" "}
-                      <a
-                        href={ANONMP4_UPLOAD_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Upload a file
-                        <FiExternalLink aria-hidden="true" />
-                      </a>
-                    </>
-                  )}
+                  Paste the 11-character ID from the video link — not the whole
+                  URL.
                 </p>
               </div>
 

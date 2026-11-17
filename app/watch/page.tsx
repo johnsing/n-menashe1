@@ -1,34 +1,28 @@
 // app/watch/page.tsx — one shareable player page.
 //
-// The canonical URL is `/watch?v=<id>` for YouTube. AnonMP4 links add
-// `&provider=anonmp4` so the player can choose the right host. Videos stored
-// only in the browser still play by ID; the client component upgrades the
-// title when it finds the video in localStorage.
+// The canonical URL is `/watch?v=<id>`. Videos stored only in the browser
+// still play by ID; the client component upgrades the title when it finds the
+// video in localStorage.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import VideoWatch from "@/app/videos/VideoWatch";
 import {
-  PROVIDER_LABEL,
   SEED_VIDEOS,
   findSeedVideo,
-  isVideoProvider,
   isValidVideoId,
   videoPath,
-  type VideoProvider,
 } from "@/app/videos/video-data";
 
 interface WatchPageProps {
   searchParams: Promise<{
-    provider?: string | string[];
     v?: string | string[];
   }>;
 }
 
 interface WatchTarget {
   id: string;
-  provider: VideoProvider;
 }
 
 function firstValue(value: string | string[] | undefined) {
@@ -40,13 +34,12 @@ async function resolveWatchTarget(
 ): Promise<WatchTarget | null> {
   const params = await searchParams;
   const id = firstValue(params.v);
-  const provider = firstValue(params.provider) ?? "youtube";
 
-  if (!isVideoProvider(provider) || !id || !isValidVideoId(provider, id)) {
+  if (!id || !isValidVideoId(id)) {
     return null;
   }
 
-  return { id, provider };
+  return { id };
 }
 
 export async function generateMetadata({
@@ -61,12 +54,12 @@ export async function generateMetadata({
     notFound();
   }
 
-  const seed = findSeedVideo(target.provider, target.id);
+  const seed = findSeedVideo(target.id);
 
   if (!seed) {
     return {
       title: "Watch video",
-      description: `Watch this ${PROVIDER_LABEL[target.provider]} video on N-MENASHE.`,
+      description: "Watch this YouTube video on N-MENASHE.",
       robots: { follow: true, index: false },
     };
   }
@@ -75,7 +68,7 @@ export async function generateMetadata({
     title: seed.title,
     description: `${seed.title}${
       seed.speaker ? ` — ${seed.speaker}` : ""
-    }. Watch this ${PROVIDER_LABEL[seed.provider]} teaching on N-MENASHE.`,
+    }. Watch this YouTube teaching on N-MENASHE.`,
     alternates: { canonical: videoPath(seed) },
   };
 }
@@ -87,11 +80,5 @@ export default async function WatchPage({ searchParams }: WatchPageProps) {
     notFound();
   }
 
-  return (
-    <VideoWatch
-      id={target.id}
-      initialVideos={SEED_VIDEOS}
-      provider={target.provider}
-    />
-  );
+  return <VideoWatch id={target.id} initialVideos={SEED_VIDEOS} />;
 }
