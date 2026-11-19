@@ -9,7 +9,7 @@ A mobile-first Torah web app ("Heritage library & media"):
 - **Zmanim Train** — daily prayer times presented as a live transit-departure board
 - **Library** — the full Tanakh (39 books / 929 chapters) with a chapter reader powered by the Sefaria API
 - **Parashat** — weekly Torah portion pages, read by aliyah
-- **Videos** — thumbnail lesson library, privacy-enhanced YouTube playback on `/watch`, plus add-by-ID in the browser
+- **Videos** — thumbnail lesson library, privacy-enhanced YouTube playback on `/watch`, plus add-by-ID in a shared Supabase library
 - **Audio** — shiurim with a persistent Spotify-style player
 - **Q&A** — community question feed (browser-local demo)
 
@@ -69,6 +69,9 @@ Legacy `/videos/watch/youtube/:id` links 307-redirect to the canonical
 - Privacy-enhanced YouTube (`youtube-nocookie.com`) embeds
 - Sanitized Sefaria HTML before `dangerouslySetInnerHTML`
 - Audio singleton design keeps playback alive across navigation
+- Audio bar uses per-slice zustand selectors (only the seek row subscribes to
+  `timeupdate`), Media Session metadata/controls, buffering state, persisted
+  volume and recently-played history
 
 ## Issues found (ranked)
 
@@ -110,8 +113,6 @@ No test script or framework. Good first candidates: `getWifiStatus`,
 `formatCountdown`, `toApiDate` (pure functions). No CI workflows. No LICENSE.
 
 ### 7. Minor performance / polish
-- `PlayerBar` subscribes to the whole zustand store → re-renders on every
-  `timeupdate` tick; select individual slices instead
 - `@hebcal/core` is bundled into the client only to format one date;
   `Intl.DateTimeFormat("en-u-ca-hebrew", …)` can do this natively
 - Location ids contain spaces/diacritics (`"maalot tarshīhā"`,
@@ -207,12 +208,19 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   plays on `/videos`; a dashed empty state appears when the library has no
   entries. The curated list lives in `app/videos/video-data.ts`. An **Add
   video** button opens an accessible dialog that accepts a YouTube **ID only**
-  (full links are rejected with guidance), a required title and an optional
-  speaker. Additions are validated, stored in `localStorage`
-  (`n-menashe-videos-v1`), merged with the curated list, and can be removed
-  from their tile; they persist per browser and do not change the static
-  build. Older saved rows that still carry a provider field are kept only when
-  the provider is YouTube; non-YouTube rows are ignored. Verified at
+  (full links are rejected with guidance), a required title, an optional
+  **Name** (the speaker), and a required category (`Pasal-Ho` or `Numei-Ho`,
+  defined once in `VIDEO_CATEGORIES`). Additions are validated and saved by
+  `app/videos/video-store.ts` to the shared Supabase `videos` table (`id`,
+  `title`, `speaker`, `category`, `created_at`), and
+  every visitor sees them. The library shows a setup error if
+  `NEXT_PUBLIC_SUPABASE_URL` or the publishable key is missing. Shared rows are
+  merged with the curated list, can be removed from their tile after a
+  confirmation, and let `/watch` render the real title in server metadata. The
+  grid has category chips with counts (All / Pasal-Ho / Numei-Ho); each card
+  and the watch page show the video's category as a small tag. The
+  public RLS policies allow anyone to add or delete, so deletion is guarded
+  only by that confirmation and should be tightened for production. Verified at
   320/390/768/1280px in light and dark themes with zero iframes, 16:9 posters,
   44px remove buttons, 3/2/1 grid columns and no horizontal overflow;
   poster/title clicks open the matching `/watch` URL. Add/reload/duplicate/
@@ -224,10 +232,10 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   rendering, which lets invalid IDs return a real 404 even though the page
   reads `searchParams`; the page repeats the check. The retired `provider`
   query is rejected, so old provider-scoped links cannot load a mismatched
-  video. Any valid ID renders on demand, so browser-local videos play from a
-  direct URL even when their title was saved in another browser, using a
-  generic title until local metadata resolves; a `MutationObserver` keeps the
-  tab title in sync once it does. The page now opens on a clean custom poster
+  video. Any valid ID renders on demand, so a shared video plays from a
+  direct URL even when its title has not loaded yet, using a generic title
+  until the Supabase row resolves; a `MutationObserver` keeps the tab title in
+  sync once it does. The page now opens on a clean custom poster
   with a 68px play button; the YouTube iframe is only created after that
   click, which keeps YouTube's title chip, red play button, copy-link control
   and "Watch on YouTube" chrome out of the initial view. The iframe then
@@ -244,11 +252,15 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   errors; Chromium autoplay after the poster click advanced playback, while
   headless Firefox left the player cued because its autoplay policy blocks
   audible start.
-- Embed permissions now include `autoplay` alongside `picture-in-picture` and
-  `fullscreen` in `app/videos/video-data.ts`, because the poster click loads
-  an autoplaying player. Firefox warns for each unsupported feature name in
-  YouTube's stock `allow` list; the trimmed list loads the embeds cleanly with
-  no page errors.
+- Embed permissions are trimmed to `picture-in-picture; fullscreen` in
+  `app/videos/video-data.ts`. `iframeAllow()` prepends `autoplay` for every
+  browser except Firefox: Chromium and Safari need that delegation before the
+  poster-click autoplay can start with sound, while Firefox does not implement
+  the permission and logs `Skipping unsupported feature name “autoplay”` for
+  each iframe that names it. The remaining playback console noise (CSP and
+  cookie notices, Quirks-Mode frames, Firefox fingerprinting messages,
+  YouTube's minified-script warnings) is emitted from YouTube's own iframe
+  documents and cannot be changed from this app.
 
 ## Suggested next steps
 
