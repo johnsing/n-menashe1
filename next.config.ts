@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   experimental: {
     agentUpgrade: "security",
   },
+  output: 'export',
   async redirects() {
     return [
       // Keep older shared YouTube links working.
