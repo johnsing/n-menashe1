@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     agentUpgrade: "security",
   },
   output: 'export',
+  basePath: '/n-menashe1',
+  assetPrefix: '/n-menashe1',
   async redirects() {
     return [
       // Keep older shared YouTube links working.
