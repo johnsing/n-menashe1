@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   experimental: {
     agentUpgrade: "security",
   },
-  output: 'export',
   basePath: '/n-menashe1',
   assetPrefix: '/n-menashe1',
   async redirects() {
