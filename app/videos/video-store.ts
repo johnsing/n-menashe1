@@ -36,7 +36,7 @@ export async function fetchSharedVideos(): Promise<Video[]> {
 
   const { data, error } = await supabase
     .from("videos")
-    .select("id, title, speaker")
+    .select("id, title, speaker, category")
     .order("created_at", { ascending: true });
 
   if (error) throw new Error(error.message);
@@ -51,7 +51,7 @@ export async function fetchSharedVideo(id: string): Promise<Video | null> {
 
   const { data, error } = await supabase
     .from("videos")
-    .select("id, title, speaker")
+    .select("id, title, speaker, category")
     .eq("id", id)
     .maybeSingle();
 
@@ -67,6 +67,7 @@ export async function addSharedVideo(video: Video): Promise<AddVideoResult> {
     id: video.id,
     title: video.title,
     speaker: video.speaker,
+    category: video.category,
   });
 
   if (!error) return "added";

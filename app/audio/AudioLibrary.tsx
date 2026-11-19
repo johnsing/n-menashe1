@@ -1,28 +1,39 @@
 "use client";
 // app/audio/AudioLibrary.tsx — category sections + track rows.
 import { FiMusic, FiPlay } from "react-icons/fi";
+
+import { formatTime } from "./format-time";
 import { usePlayerStore, useCurrentTrack } from "./player-store";
 import { CATEGORIES, TRACKS, tracksByCategory, type Track } from "./tracks";
 
-function formatTime(sec: number): string {
-  if (!Number.isFinite(sec) || sec <= 0) return "--:--";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function Cover({ track, size = 44 }: { track: Track; size?: number }) {
+function Cover({ track }: { track: Track }) {
   return (
     <span
       className="cover-tile"
       style={{
-        width: size,
-        height: size,
         background: `linear-gradient(135deg, ${track.color}, #1a1a1a)`,
       }}
       aria-hidden="true"
     >
       <FiMusic />
+    </span>
+  );
+}
+
+// Only the playing row subscribes to the clock, so timeupdate ticks do not
+// re-render every row in the library.
+function RemainingTime() {
+  const currentTime = usePlayerStore((s) => s.currentTime);
+  const duration = usePlayerStore((s) => s.duration);
+
+  if (!Number.isFinite(duration) || duration <= 0) {
+    return <span className="track-dur">--:--</span>;
+  }
+
+  const remaining = Math.max(duration - currentTime, 0);
+  return (
+    <span className="track-dur" aria-label={`${formatTime(remaining)} remaining`}>
+      -{formatTime(remaining)}
     </span>
   );
 }
@@ -39,8 +50,6 @@ function TrackRow({
   const current = useCurrentTrack();
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const playQueue = usePlayerStore((s) => s.playQueue);
-  const currentTime = usePlayerStore((s) => s.currentTime);
-  const duration = usePlayerStore((s) => s.duration);
 
   const isCurrent = current?.id === track.id;
   const playing = isCurrent && isPlaying;
@@ -50,11 +59,15 @@ function TrackRow({
       type="button"
       className={`track-row${isCurrent ? " is-current" : ""}`}
       onClick={() => playQueue(tracks, index)}
+      aria-current={isCurrent ? "true" : undefined}
+      aria-label={`${playing ? "Pause" : "Play"} ${track.title} by ${track.artist}`}
     >
       <span className="track-index" aria-hidden="true">
         {isCurrent ? (
           <span className={`eq${playing ? " eq-on" : ""}`}>
-            <i /><i /><i />
+            <i />
+            <i />
+            <i />
           </span>
         ) : (
           <>
@@ -71,15 +84,14 @@ function TrackRow({
         <small className="muted">{track.artist}</small>
       </span>
 
-      <span className="track-dur">
-        {isCurrent ? formatTime(duration - currentTime) : ""}
-      </span>
+      {isCurrent ? <RemainingTime /> : <span className="track-dur" />}
     </button>
   );
 }
 
 export default function AudioLibrary() {
   const history = usePlayerStore((s) => s.history);
+
   const recent = history
     .map((id) => TRACKS.find((t) => t.id === id))
     .filter((t): t is Track => Boolean(t))
@@ -97,12 +109,12 @@ export default function AudioLibrary() {
           <section className="audio-section">
             <h2 className="section-title">Recently played</h2>
             <div className="recent-grid">
-              {recent.map((track) => (
+              {recent.map((track, index) => (
                 <TrackRow
                   key={track.id}
                   track={track}
                   tracks={recent}
-                  index={recent.indexOf(track)}
+                  index={index}
                 />
               ))}
             </div>

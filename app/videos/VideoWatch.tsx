@@ -7,8 +7,8 @@ import Link from "next/link";
 import { FiArrowLeft, FiArrowRight, FiPlay } from "react-icons/fi";
 
 import {
-  IFRAME_ALLOW,
   embedUrl,
+  iframeAllow,
   thumbnailUrl,
   videoPath,
   type Video,
@@ -37,7 +37,7 @@ function VideoMedia({
           src={`${embedUrl(video)}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`}
           title={title}
           loading="eager"
-          allow={IFRAME_ALLOW}
+          allow={iframeAllow()}
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
         />
@@ -78,6 +78,7 @@ export default function VideoWatch({
       id,
       title: "",
       speaker: "",
+      category: "",
     };
 
   const moreVideos = videos.filter((entry) => entry.id !== id).slice(0, 4);
@@ -136,6 +137,12 @@ export default function VideoWatch({
             <p className="video-speaker video-watch-speaker">
               {video.speaker}
             </p>
+          )}
+
+          {video.category && (
+            <span className="video-category-tag video-watch-category">
+              {video.category}
+            </span>
           )}
         </div>
       </article>

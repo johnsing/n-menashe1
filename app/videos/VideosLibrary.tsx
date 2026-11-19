@@ -17,13 +17,20 @@ import {
 } from "react-icons/fi";
 
 import {
+  VIDEO_CATEGORIES,
   thumbnailUrl,
   validateVideoId,
   videoKey,
   videoPath,
   type Video,
+  type VideoCategory,
 } from "./video-data";
 import { useVideoLibrary } from "./use-video-library";
+
+const FILTER_OPTIONS: { key: VideoCategory | "all"; label: string }[] = [
+  { key: "all", label: "All" },
+  ...VIDEO_CATEGORIES.map((category) => ({ key: category, label: category })),
+];
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -92,6 +99,10 @@ export default function VideosLibrary({
   const [videoId, setVideoId] = useState("");
   const [title, setTitle] = useState("");
   const [speaker, setSpeaker] = useState("");
+  const [category, setCategory] = useState<VideoCategory | "">("");
+  const [activeCategory, setActiveCategory] = useState<VideoCategory | "all">(
+    "all",
+  );
   const [formError, setFormError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -100,9 +111,30 @@ export default function VideosLibrary({
   const modalRef = useRef<HTMLDivElement>(null);
   const idInputRef = useRef<HTMLInputElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const categorySelectRef = useRef<HTMLSelectElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const removeButtonRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  // Counts stay visible on the chips so an empty category is obvious.
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: videos.length };
+    for (const option of VIDEO_CATEGORIES) counts[option] = 0;
+
+    for (const video of videos) {
+      if (video.category) counts[video.category] += 1;
+    }
+
+    return counts;
+  }, [videos]);
+
+  const visibleVideos = useMemo(
+    () =>
+      activeCategory === "all"
+        ? videos
+        : videos.filter((video) => video.category === activeCategory),
+    [activeCategory, videos],
+  );
 
   // ── Add dialog: Escape, scroll lock, focus trap, focus restore ──
   useEffect(() => {
@@ -169,6 +201,7 @@ export default function VideosLibrary({
     setVideoId("");
     setTitle("");
     setSpeaker("");
+    setCategory("");
     setFormError("");
     setStatusMessage("");
     setIsAddOpen(true);
@@ -199,10 +232,17 @@ export default function VideosLibrary({
       return;
     }
 
+    if (!category) {
+      setFormError("Choose a category for this video.");
+      categorySelectRef.current?.focus();
+      return;
+    }
+
     const video: Video = {
       id,
       title: cleanTitle.slice(0, 140),
       speaker: speaker.trim().slice(0, 80),
+      category,
     };
 
     if (videos.some((entry) => videoKey(entry) === videoKey(video))) {
@@ -234,6 +274,7 @@ export default function VideosLibrary({
       setVideoId("");
       setTitle("");
       setSpeaker("");
+      setCategory("");
       setFormError("");
       setIsAddOpen(false);
     } finally {
@@ -321,14 +362,58 @@ export default function VideosLibrary({
         </p>
       )}
 
+      {videos.length > 0 && (
+        <div
+          className="video-filters"
+          role="group"
+          aria-label="Filter videos by category"
+        >
+          {FILTER_OPTIONS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              className="video-filter"
+              aria-pressed={activeCategory === option.key}
+              onClick={() => setActiveCategory(option.key)}
+            >
+              {option.label}
+              <span className="video-filter-count">
+                {categoryCounts[option.key] ?? 0}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {isLoading && videos.length === 0 ? (
         <div className="videos-empty" role="status">
           <p className="videos-kicker">Loading videos</p>
           <p>Fetching the shared library…</p>
         </div>
-      ) : videos.length > 0 ? (
+      ) : videos.length === 0 ? (
+        <div className="videos-empty">
+          <p className="videos-kicker">No videos yet</p>
+          <p>
+            {isConfigured
+              ? "Add a YouTube video to start the library."
+              : "Finish the Supabase setup to start the library."}
+          </p>
+        </div>
+      ) : visibleVideos.length === 0 ? (
+        <div className="videos-empty">
+          <p className="videos-kicker">Nothing in {activeCategory}</p>
+          <p>No videos have this category yet.</p>
+          <button
+            type="button"
+            className="video-filter-reset"
+            onClick={() => setActiveCategory("all")}
+          >
+            Show all videos
+          </button>
+        </div>
+      ) : (
         <div className="videos-grid">
-          {videos.map((video, index) => {
+          {visibleVideos.map((video, index) => {
             const key = videoKey(video);
 
             return (
@@ -346,6 +431,11 @@ export default function VideosLibrary({
                     </Link>
                     {video.speaker && (
                       <p className="video-speaker">{video.speaker}</p>
+                    )}
+                    {video.category && (
+                      <span className="video-category-tag">
+                        {video.category}
+                      </span>
                     )}
                   </div>
 
@@ -370,15 +460,6 @@ export default function VideosLibrary({
               </article>
             );
           })}
-        </div>
-      ) : (
-        <div className="videos-empty">
-          <p className="videos-kicker">No videos yet</p>
-          <p>
-            {isConfigured
-              ? "Add a YouTube video to start the library."
-              : "Finish the Supabase setup to start the library."}
-          </p>
         </div>
       )}
 
@@ -480,7 +561,7 @@ export default function VideosLibrary({
 
               <div className="video-add-field">
                 <label className="video-add-label" htmlFor="video-speaker">
-                  Speaker
+                  Name
                   <span className="video-add-optional">Optional</span>
                 </label>
                 <input
@@ -496,6 +577,31 @@ export default function VideosLibrary({
                   maxLength={80}
                   autoComplete="off"
                 />
+              </div>
+
+              <div className="video-add-field">
+                <label className="video-add-label" htmlFor="video-category">
+                  Category
+                  <span className="video-add-required">Required</span>
+                </label>
+                <select
+                  ref={categorySelectRef}
+                  id="video-category"
+                  className="input select video-category-select"
+                  value={category}
+                  onChange={(event) => {
+                    setCategory(event.target.value as VideoCategory | "");
+                    if (formError) setFormError("");
+                  }}
+                  required
+                >
+                  <option value="">Choose a category</option>
+                  {VIDEO_CATEGORIES.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {formError && (

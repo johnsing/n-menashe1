@@ -3,10 +3,25 @@
 // Videos are referenced by YouTube ID only: the 11-character ID from the
 // watch URL, e.g. https://www.youtube.com/watch?v=<id>.
 
+// Fixed groups for the library. The exact labels are stored in Supabase, so
+// changing them here also requires updating the existing rows.
+export const VIDEO_CATEGORIES = ["Pasal-Ho", "Numei-Ho"] as const;
+
+export type VideoCategory = (typeof VIDEO_CATEGORIES)[number];
+
+export function isVideoCategory(value: unknown): value is VideoCategory {
+  return (
+    typeof value === "string" &&
+    (VIDEO_CATEGORIES as readonly string[]).includes(value)
+  );
+}
+
 export interface Video {
   id: string;
   title: string;
   speaker: string;
+  // Empty only for a legacy row saved before categories existed.
+  category: VideoCategory | "";
 }
 
 export const SEED_VIDEOS: Video[] = [];
@@ -14,11 +29,22 @@ export const SEED_VIDEOS: Video[] = [];
 const EMBED_BASE = "https://www.youtube-nocookie.com/embed/";
 
 // Delegate only the permissions this library uses. YouTube's stock list also
-// names accelerometer, autoplay, clipboard-write, encrypted-media and gyroscope;
-// Firefox warns for each unsupported name, and standard teaching videos do not
-// need them. Fullscreen and picture-in-picture remain available.
-export const IFRAME_ALLOW =
-  "autoplay; picture-in-picture; fullscreen";
+// names accelerometer, clipboard-write, encrypted-media and gyroscope; Firefox
+// warns for each unsupported name. Fullscreen and picture-in-picture remain
+// available.
+export const IFRAME_ALLOW = "picture-in-picture; fullscreen";
+
+// Firefox does not implement the autoplay permission and logs “Skipping
+// unsupported feature name “autoplay”” for every iframe that asks for it.
+// Chromium and Safari need the delegation for the poster-click autoplay to
+// start with sound, so only Firefox omits it.
+export function iframeAllow() {
+  const isFirefox =
+    typeof navigator !== "undefined" &&
+    navigator.userAgent.includes("Firefox/");
+
+  return isFirefox ? IFRAME_ALLOW : `autoplay; ${IFRAME_ALLOW}`;
+}
 
 export const embedUrl = (video: Pick<Video, "id">) =>
   `${EMBED_BASE}${encodeURIComponent(video.id)}`;
@@ -76,9 +102,14 @@ export function normalizeVideo(value: unknown): Video | null {
   const speaker =
     typeof record.speaker === "string" ? record.speaker.trim() : "";
 
+  // Unknown or missing categories stay playable; they simply show no tag and
+  // appear only under "All".
+  const category = isVideoCategory(record.category) ? record.category : "";
+
   return {
     id,
     title: title.slice(0, 140),
     speaker: speaker.slice(0, 80),
+    category,
   };
 }
