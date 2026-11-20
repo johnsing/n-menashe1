@@ -76,29 +76,24 @@ Legacy `/videos/watch/youtube/:id` links 307-redirect to the canonical
 ## Issues found (ranked)
 
 ### 1. Hebrew date can be stale / hydration mismatch
-`app/components/Header/HebrewDate.tsx` computes the date in a `useState`
-initializer. Statically prerendered pages freeze the build-day date in the HTML;
-after midnight the client and server disagree (hydration warning + stale flash).
-It also never updates if the app stays open past midnight.
-**Fix:** compute in an effect or reuse the `useSyncExternalStore` clock pattern.
+`app/components/Header/HebrewDate.tsx` used to compute the date in a `useState`
+initializer. Statically prerendered pages froze the build-day date in the HTML;
+after midnight the client and server could disagree (hydration warning + stale
+flash), and it never updated if the app stayed open past midnight.
+**Fixed (2026-11-20):** the component starts empty, computes the date after
+mount in the visitor's timezone, and reschedules at local midnight and when the
+tab becomes visible again.
 
-### 2. Dead CSS files
-These are no longer imported anywhere (only `globals.css` and
-`lenis/dist/lenis.css` are loaded):
+### 2. Dead CSS files — resolved
+The five leftover stylesheets (`app/zmanim-board.css`, `app/audio/player.css`,
+`app/qa/qa.css`, `app/qa/qa-extras.css`, `app/library/css/reader.css`) were
+deleted; only `app/globals.css` remains.
 
-- `app/zmanim-board.css`
-- `app/audio/player.css`
-- `app/qa/qa.css`
-- `app/qa/qa-extras.css`
-- `app/library/css/reader.css`
-
-Leftovers from the "consolidate all styles into globals.css" commit.
-
-### 3. README is out of date
-- Claims bilingual Hebrew **+ English** verses; the reader fetches Hebrew only
-- References files that don't exist: `app/library/data.ts`, `app/parashat/`,
-  `components/library/AliyahReader`, `utils/ParashaThisWeek`
-- Claims MIT, but there is no `LICENSE` file
+### 3. README is out of date — resolved
+The README now documents the current features, Supabase setup, the local-only
+Q&A demo, demo audio tracks, and the test commands. An MIT `LICENSE` file was
+added, and `.env.example` documents the publishable-key and legacy anon-key
+variable names.
 
 ### 4. Q&A is browser-local only
 `app/qa/*` stores all questions, answers and votes in `localStorage`. Data is
@@ -108,9 +103,10 @@ before hydration. A real community feed needs route handlers + a database.
 ### 5. Unused config leftovers
 - `components.json` (shadcn) is unused; its `@/lib/utils` alias doesn't exist
 
-### 6. No tests / CI / LICENSE
-No test script or framework. Good first candidates: `getWifiStatus`,
-`formatCountdown`, `toApiDate` (pure functions). No CI workflows. No LICENSE.
+### 6. No tests / CI / LICENSE — partially resolved
+Vitest 4 is configured with `npm test`, covering `formatTime`,
+`getWifiStatus`/`formatCountdown`/`formatIn`, `toApiDate`, and `relTime`. An
+MIT `LICENSE` file was added. CI is still missing.
 
 ### 7. Minor performance / polish
 - `@hebcal/core` is bundled into the client only to format one date;
@@ -131,7 +127,7 @@ The app uses the classic model (`export const revalidate`,
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12–16)
+## Recent changes (2026-11-12–20)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -261,11 +257,25 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   cookie notices, Quirks-Mode frames, Firefox fingerprinting messages,
   YouTube's minified-script warnings) is emitted from YouTube's own iframe
   documents and cannot be changed from this app.
+- The header Hebrew date is now computed after mount in the visitor's timezone
+  instead of during prerender, and it reschedules at local midnight and when
+  the tab becomes visible. This removes the hydration mismatch and stale-date
+  flash.
+- Vitest 4 is configured with `npm test` and `npm run test:watch`. The suite
+  covers `formatTime`, `getWifiStatus`/`formatCountdown`/`formatIn`,
+  `toApiDate`, and `relTime` using fixed dates and fake timers.
+- `README.md` was rewritten to match the current app: Supabase setup, the
+  browser-local Q&A demo, demo audio tracks, the test commands, and the real
+  data sources. An MIT `LICENSE` file was added and `.env.example` documents
+  the publishable-key and legacy anon-key variable names.
 
 ## Suggested next steps
 
-1. Fix `HebrewDate` hydration/staleness
-2. Delete the 5 dead CSS files
-3. Refresh README and add a LICENSE
-4. Add Vitest unit tests for time logic
-5. Decide on a real Q&A backend (or label it clearly as a local demo)
+1. Decide on a real Q&A backend (or label it clearly as a local demo in the
+   UI). The README now calls it a local demo, but the page itself still reads
+   as a community feed.
+2. Add CI (for example GitHub Actions) that runs `npm run lint`, `npm test`,
+   and `npm run build` on pushes and pull requests.
+3. Consider replacing the `@hebcal/core` client dependency with
+   `Intl.DateTimeFormat("en-u-ca-hebrew", …)` if bundle size matters; the
+   header only needs the local date.
