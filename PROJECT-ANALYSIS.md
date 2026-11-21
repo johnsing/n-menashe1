@@ -127,7 +127,7 @@ The app uses the classic model (`export const revalidate`,
 `cacheComponents` is disabled. If Cache Components is enabled later, migrate
 to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 
-## Recent changes (2026-11-12–20)
+## Recent changes (2026-11-12–21)
 
 - `app/library/page.tsx` redesigned as a wooden bookcase:
   vertical book spines, brass section plaques, shelf planks, hover lift,
@@ -268,6 +268,15 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
   browser-local Q&A demo, demo audio tracks, the test commands, and the real
   data sources. An MIT `LICENSE` file was added and `.env.example` documents
   the publishable-key and legacy anon-key variable names.
+- Mobile pull-to-refresh added in `app/components/PullToRefresh.tsx` and mounted
+  outside `<SmoothScroll>` in `app/layout.tsx`, so the fixed indicator is not
+  affected by Lenis. It activates only for a mostly vertical downward drag that
+  starts at `scrollY <= 0.5`, ignores dialogs, the tab bar, the player, and form
+  controls, resists the pull (64px arms, 96px maximum), and reloads after a
+  220ms confirmation state. Styles live in the "Pull to refresh" section of
+  `app/globals.css`. Verified below and above the threshold, ignored targets,
+  normal scrolling, and a real reload; the production build includes `.ptr`
+  and `ptr-spin` in its CSS chunk.
 
 ## Suggested next steps
 

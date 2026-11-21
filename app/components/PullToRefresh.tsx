@@ -55,7 +55,6 @@ export default function PullToRefresh() {
   }, []);
 
   useEffect(() => {
-    console.debug("[ptr] effect mounted");
     const reset = () => {
       trackingRef.current = false;
       draggingRef.current = false;
@@ -64,12 +63,6 @@ export default function PullToRefresh() {
     };
 
     const onTouchStart = (event: TouchEvent) => {
-      console.debug(
-        "[ptr] start",
-        event.touches.length,
-        window.scrollY,
-        shouldIgnore(event.target),
-      );
       if (event.touches.length !== 1) return;
       if (phaseRef.current === "refreshing") return;
       if (window.scrollY > 0.5) return;
@@ -83,12 +76,6 @@ export default function PullToRefresh() {
     };
 
     const onTouchMove = (event: TouchEvent) => {
-      console.debug(
-        "[ptr] move",
-        trackingRef.current,
-        event.touches.length,
-        phaseRef.current,
-      );
       if (!trackingRef.current || event.touches.length !== 1) return;
       if (phaseRef.current === "refreshing") return;
 
@@ -189,6 +176,16 @@ export default function PullToRefresh() {
       aria-live="polite"
       aria-hidden={!visible}
     >
-]    </div>
+      <span className="ptr-icon" aria-hidden="true">
+        {phase === "refreshing" ? "◌" : "↓"}
+      </span>
+      <span className="ptr-label">
+        {phase === "refreshing"
+          ? "Refreshing…"
+          : phase === "armed"
+            ? "Release to refresh"
+            : "Pull to refresh"}
+      </span>
+    </div>
   );
 }

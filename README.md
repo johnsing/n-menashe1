@@ -23,6 +23,8 @@ shared video and audio teachings, and a browser-local Q&A demo.
   per-browser and are **not** shared between visitors yet.
 - **Hebrew date** — computed in the browser with `@hebcal/core`, using the
   visitor's timezone, and refreshed automatically at local midnight.
+- **Pull to refresh** — on touch devices, pull down from the top of any page to
+  reload it; a small indicator tracks the pull and arms at the threshold.
 - Dark theme, mobile-first layout, and a floating tab bar.
 
 ## Tech stack
