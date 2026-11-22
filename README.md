@@ -68,12 +68,6 @@ Supabase project:
    cp .env.example .env.local
    ```
 
-   ```dotenv
-   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-   # Older projects can use the anon key instead:
-   # NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-   ```
 
 If these values are missing, `/videos` shows a setup message and the rest of
 the site still works.
