@@ -20,7 +20,6 @@ const IGNORE_SELECTOR = [
   ".qa-modal-backdrop",
   ".nav",
   ".tabbar",
-  ".player-bar",
   "input",
   "textarea",
   "select",

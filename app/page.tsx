@@ -4,7 +4,6 @@ import {
   FiArrowUpRight,
   FiBookOpen,
   FiCalendar,
-  FiHeadphones,
   FiMessageSquare,
   FiVideo,
 } from "react-icons/fi";
@@ -29,12 +28,6 @@ const sections = [
     desc: "Torah and holiday teachings.",
   },
   {
-    href: "/audio",
-    Icon: FiHeadphones,
-    title: "Audio",
-    desc: "Shiurim, tefillah and music.",
-  },
-  {
     href: "/qa",
     Icon: FiMessageSquare,
     title: "Q&A",
@@ -53,7 +46,7 @@ export default function Home() {
             A house of Torah, prayer & community.
           </h1>
           <p className="home-lede">
-            Zmanim, Tanakh, shiurim and a community of learners — a home for
+            Zmanim, Tanakh, teachings and a community of learners — a home for
             the sacred, every day.
           </p>
           <div className="home-cta-row">
@@ -73,7 +66,7 @@ export default function Home() {
           <h2 id="home-sections-title" className="home-sections-title">
             Explore
           </h2>
-          <span className="home-sections-note">Five ways in</span>
+          <span className="home-sections-note">Four ways in</span>
         </div>
 
         <div className="home-grid">

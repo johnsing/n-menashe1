@@ -2,7 +2,6 @@
 import type { Metadata, Viewport } from "next";
 import Header from "./components/Header/Header";
 import TabBar from "./components/Header/TabBar";
-import PlayerBar from "./components/audio/PlayerBar";
 import PullToRefresh from "./components/PullToRefresh";
 import SmoothScroll from "./components/providers/SmoothScroll";
 import "./globals.css";
@@ -37,7 +36,6 @@ export default function RootLayout({
           <Header />
           <div className="site-content">{children}</div>
           <TabBar />
-          <PlayerBar />
         </SmoothScroll>
         <PullToRefresh />
       </body>

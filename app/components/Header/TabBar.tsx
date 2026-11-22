@@ -3,13 +3,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiBook, FiCalendar, FiHeadphones, FiHome, FiMessageSquare, FiVideo,  } from "react-icons/fi";
+import { FiBook, FiCalendar, FiHome, FiMessageSquare, FiVideo,  } from "react-icons/fi";
 
 const tabs = [
   { href: "/", label: "Home", Icon: FiHome },
   { href: "/library", label: "Library", Icon: FiBook },
   { href: "/videos", label: "Videos", Icon: FiVideo },
-  { href: "/audio", label: "Audio", Icon: FiHeadphones },
   { href: "/qa", label: "Q&A", Icon: FiMessageSquare },
   { href: "/calendar", label: "Calendar", Icon: FiCalendar },
 ];

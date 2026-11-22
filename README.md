@@ -2,7 +2,7 @@
 
 Torah, zmanim, and community — a mobile-first web app. Daily prayer times on a
 live "train board," the full Tanakh in a Hebrew reader, weekly parasha pages,
-shared video and audio teachings, and a browser-local Q&A demo.
+shared video teachings, and a browser-local Q&A demo.
 
 ## Features
 
@@ -16,8 +16,6 @@ shared video and audio teachings, and a browser-local Q&A demo.
 - **Videos** — a thumbnail grid of Torah and holiday lessons. Anyone can add a
   video by its YouTube ID, and the shared list is stored in Supabase. Playback
   happens on the dedicated `/watch?v=<id>` page; the grid never autoplays.
-- **Audio** — shiurim with a persistent bottom player that keeps playing while
-  you browse. Volume and recently played tracks are remembered in the browser.
 - **Q&A (local demo)** — a question feed with detail pages, voting, and answers.
   Questions, votes, and answers are stored in `localStorage`, so they are
   per-browser and are **not** shared between visitors yet.
@@ -34,7 +32,7 @@ shared video and audio teachings, and a browser-local Q&A demo.
 - `@hebcal/core` and the Hebcal API (Hebrew dates, zmanim, Shabbat times)
 - Sefaria API (biblical text)
 - Supabase (shared video library)
-- zustand (audio player state) · lenis (smooth scrolling) · react-icons
+- lenis (smooth scrolling) · react-icons
 - Vitest (unit tests for time and date helpers)
 
 ## Getting started
@@ -51,7 +49,6 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000.
 
 ### Supabase setup (video library)
 
@@ -99,39 +96,18 @@ the site still works.
 - [Supabase](https://supabase.com/) — shared videos added through `/videos`.
 - [YouTube](https://www.youtube.com/) — privacy-enhanced
   (`youtube-nocookie.com`) embeds on `/watch` only.
-- **Browser storage** — Q&A data, audio volume, recently played tracks, and
-  player preferences. These never leave the device.
-- **Audio demo tracks** — the bundled playlist uses SoundHelix sample MP3s.
-  Replace the `src` values in `app/audio/tracks.ts` with real shiur URLs for
-  production.
+- **Browser storage** — Q&A questions, answers, and votes. These never leave
+  the device.
 
 Hebcal and Sefaria are free and need no API key.
-
-## Project structure
-
-```
-app/
-  audio/        audio player state, queue, demo tracks
-  components/   header, zmanim board, player bar, icons
-  data/         Tanakh metadata, parasha data, local Q&A data
-  lib/          Hebcal zmanim/Shabbat client
-  utils/        time, countdown, and Sefaria helpers
-  videos/       shared video library and Supabase store
-  watch/        the `/watch?v=<id>` player route
-```
 
 ## Testing
 
 Vitest covers the pure time and date helpers:
 
-- `app/audio/format-time.test.ts` — player clock formatting
 - `app/utils/wifiStatus.test.ts` — board status and countdown labels
 - `app/lib/zmanim.test.ts` — timezone-aware Hebcal date keys
 - `app/data/qa-data.test.ts` — relative timestamps
-
-```bash
-npm test
-```
 
 ## License
 
