@@ -4016,10 +4016,6 @@ a.card:active {
   line-height: 1;
 }
 
-.tabbar-label {
-  display: none; /* icons-only on small screens */
-}
-
 /* room for text labels on larger screens */
 @media (min-width: 520px) {
   .tabbar-label {

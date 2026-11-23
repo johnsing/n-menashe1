@@ -52,9 +52,6 @@ export default function TabBar() {
             <span className="tabbar-icon" aria-hidden="true">
               <tab.Icon />
             </span>
-            <span className="tabbar-label" aria-hidden="true">
-              {label}
-            </span>
           </Link>
         );
       })}
