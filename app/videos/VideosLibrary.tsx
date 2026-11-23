@@ -320,7 +320,7 @@ export default function VideosLibrary({
   }
 
   return (
-    <main className="container videos-page">
+    <div className="container videos-page" lang="en" dir="ltr">
       <header className="videos-hero">
         <div className="videos-hero-copy">
           <p className="videos-kicker">Video library</p>
@@ -633,6 +633,6 @@ export default function VideosLibrary({
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

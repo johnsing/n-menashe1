@@ -131,20 +131,29 @@ export default function QuestionDetailPage({
   // Server render / loading state
   if (!data) {
     return (
-      <main className="container qa qa-page qa-detail" aria-busy="true">
+      <div
+        className="container qa qa-page qa-detail"
+        aria-busy="true"
+        lang="en"
+        dir="ltr"
+      >
         <div className="card qa-empty qa-detail-loading" role="status">
           <span className="qa-empty-icon" aria-hidden="true">
             <FiMessageSquare />
           </span>
           <p className="muted">Loading question…</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   if (notFound || !question) {
     return (
-      <main className="container qa qa-page qa-detail">
+      <div
+        className="container qa qa-page qa-detail"
+        lang="en"
+        dir="ltr"
+      >
         <nav className="qa-detail-nav" aria-label="Breadcrumb">
           <Link href="/qa" className="qa-detail-back">
             <FiArrowLeft aria-hidden="true" />
@@ -165,12 +174,12 @@ export default function QuestionDetailPage({
             Back to all questions
           </Link>
         </div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="container qa qa-page qa-detail">
+    <div className="container qa qa-page qa-detail">
       <nav className="qa-detail-nav" aria-label="Breadcrumb">
         <Link href="/qa" className="qa-detail-back">
           <FiArrowLeft aria-hidden="true" />
@@ -352,6 +361,6 @@ export default function QuestionDetailPage({
           </div>
         </form>
       </section>
-    </main>
+    </div>
   );
 }

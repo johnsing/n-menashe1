@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { getBook } from "@/app/data/data";
 import { bookPalette, SECTION_HEBREW } from "@/app/lib/bookDesign";
+import { pageMetadata } from "@/app/lib/metadata";
 import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
 
 export const revalidate = 86400; // ISR
@@ -44,13 +45,18 @@ export async function generateMetadata({
   const n = Number(chapter);
 
   if (!book || !Number.isInteger(n) || n < 1 || n > book.chapters) {
-    return { title: "Library" };
+    return pageMetadata({
+      title: "Library",
+      description: "The full Tanakh — Torah, Nevi'im and Ketuvim, book by book.",
+      locale: "en_US",
+    });
   }
 
-  return {
+  return pageMetadata({
     title: `${book.name} ${n}`,
     description: `${book.name} chapter ${n} — read the Hebrew text from Sefaria.`,
-  };
+    locale: "en_US",
+  });
 }
 
 interface CoverVars extends CSSProperties {
@@ -94,7 +100,13 @@ export default async function ChapterPage({
   )}.${n}`;
 
   return (
-    <main id="top" className="container chapter-page" style={coverVars}>
+    <div
+      id="top"
+      className="container chapter-page"
+      style={coverVars}
+      lang="en"
+      dir="ltr"
+    >
       <nav className="book-breadcrumb" aria-label="Breadcrumb">
         <Link href="/library">Library</Link>
         <span className="book-breadcrumb-sep" aria-hidden="true">
@@ -279,6 +291,6 @@ export default async function ChapterPage({
           </a>
         </p>
       </footer>
-    </main>
+    </div>
   );
 }

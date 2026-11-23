@@ -1,15 +1,16 @@
 // app/library/page.tsx — Tanakh index presented as a wooden bookcase.
 // Server Component: every book is a link styled as a bound spine.
 import Link from "next/link";
-import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { BOOKS, SECTIONS, booksBySection, type Book } from "@/app/data/data";
 import { bookPalette, spineHash } from "@/app/lib/bookDesign";
+import { pageMetadata } from "@/app/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Library",
   description: "The full Tanakh — Torah, Nevi'im and Ketuvim, book by book.",
-};
+  locale: "en_US",
+});
 
 const BOOKS_PER_SHELF = 7;
 
@@ -54,7 +55,7 @@ export default function LibraryPage() {
   const totalChapters = BOOKS.reduce((sum, book) => sum + book.chapters, 0);
 
   return (
-    <main className="container library-page">
+    <div className="container library-page" lang="en" dir="ltr">
       <header className="hero library-hero">
         <h1>Library</h1>
         <p className="muted">
@@ -128,6 +129,6 @@ export default function LibraryPage() {
           →
         </span>
       </Link>
-    </main>
+    </div>
   );
 }

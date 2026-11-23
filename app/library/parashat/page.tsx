@@ -2,16 +2,17 @@
 // Visual companion to the bookcase and chapter reader: a leather title band,
 // book-coloured jump tabs, and a single parchment index grouped by Chumash.
 import Link from "next/link";
-import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { CHUMASH_HEBREW, CHUMASH_LABELS, PARASHIYOT } from "@/app/data/parashat-data";
 import { bookPalette, type SpinePalette } from "@/app/lib/bookDesign";
+import { pageMetadata } from "@/app/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "Parashat HaShavua",
   description:
     "The 54 weekly Torah portions, from Bereshit to Vezot Haberakhah, grouped by the five books of the Torah.",
-};
+  locale: "en_US",
+});
 
 const BOOK_ORDER = [
   "genesis",
@@ -53,7 +54,7 @@ export default function ParashatIndexPage() {
   });
 
   return (
-    <main className="container parashat-page">
+    <div className="container parashat-page" lang="en" dir="ltr">
       <nav className="book-breadcrumb" aria-label="Breadcrumb">
         <Link href="/library">Library</Link>
         <span className="book-breadcrumb-sep" aria-hidden="true">
@@ -203,6 +204,6 @@ export default function ParashatIndexPage() {
           Hebrew text from Sefaria · Read by portion
         </p>
       </footer>
-    </main>
+    </div>
   );
 }

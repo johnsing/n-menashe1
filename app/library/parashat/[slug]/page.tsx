@@ -12,6 +12,7 @@ import {
   parashaIndex,
 } from "@/app/data/parashat-data";
 import { bookPalette } from "@/app/lib/bookDesign";
+import { pageMetadata } from "@/app/lib/metadata";
 import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
 
 export const revalidate = 86400; // ISR
@@ -53,12 +54,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const parasha = getParasha(slug);
 
-  return {
+  return pageMetadata({
     title: parasha ? parasha.name : "Parashat",
     description: parasha
       ? `${parasha.name} — ${parasha.range}. Read the Hebrew text of this Torah portion from Sefaria.`
-      : undefined,
-  };
+      : "The 54 weekly Torah portions, from Bereshit to Vezot Haberakhah, grouped by the five books of the Torah.",
+    locale: "en_US",
+  });
 }
 
 interface CoverVars extends CSSProperties {
@@ -101,7 +103,13 @@ export default async function ParashatReaderPage({
   const sefariaUrl = `https://www.sefaria.org/${parasha.ref}`;
 
   return (
-    <main id="top" className="container parashat-reader-page" style={coverVars}>
+    <div
+      id="top"
+      className="container parashat-reader-page"
+      style={coverVars}
+      lang="en"
+      dir="ltr"
+    >
       <nav className="book-breadcrumb" aria-label="Breadcrumb">
         <Link href="/library">Library</Link>
         <span className="book-breadcrumb-sep" aria-hidden="true">
@@ -295,6 +303,6 @@ export default async function ParashatReaderPage({
           </a>
         </p>
       </footer>
-    </main>
+    </div>
   );
 }

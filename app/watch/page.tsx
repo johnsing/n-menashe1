@@ -13,6 +13,7 @@ import {
   videoPath,
 } from "@/app/videos/video-data";
 import { fetchSharedVideo } from "@/app/videos/video-store";
+import { pageMetadata } from "@/app/lib/metadata";
 
 interface WatchPageProps {
   searchParams: Promise<{
@@ -59,17 +60,23 @@ export async function generateMetadata({
 
   if (!video) {
     return {
-      title: "Watch video",
-      description: "Watch this YouTube video on N-MENASHE.",
+      ...pageMetadata({
+        title: "Watch video",
+        description: "Watch this YouTube video on N-MENASHE.",
+        locale: "en_US",
+      }),
       robots: { follow: true, index: false },
     };
   }
 
   return {
-    title: video.title,
-    description: `${video.title}${
-      video.speaker ? ` — ${video.speaker}` : ""
-    }. Watch this YouTube teaching on N-MENASHE.`,
+    ...pageMetadata({
+      title: video.title,
+      description: `${video.title}${
+        video.speaker ? ` — ${video.speaker}` : ""
+      }. Watch this YouTube teaching on N-MENASHE.`,
+      locale: "en_US",
+    }),
     alternates: { canonical: videoPath(video) },
   };
 }

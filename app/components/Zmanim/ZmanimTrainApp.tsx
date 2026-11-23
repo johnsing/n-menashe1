@@ -200,7 +200,7 @@ export default function ZmanimTrainApp() {
   const locationName = locationTitle || location.label;
 
   return (
-    <div className="zt-app">
+    <div className="zt-app" lang="en" dir="ltr">
       <TransitHeader
         location={locationName}
         nextStation={nextStation}
@@ -210,7 +210,7 @@ export default function ZmanimTrainApp() {
         error={!!error}
       />
 
-      <main className="zt-content">
+      <div className="zt-content">
         <div className="zt-toolbar">
           <div className="zt-field">
             <label className="zt-field-label" htmlFor="zt-location">
@@ -335,7 +335,7 @@ export default function ZmanimTrainApp() {
           </p>
           <p>Halachic times vary by community — verify with your local calendar.</p>
         </footer>
-      </main>
+      </div>
     </div>
   );
 }

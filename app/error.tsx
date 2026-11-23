@@ -16,7 +16,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="container">
+    <div className="container" lang="en" dir="ltr">
       <header className="hero">
         <h1>Something went wrong</h1>
         <p className="muted">
@@ -31,6 +31,6 @@ export default function Error({
           </Link>
         </div>
       </header>
-    </main>
+    </div>
   );
 }

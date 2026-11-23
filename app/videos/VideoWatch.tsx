@@ -107,7 +107,11 @@ export default function VideoWatch({
   }, [video.title]);
 
   return (
-    <main className="container videos-page video-watch-page">
+    <div
+      className="container videos-page video-watch-page"
+      lang="en"
+      dir="ltr"
+    >
       <nav className="video-watch-nav" aria-label="Breadcrumb">
         <Link href="/videos" className="video-watch-back">
           <FiArrowLeft aria-hidden="true" />
@@ -181,6 +185,6 @@ export default function VideoWatch({
           </div>
         </section>
       )}
-    </main>
+    </div>
   );
 }

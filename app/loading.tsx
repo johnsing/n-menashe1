@@ -1,10 +1,10 @@
 // app/loading.tsx — shown automatically while a route segment loads
 export default function Loading() {
   return (
-    <main className="container">
+    <div className="container" lang="en" dir="ltr">
       <header className="hero">
         <p className="muted">Loading…</p>
       </header>
-    </main>
+    </div>
   );
 }

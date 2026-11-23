@@ -246,7 +246,7 @@ export default function QAPage() {
   };
 
   return (
-    <main className="container qa qa-page">
+    <div className="container qa qa-page" lang="en" dir="ltr">
       <header className="qa-hero">
         <div className="qa-hero-copy">
           <p className="qa-kicker">Community study hall</p>
@@ -611,7 +611,7 @@ export default function QAPage() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }
 

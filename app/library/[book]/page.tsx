@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { BOOKS, getBook } from "@/app/data/data";
 import { bookPalette, SECTION_HEBREW } from "@/app/lib/bookDesign";
+import { pageMetadata } from "@/app/lib/metadata";
 
 // All 39 book pages are generated at build time.
 export function generateStaticParams() {
@@ -20,12 +21,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { book: slug } = await params;
   const book = getBook(slug);
-  if (!book) return { title: "Library" };
+  if (!book) {
+    return pageMetadata({
+      title: "Library",
+      description: "The full Tanakh — Torah, Nevi'im and Ketuvim, book by book.",
+      locale: "en_US",
+    });
+  }
 
-  return {
+  return pageMetadata({
     title: book.name,
     description: `${book.name} — ${book.chapters} chapters. Read the Hebrew text chapter by chapter.`,
-  };
+    locale: "en_US",
+  });
 }
 
 interface CoverVars extends CSSProperties {
@@ -59,7 +67,7 @@ export default async function BookPage({
   const chapterWord = book.chapters === 1 ? "chapter" : "chapters";
 
   return (
-    <main className="container book-page">
+    <div className="container book-page" lang="en" dir="ltr">
       <nav className="book-breadcrumb" aria-label="Breadcrumb">
         <Link href="/library">Library</Link>
         <span className="book-breadcrumb-sep" aria-hidden="true">
@@ -173,6 +181,6 @@ export default async function BookPage({
           <span className="book-pager-empty" aria-hidden="true" />
         )}
       </nav>
-    </main>
+    </div>
   );
 }
