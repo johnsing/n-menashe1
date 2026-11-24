@@ -54,6 +54,17 @@ before launch.
 - Dates are displayed as `DD/MM/YYYY`.
 - Helpers live in `app/lib/format.ts` and are covered by unit tests.
 
+### SEO notes
+
+- Page titles, descriptions, and matching Open Graph tags come from
+  `pageMetadata()` in `app/lib/metadata.ts`, so a shared link never inherits the
+  home-page description.
+- Static pages ship their metadata in the initial HTML. Dynamic routes
+  (`/watch`, Tanakh chapters) use Next's streaming metadata: the tags are
+  appended to `<body>` for JavaScript-capable crawlers and kept in `<head>` for
+  HTML-limited bots. Lighthouse's SEO audit can flag the streamed `/watch`
+  description as missing even though Googlebot and social crawlers receive it.
+
 ### Existing site features
 
 - **Zmanim Train** — daily zmanim (dawn → nightfall) on an animated transit
@@ -131,6 +142,9 @@ the site still works.
   `lastUpdated` date. The footer, contact page, and legal pages read from it.
 - **Bilingual copy** — edit the `he` and `en` dictionaries in
   `app/lib/i18n.ts`. Both dictionaries are type-checked against the same keys.
+- **Page metadata** — use `pageMetadata()` from `app/lib/metadata.ts` for new
+  pages. It keeps the document title, meta description, and Open Graph tags in
+  sync; pass `locale: "en_US"` for English legacy pages.
 - **Colours and spacing** — edit the design tokens at the top of
   `app/globals.css`. `--accent-ink` is the dark-gold text colour for light
   surfaces; `--accent` is the bright gold for dark surfaces.

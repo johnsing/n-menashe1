@@ -179,7 +179,7 @@ export default function QuestionDetailPage({
   }
 
   return (
-    <div className="container qa qa-page qa-detail">
+    <div className="container qa qa-page qa-detail" lang="en" dir="ltr">
       <nav className="qa-detail-nav" aria-label="Breadcrumb">
         <Link href="/qa" className="qa-detail-back">
           <FiArrowLeft aria-hidden="true" />
