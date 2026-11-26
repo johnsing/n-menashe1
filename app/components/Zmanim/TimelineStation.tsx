@@ -1,6 +1,5 @@
 "use client";
-// One row per zman (or Shabbat event): name, Hebrew, time,
-// countdown pill, and animated status icon.
+
 import AnimatedWifi from "@/app/components/icons/AnimatedWifi";
 import { formatCountdown, getWifiStatus } from "@/app/utils/wifiStatus";
 import type { Station } from "@/app/lib/zmanim";
@@ -27,13 +26,13 @@ export default function TimelineStation({
         const isNext = station.id === nextId;
         const isShabbat =
           station.kind === "candles" || station.kind === "havdalah";
-        const timeStr = station.time.toLocaleTimeString([], {
+        const timeLabel = station.time.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
           timeZone,
         });
 
-        const IconComponent = station.icon;
+        const Icon = station.icon;
 
         return (
           <li
@@ -43,11 +42,7 @@ export default function TimelineStation({
             }`}
           >
             <span className="zt-row-rail" aria-hidden="true">
-              {IconComponent ? (
-                <IconComponent size={18} />
-              ) : (
-                <span className="zt-row-dot" />
-              )}
+              <Icon size={18} />
             </span>
 
             <div className="zt-row-body">
@@ -75,7 +70,7 @@ export default function TimelineStation({
                 className="zt-time"
                 dateTime={station.time.toISOString()}
               >
-                {timeStr}
+                {timeLabel}
               </time>
               <div className="zt-row-status">
                 <span className={`zt-pill st-${status}`}>

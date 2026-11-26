@@ -1,7 +1,3 @@
-// app/watch/page.tsx — one shareable player page.
-//
-// The canonical URL is `/watch?v=<id>`. Shared titles come from Supabase.
-
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -21,42 +17,24 @@ interface WatchPageProps {
   }>;
 }
 
-interface WatchTarget {
-  id: string;
-}
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-async function resolveWatchTarget(
+async function resolveVideoId(
   searchParams: WatchPageProps["searchParams"],
-): Promise<WatchTarget | null> {
-  const params = await searchParams;
-  const id = firstValue(params.v);
+): Promise<string | null> {
+  const { v } = await searchParams;
+  const id = Array.isArray(v) ? v[0] : v;
 
-  if (!id || !isValidVideoId(id)) {
-    return null;
-  }
-
-  return { id };
+  return id && isValidVideoId(id) ? id : null;
 }
 
 export async function generateMetadata({
   searchParams,
 }: WatchPageProps): Promise<Metadata> {
-  const target = await resolveWatchTarget(searchParams);
-
-  // Keep metadata in agreement with the page. The real 404 status is set by
-  // proxy.ts before rendering, because reading searchParams makes this route
-  // stream and a mid-stream notFound() can only return 200.
-  if (!target) {
-    notFound();
-  }
+  const id = await resolveVideoId(searchParams);
+  if (!id) notFound();
 
   const video =
-    findSeedVideo(target.id) ??
-    (await fetchSharedVideo(target.id).catch(() => null));
+    findSeedVideo(id) ??
+    (await fetchSharedVideo(id).catch(() => null));
 
   if (!video) {
     return {
@@ -82,11 +60,8 @@ export async function generateMetadata({
 }
 
 export default async function WatchPage({ searchParams }: WatchPageProps) {
-  const target = await resolveWatchTarget(searchParams);
+  const id = await resolveVideoId(searchParams);
+  if (!id) notFound();
 
-  if (!target) {
-    notFound();
-  }
-
-  return <VideoWatch id={target.id} initialVideos={SEED_VIDEOS} />;
+  return <VideoWatch id={id} initialVideos={SEED_VIDEOS} />;
 }

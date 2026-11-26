@@ -1,39 +1,15 @@
-// app/library/[book]/[chapter]/page.tsx — read one chapter, Hebrew only.
-// Text comes from the free Sefaria API (no key required), cached for 24h.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import { getBook } from "@/app/data/data";
-import { bookPalette, SECTION_HEBREW } from "@/app/lib/bookDesign";
+import { SECTION_HEBREW, coverVars } from "@/app/lib/bookDesign";
 import { pageMetadata } from "@/app/lib/metadata";
-import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
+import {
+  fetchSefariaVerses,
+  sanitizeSefariaHtml,
+} from "@/app/utils/sefaria";
 
-export const revalidate = 86400; // ISR
-
-interface SefariaResponse {
-  ref?: string;
-  he?: string[] | string[][];
-  error?: string;
-}
-
-/** Normalize Sefaria's text shape (possibly nested by chapter) to flat verses. */
-function toVerses(data?: string[] | string[][]): string[] {
-  if (!data) return [];
-  if (typeof data === "string") return [data];
-  return data.flatMap((v) => (Array.isArray(v) ? v : [v]));
-}
-
-async function fetchText(ref: string) {
-  const url = `https://www.sefaria.org/api/texts/${encodeURIComponent(
-    ref,
-  )}?context=0&commentary=0`;
-  const res = await fetch(url, { next: { revalidate } });
-  if (!res.ok) return null;
-  const data = (await res.json()) as SefariaResponse;
-  if (data.error) return null;
-  return { hebrew: toVerses(data.he) };
-}
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
@@ -42,9 +18,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { book: slug, chapter } = await params;
   const book = getBook(slug);
-  const n = Number(chapter);
+  const chapterNumber = Number(chapter);
 
-  if (!book || !Number.isInteger(n) || n < 1 || n > book.chapters) {
+  if (
+    !book ||
+    !Number.isInteger(chapterNumber) ||
+    chapterNumber < 1 ||
+    chapterNumber > book.chapters
+  ) {
     return pageMetadata({
       title: "Library",
       description: "The full Tanakh — Torah, Nevi'im and Ketuvim, book by book.",
@@ -53,16 +34,10 @@ export async function generateMetadata({
   }
 
   return pageMetadata({
-    title: `${book.name} ${n}`,
-    description: `${book.name} chapter ${n} — read the Hebrew text from Sefaria.`,
+    title: `${book.name} ${chapterNumber}`,
+    description: `${book.name} chapter ${chapterNumber} — read the Hebrew text from Sefaria.`,
     locale: "en_US",
   });
-}
-
-interface CoverVars extends CSSProperties {
-  "--cover-bg": string;
-  "--cover-fg": string;
-  "--cover-accent": string;
 }
 
 export default async function ChapterPage({
@@ -72,38 +47,37 @@ export default async function ChapterPage({
 }) {
   const { book: slug, chapter } = await params;
   const book = getBook(slug);
-  const n = Number(chapter);
+  const chapterNumber = Number(chapter);
 
-  if (!book || !Number.isInteger(n) || n < 1 || n > book.chapters) {
+  if (
+    !book ||
+    !Number.isInteger(chapterNumber) ||
+    chapterNumber < 1 ||
+    chapterNumber > book.chapters
+  ) {
     notFound();
   }
 
-  const content = await fetchText(`${book.sefaria}.${n}`);
-  const verses = content?.hebrew ?? [];
+  const verses =
+    (await fetchSefariaVerses(`${book.sefaria}.${chapterNumber}`)) ?? [];
   const verseCount = verses.length;
   const verseWord = verseCount === 1 ? "verse" : "verses";
 
-  const prev = n > 1 ? n - 1 : null;
-  const next = n < book.chapters ? n + 1 : null;
-  const progress = Math.round((n / book.chapters) * 100);
-
-  const palette = bookPalette(book.slug);
-  const coverVars: CoverVars = {
-    "--cover-bg": palette.bg,
-    "--cover-fg": palette.fg,
-    "--cover-accent": palette.accent,
-  };
+  const previousChapter = chapterNumber > 1 ? chapterNumber - 1 : null;
+  const nextChapter =
+    chapterNumber < book.chapters ? chapterNumber + 1 : null;
+  const progress = Math.round((chapterNumber / book.chapters) * 100);
 
   const sefariaUrl = `https://www.sefaria.org/${book.sefaria.replace(
     / /g,
     "_",
-  )}.${n}`;
+  )}.${chapterNumber}`;
 
   return (
     <div
       id="top"
       className="container chapter-page"
-      style={coverVars}
+      style={coverVars(book.slug)}
       lang="en"
       dir="ltr"
     >
@@ -117,7 +91,7 @@ export default async function ChapterPage({
           /
         </span>
         <span className="book-breadcrumb-current" aria-current="page">
-          Chapter {n}
+          Chapter {chapterNumber}
         </span>
       </nav>
 
@@ -137,7 +111,7 @@ export default async function ChapterPage({
 
           <h1 className="chapter-title" id="chapter-heading">
             <span className="chapter-title-word">Chapter</span>{" "}
-            <span className="chapter-title-num">{n}</span>
+            <span className="chapter-title-num">{chapterNumber}</span>
           </h1>
 
           <p className="chapter-meta">
@@ -150,7 +124,7 @@ export default async function ChapterPage({
         <div className="chapter-progress">
           <span className="chapter-progress-label">
             <span>
-              Chapter {n} of {book.chapters}
+              Chapter {chapterNumber} of {book.chapters}
             </span>
             <span>{progress}%</span>
           </span>
@@ -160,8 +134,8 @@ export default async function ChapterPage({
             aria-label="Chapter progress"
             aria-valuemin={1}
             aria-valuemax={book.chapters}
-            aria-valuenow={n}
-            aria-valuetext={`Chapter ${n} of ${book.chapters}`}
+            aria-valuenow={chapterNumber}
+            aria-valuetext={`Chapter ${chapterNumber} of ${book.chapters}`}
           >
             <span
               className="chapter-progress-fill"
@@ -173,7 +147,7 @@ export default async function ChapterPage({
 
       <article className="manuscript" aria-labelledby="chapter-heading">
         <span className="manuscript-ribbon" aria-hidden="true">
-          {n}
+          {chapterNumber}
         </span>
 
         <header className="manuscript-head">
@@ -182,7 +156,7 @@ export default async function ChapterPage({
             ·
           </span>
           <span className="manuscript-he" lang="he" dir="rtl">
-            פרק {n}
+            פרק {chapterNumber}
           </span>
         </header>
 
@@ -214,7 +188,7 @@ export default async function ChapterPage({
             </ol>
 
             <footer className="manuscript-foot">
-              <span>End of chapter {n}</span>
+              <span>End of chapter {chapterNumber}</span>
             </footer>
           </>
         ) : (
@@ -245,8 +219,8 @@ export default async function ChapterPage({
       >
         <Link
           href={
-            prev
-              ? `/library/${book.slug}/${prev}`
+            previousChapter
+              ? `/library/${book.slug}/${previousChapter}`
               : `/library/${book.slug}`
           }
           className="book-pager-link book-pager-prev"
@@ -255,23 +229,31 @@ export default async function ChapterPage({
             ←
           </span>
           <span className="book-pager-text">
-            <small>{prev ? "Previous chapter" : "Book contents"}</small>
-            <strong>{prev ? `Chapter ${prev}` : "All chapters"}</strong>
+            <small>
+              {previousChapter ? "Previous chapter" : "Book contents"}
+            </small>
+            <strong>
+              {previousChapter
+                ? `Chapter ${previousChapter}`
+                : "All chapters"}
+            </strong>
           </span>
         </Link>
 
         {book.chapters > 1 && (
           <Link
             href={
-              next
-                ? `/library/${book.slug}/${next}`
+              nextChapter
+                ? `/library/${book.slug}/${nextChapter}`
                 : `/library/${book.slug}`
             }
             className="book-pager-link book-pager-next"
           >
             <span className="book-pager-text">
-              <small>{next ? "Next chapter" : "Book contents"}</small>
-              <strong>{next ? `Chapter ${next}` : "All chapters"}</strong>
+              <small>{nextChapter ? "Next chapter" : "Book contents"}</small>
+              <strong>
+                {nextChapter ? `Chapter ${nextChapter}` : "All chapters"}
+              </strong>
             </span>
             <span className="book-pager-dir" aria-hidden="true">
               →

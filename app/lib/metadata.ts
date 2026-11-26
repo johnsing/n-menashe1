@@ -1,5 +1,3 @@
-// app/lib/metadata.ts — page metadata with matching Open Graph values.
-//
 // Next inherits a layout's `openGraph` object unchanged, so without an override
 // every shared link would show the home-page title and description. Pages call
 // this helper to keep the document head and the social preview in sync.

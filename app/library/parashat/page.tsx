@@ -1,9 +1,11 @@
-// app/library/parashat/page.tsx — index of the 54 weekly portions.
-// Visual companion to the bookcase and chapter reader: a leather title band,
-// book-coloured jump tabs, and a single parchment index grouped by Chumash.
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { CHUMASH_HEBREW, CHUMASH_LABELS, PARASHIYOT } from "@/app/data/parashat-data";
+import {
+  CHUMASH_BOOKS,
+  CHUMASH_HEBREW,
+  CHUMASH_LABELS,
+  PARASHIYOT,
+} from "@/app/data/parashat-data";
 import { bookPalette, type SpinePalette } from "@/app/lib/bookDesign";
 import { pageMetadata } from "@/app/lib/metadata";
 
@@ -13,14 +15,6 @@ export const metadata = pageMetadata({
     "The 54 weekly Torah portions, from Bereshit to Vezot Haberakhah, grouped by the five books of the Torah.",
   locale: "en_US",
 });
-
-const BOOK_ORDER = [
-  "genesis",
-  "exodus",
-  "leviticus",
-  "numbers",
-  "deuteronomy",
-] as const;
 
 interface ParashaVars extends CSSProperties {
   "--parashat-bg": string;
@@ -39,16 +33,17 @@ function parashaVars(palette: SpinePalette): ParashaVars {
 export default function ParashatIndexPage() {
   const total = PARASHIYOT.length;
 
-  const groups = BOOK_ORDER.map((book) => {
-    const portions = PARASHIYOT.filter((p) => p.book === book);
-    const start = PARASHIYOT.findIndex((p) => p.book === book) + 1;
+  const groups = CHUMASH_BOOKS.map((book) => {
+    const portions = PARASHIYOT.filter((portion) => portion.book === book);
+    const firstNumber =
+      PARASHIYOT.findIndex((portion) => portion.book === book) + 1;
 
     return {
       book,
-      label: CHUMASH_LABELS[book] ?? book,
-      hebrew: CHUMASH_HEBREW[book] ?? "",
+      label: CHUMASH_LABELS[book],
+      hebrew: CHUMASH_HEBREW[book],
       portions,
-      start,
+      firstNumber,
       palette: bookPalette(book),
     };
   });
@@ -166,7 +161,7 @@ export default function ParashatIndexPage() {
                     className="parashat-portion"
                   >
                     <span className="parashat-portion-num" aria-hidden="true">
-                      {group.start + index}
+                      {group.firstNumber + index}
                     </span>
                     <span className="parashat-portion-body">
                       <span className="parashat-portion-title">

@@ -1,5 +1,3 @@
-// app/lib/site.ts — single source of truth for organisation details.
-//
 // Replace the placeholder phone, email, address, and lastUpdated values with
 // the real details before launch. The accessibility statement, footer, and
 // contact page all read from here.

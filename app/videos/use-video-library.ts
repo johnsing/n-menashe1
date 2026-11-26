@@ -1,19 +1,14 @@
-// app/videos/use-video-library.ts — merge curated seeds with the Supabase library.
-//
-// Both the grid and the watch page use this hook. Videos added through the UI
-// are stored in Supabase only; there is no browser-local fallback.
-
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { videoKey, type Video } from "./video-data";
+import type { Video } from "./video-data";
 import { isCloudLibraryEnabled } from "./supabase";
 import {
   addSharedVideo,
   fetchSharedVideos,
   removeSharedVideo,
-  type AddVideoResult,
+  type AddVideoOutcome,
 } from "./video-store";
 
 export type VideoLibraryStatus = "loading" | "ready" | "error";
@@ -22,8 +17,7 @@ const CONFIG_ERROR =
   "Video storage is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) to .env.local, then restart the server.";
 
 export function useVideoLibrary(initialVideos: Video[]) {
-  // Start empty on both the server and the client so hydration matches; the
-  // effect below loads the shared library.
+  // Start empty so the server and first client render match.
   const [storedVideos, setStoredVideos] = useState<Video[]>([]);
   const [status, setStatus] = useState<VideoLibraryStatus>(
     isCloudLibraryEnabled ? "loading" : "error",
@@ -37,14 +31,16 @@ export function useVideoLibrary(initialVideos: Video[]) {
 
     let cancelled = false;
 
-    async function load() {
+    async function loadSharedVideos() {
       try {
-        const rows = await fetchSharedVideos();
+        const sharedVideos = await fetchSharedVideos();
         if (cancelled) return;
-        setStoredVideos(rows);
+
+        setStoredVideos(sharedVideos);
         setStatus("ready");
       } catch {
         if (cancelled) return;
+
         setStoredVideos([]);
         setStatus("error");
         setLoadError(
@@ -53,18 +49,16 @@ export function useVideoLibrary(initialVideos: Video[]) {
       }
     }
 
-    void load();
+    void loadSharedVideos();
     return () => {
       cancelled = true;
     };
   }, []);
 
   const { allVideos, storedOnly } = useMemo(() => {
-    // Ignore a stored copy if the same video has since been added to the
-    // curated seed list in code.
-    const seedKeys = new Set(initialVideos.map(videoKey));
+    const seedIds = new Set(initialVideos.map((video) => video.id));
     const storedOnlyVideos = storedVideos.filter(
-      (video) => !seedKeys.has(videoKey(video)),
+      (video) => !seedIds.has(video.id),
     );
 
     return {
@@ -74,22 +68,20 @@ export function useVideoLibrary(initialVideos: Video[]) {
   }, [initialVideos, storedVideos]);
 
   const addVideo = useCallback(
-    async (video: Video): Promise<AddVideoResult> => {
-      if (allVideos.some((entry) => videoKey(entry) === videoKey(video))) {
+    async (video: Video): Promise<AddVideoOutcome> => {
+      if (allVideos.some((entry) => entry.id === video.id)) {
         return "duplicate";
       }
 
       try {
-        const result = await addSharedVideo(video);
-        if (result === "added") {
+        const outcome = await addSharedVideo(video);
+        if (outcome === "added") {
           setStoredVideos((current) => [
-            ...current.filter(
-              (entry) => videoKey(entry) !== videoKey(video),
-            ),
+            ...current.filter((entry) => entry.id !== video.id),
             video,
           ]);
         }
-        return result;
+        return outcome;
       } catch {
         return "unavailable";
       }
@@ -101,7 +93,7 @@ export function useVideoLibrary(initialVideos: Video[]) {
     try {
       await removeSharedVideo(video);
       setStoredVideos((current) =>
-        current.filter((entry) => videoKey(entry) !== videoKey(video)),
+        current.filter((entry) => entry.id !== video.id),
       );
       return true;
     } catch {

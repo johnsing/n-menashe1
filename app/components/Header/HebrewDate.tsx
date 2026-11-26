@@ -6,9 +6,11 @@ import { HDate } from "@hebcal/core";
 import { useLocale } from "@/app/components/providers/LocaleProvider";
 
 function formatHebrewDate(now: Date, locale: "he" | "en"): string {
-  const hd = new HDate(now);
+  const hebrewDate = new HDate(now);
   // Gematriya without nikud reads naturally in the compact header.
-  return locale === "he" ? hd.renderGematriya(true) : hd.render("en");
+  return locale === "he"
+    ? hebrewDate.renderGematriya(true)
+    : hebrewDate.render("en");
 }
 
 export default function HebrewDate() {

@@ -1,10 +1,3 @@
-// app/videos/video-data.ts — shared video types, seed library, and helpers.
-//
-// Videos are referenced by YouTube ID only: the 11-character ID from the
-// watch URL, e.g. https://www.youtube.com/watch?v=<id>.
-
-// Fixed groups for the library. The exact labels are stored in Supabase, so
-// changing them here also requires updating the existing rows.
 export const VIDEO_CATEGORIES = ["Pasal-Ho", "Numei-Ho"] as const;
 
 export type VideoCategory = (typeof VIDEO_CATEGORIES)[number];
@@ -20,40 +13,26 @@ export interface Video {
   id: string;
   title: string;
   speaker: string;
-  // Empty only for a legacy row saved before categories existed.
-  category: VideoCategory | "";
+  category: VideoCategory | ""; // empty for legacy rows saved before categories
 }
 
 export const SEED_VIDEOS: Video[] = [];
 
 const EMBED_BASE = "https://www.youtube-nocookie.com/embed/";
+const IFRAME_ALLOW = "picture-in-picture; fullscreen";
 
-// Delegate only the permissions this library uses. YouTube's stock list also
-// names accelerometer, clipboard-write, encrypted-media and gyroscope; Firefox
-// warns for each unsupported name. Fullscreen and picture-in-picture remain
-// available.
-export const IFRAME_ALLOW = "picture-in-picture; fullscreen";
-
-// Firefox does not implement the autoplay permission and logs “Skipping
-// unsupported feature name “autoplay”” for every iframe that asks for it.
-// Chromium and Safari need the delegation for the poster-click autoplay to
-// start with sound, so only Firefox omits it.
+// Firefox logs a warning for the autoplay permission and works without it.
 export function iframeAllow() {
-  const isFirefox =
-    typeof navigator !== "undefined" &&
-    navigator.userAgent.includes("Firefox/");
-
-  return isFirefox ? IFRAME_ALLOW : `autoplay; ${IFRAME_ALLOW}`;
+  return navigator.userAgent.includes("Firefox/")
+    ? IFRAME_ALLOW
+    : `autoplay; ${IFRAME_ALLOW}`;
 }
 
 export const embedUrl = (video: Pick<Video, "id">) =>
   `${EMBED_BASE}${encodeURIComponent(video.id)}`;
 
-// Library cards show a still image, never an inline player.
 export const thumbnailUrl = (video: Pick<Video, "id">) =>
   `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/hqdefault.jpg`;
-
-export const videoKey = (video: Pick<Video, "id">) => video.id;
 
 export const videoPath = (video: Pick<Video, "id">) =>
   `/watch?v=${encodeURIComponent(video.id)}`;
@@ -88,23 +67,23 @@ export function validateVideoId(raw: string) {
 }
 
 // Validate a row loaded from Supabase before it reaches an iframe.
-export function normalizeVideo(value: unknown): Video | null {
-  if (!value || typeof value !== "object") return null;
+export function normalizeVideo(row: unknown): Video | null {
+  if (!row || typeof row !== "object") return null;
 
-  const record = value as Record<string, unknown>;
+  const fields = row as Record<string, unknown>;
 
-  const id = record.id;
+  const id = fields.id;
   if (typeof id !== "string" || !isValidVideoId(id)) return null;
 
-  const title = typeof record.title === "string" ? record.title.trim() : "";
+  const title = typeof fields.title === "string" ? fields.title.trim() : "";
   if (!title) return null;
 
   const speaker =
-    typeof record.speaker === "string" ? record.speaker.trim() : "";
+    typeof fields.speaker === "string" ? fields.speaker.trim() : "";
 
   // Unknown or missing categories stay playable; they simply show no tag and
   // appear only under "All".
-  const category = isVideoCategory(record.category) ? record.category : "";
+  const category = isVideoCategory(fields.category) ? fields.category : "";
 
   return {
     id,

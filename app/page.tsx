@@ -1,4 +1,3 @@
-// app/page.tsx
 import HomeContent from "./components/HomeContent";
 import { pageMetadata } from "@/app/lib/metadata";
 

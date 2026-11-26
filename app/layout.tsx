@@ -1,4 +1,3 @@
-// app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Heebo } from "next/font/google";
 
@@ -47,7 +46,7 @@ export const viewport: Viewport = {
 
 // Runs before paint so the saved locale applies immediately, without making
 // the whole app dynamic by reading cookies in the layout.
-const localeBootstrap = `(function(){try{var m=document.cookie.match(/(?:^|; )locale=(en|he)/);if(m){document.documentElement.lang=m[1];document.documentElement.dir=m[1]==="he"?"rtl":"ltr";}}catch(e){}})();`;
+const localeBootstrap = `(function(){var m=document.cookie.match(/(?:^|; )locale=(en|he)/);if(!m)return;document.documentElement.lang=m[1];document.documentElement.dir=m[1]==="he"?"rtl":"ltr";})();`;
 
 export default function RootLayout({
   children,

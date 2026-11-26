@@ -1,16 +1,27 @@
-// app/library/parashat-data.ts — the 54 weekly Torah portions
+// The 54 weekly Torah portions, in annual reading order.
+
+export const CHUMASH_BOOKS = [
+  "genesis",
+  "exodus",
+  "leviticus",
+  "numbers",
+  "deuteronomy",
+] as const;
+
+export type ChumashBook = (typeof CHUMASH_BOOKS)[number];
 
 export interface Parasha {
   slug: string;
-  name: string;     // transliterated: "Bereshit"
-  hebrew: string;   // "בראשית"
-  book: string;     // book slug: "genesis"
-  ref: string;      // Sefaria range: "Genesis.1.1-6.8"
-  range: string;    // display: "Genesis 1:1–6:8"
+  name: string;
+  hebrew: string;
+  book: ChumashBook;
+  /** Sefaria range, e.g. "Genesis.1.1-6.8". */
+  ref: string;
+  /** Display range, e.g. "Genesis 1:1–6:8". */
+  range: string;
 }
 
-/** English and Hebrew names for the five books of the Torah. */
-export const CHUMASH_LABELS: Record<string, string> = {
+export const CHUMASH_LABELS: Record<ChumashBook, string> = {
   genesis: "Genesis",
   exodus: "Exodus",
   leviticus: "Leviticus",
@@ -18,7 +29,7 @@ export const CHUMASH_LABELS: Record<string, string> = {
   deuteronomy: "Deuteronomy",
 };
 
-export const CHUMASH_HEBREW: Record<string, string> = {
+export const CHUMASH_HEBREW: Record<ChumashBook, string> = {
   genesis: "בראשית",
   exodus: "שמות",
   leviticus: "ויקרא",
@@ -92,5 +103,5 @@ export const getParasha = (slug: string) =>
   PARASHIYOT.find((p) => p.slug === slug);
 
 export const parashaIndex = (slug: string) =>
-  PARASHIYOT.findIndex((p) => p.slug === slug);
+  PARASHIYOT.findIndex((parasha) => parasha.slug === slug);
 

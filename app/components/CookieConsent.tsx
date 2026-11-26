@@ -5,12 +5,12 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
 
 import { useLocale } from "@/app/components/providers/LocaleProvider";
+import { useDialogFocus } from "@/app/components/useDialogFocus";
 import {
   CONSENT_CHANGED_EVENT,
   OPEN_COOKIE_SETTINGS_EVENT,
@@ -36,10 +36,6 @@ function subscribeConsent(onChange: () => void) {
   };
 }
 
-function getConsentRaw() {
-  return readConsentRaw();
-}
-
 const getServerConsentRaw = () => null;
 
 export default function CookieConsent() {
@@ -51,20 +47,19 @@ export default function CookieConsent() {
   );
   const rawConsent = useSyncExternalStore(
     subscribeConsent,
-    getConsentRaw,
+    readConsentRaw,
     getServerConsentRaw,
   );
   const storedConsent = useMemo(
     () => parseConsent(rawConsent),
     [rawConsent],
   );
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [status, setStatus] = useState("");
 
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
   const bannerOpen = hydrated && !storedConsent && !settingsOpen;
 
   const closeSettings = useCallback(() => {
@@ -75,78 +70,22 @@ export default function CookieConsent() {
     const stored = readConsent();
     setAnalytics(stored?.analytics ?? false);
     setMarketing(stored?.marketing ?? false);
-    restoreFocusRef.current = document.activeElement as HTMLElement | null;
     setSettingsOpen(true);
   }, []);
 
+  const dialogRef = useDialogFocus<HTMLDivElement>({
+    open: settingsOpen,
+    onClose: closeSettings,
+    fallbackFocus: () =>
+      document.querySelector<HTMLElement>("[data-cookie-settings]") ??
+      document.getElementById("main-content"),
+  });
+
   useEffect(() => {
-    const onOpen = () => openSettings();
-    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, onOpen);
+    window.addEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
     return () =>
-      window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, onOpen);
+      window.removeEventListener(OPEN_COOKIE_SETTINGS_EVENT, openSettings);
   }, [openSettings]);
-
-  useEffect(() => {
-    if (!settingsOpen) {
-      return;
-    }
-
-    const panel = dialogRef.current;
-    if (!panel) {
-      return;
-    }
-
-    const focusables = Array.from(
-      panel.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ),
-    );
-    const previousFocus = restoreFocusRef.current;
-    focusables[0]?.focus();
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        closeSettings();
-        return;
-      }
-
-      if (event.key !== "Tab" || focusables.length === 0) {
-        return;
-      }
-
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-
-      // The opener may have unmounted (for example, the banner's settings
-      // button disappears after saving). Fall back to the footer trigger.
-      const fallback =
-        document.querySelector<HTMLElement>("[data-cookie-settings]") ??
-        document.getElementById("main-content");
-      const canRestore =
-        previousFocus !== null &&
-        previousFocus !== document.body &&
-        previousFocus.isConnected;
-      (canRestore ? previousFocus : fallback)?.focus();
-    };
-  }, [settingsOpen, closeSettings]);
 
   const commit = useCallback(
     (preferences: { analytics: boolean; marketing: boolean }) => {
@@ -159,9 +98,10 @@ export default function CookieConsent() {
     [t],
   );
 
-  if (!hydrated) {
-    return null;
-  }
+  const acceptAll = () => commit({ analytics: true, marketing: true });
+  const rejectAll = () => commit({ analytics: false, marketing: false });
+
+  if (!hydrated) return null;
 
   return (
     <>
@@ -169,7 +109,7 @@ export default function CookieConsent() {
         {status}
       </p>
 
-      {bannerOpen && !settingsOpen ? (
+      {bannerOpen && (
         <section
           className="cookie-banner"
           aria-labelledby="cookie-banner-title"
@@ -189,19 +129,11 @@ export default function CookieConsent() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() =>
-                  commit({ analytics: true, marketing: true })
-                }
+                onClick={acceptAll}
               >
                 {t("cookie.acceptAll")}
               </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() =>
-                  commit({ analytics: false, marketing: false })
-                }
-              >
+              <button type="button" className="btn" onClick={rejectAll}>
                 {t("cookie.rejectAll")}
               </button>
               <button
@@ -214,15 +146,13 @@ export default function CookieConsent() {
             </div>
           </div>
         </section>
-      ) : null}
+      )}
 
-      {settingsOpen ? (
+      {settingsOpen && (
         <div
           className="cookie-backdrop"
           onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              closeSettings();
-            }
+            if (event.target === event.currentTarget) closeSettings();
           }}
         >
           <div
@@ -323,16 +253,14 @@ export default function CookieConsent() {
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() =>
-                  commit({ analytics: true, marketing: true })
-                }
+                onClick={acceptAll}
               >
                 {t("cookie.acceptAll")}
               </button>
             </div>
           </div>
         </div>
-      ) : null}
+      )}
     </>
   );
 }

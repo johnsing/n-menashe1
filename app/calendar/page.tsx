@@ -1,4 +1,3 @@
-// app/calendar/page.tsx — live Zmanim Train timetable
 import ZmanimTrainApp from "@/app/components/Zmanim/ZmanimTrainApp";
 import { pageMetadata } from "@/app/lib/metadata";
 

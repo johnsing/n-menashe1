@@ -1,5 +1,3 @@
-// app/lib/consent.ts — granular cookie-consent state.
-//
 // The banner stores a versioned JSON record in localStorage. No analytics or
 // marketing script is loaded by default; call hasConsent("analytics") before
 // initialising such a script.

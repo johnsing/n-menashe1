@@ -1,5 +1,3 @@
-// app/lib/i18n.ts — locale type, direction helper, and shell/home/contact copy.
-//
 // The legal pages are intentionally Hebrew-only (Israeli regulatory copy), but
 // the shell, home page, and contact form switch between Hebrew and English.
 
@@ -32,8 +30,6 @@ const he = {
   "footer.accessibility": "הצהרת נגישות",
   "footer.privacy": "מדיניות פרטיות",
   "footer.terms": "תנאי שימוש",
-  "footer.contactUs": "צור קשר",
-  "footer.address": "כתובת",
   "footer.updated": "עודכן לאחרונה",
   "cookie.title": "הסכמה לשימוש בעוגיות",
   "cookie.description":
@@ -115,9 +111,6 @@ const he = {
   "contact.supportAmount": "החל מ־",
   "contact.formNote":
     "הטופס להדגמה — חברו שירות דואר או API לפני עלייה לאוויר.",
-  "legal.updated": "עודכן לאחרונה",
-  "legal.toc": "תוכן העמוד",
-  "legal.contactTitle": "יצירת קשר",
 } as const;
 
 export type MessageKey = keyof typeof he;
@@ -143,8 +136,6 @@ const en: Record<MessageKey, string> = {
   "footer.accessibility": "Accessibility statement",
   "footer.privacy": "Privacy policy",
   "footer.terms": "Terms of use",
-  "footer.contactUs": "Contact us",
-  "footer.address": "Address",
   "footer.updated": "Last updated",
   "cookie.title": "Cookie consent",
   "cookie.description":
@@ -229,9 +220,6 @@ const en: Record<MessageKey, string> = {
   "contact.supportAmount": "From ",
   "contact.formNote":
     "This form is a template — connect an email service or API before launch.",
-  "legal.updated": "Last updated",
-  "legal.toc": "On this page",
-  "legal.contactTitle": "Contact",
 };
 
 export const messages: Record<Locale, Record<MessageKey, string>> = {

@@ -1,6 +1,5 @@
 "use client";
-// Board header: line name, location, live clock, next-event countdown,
-// and the weekly parasha. The clock uses the selected city's timezone.
+
 import { useEffect, useState } from "react";
 import { LuBookOpen } from "react-icons/lu";
 import { TfiLocationPin } from "react-icons/tfi";
@@ -48,22 +47,22 @@ export default function TransitHeader({
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    // Fill the clock on the next tick, then keep it ticking once a second.
     const tick = () => setNow(new Date());
     const firstTick = setTimeout(tick, 0);
-    const id = setInterval(tick, 1000);
+    const intervalId = setInterval(tick, 1000);
     return () => {
       clearTimeout(firstTick);
-      clearInterval(id);
+      clearInterval(intervalId);
     };
   }, []);
 
-  const timeStr = now ? formatClock(now, timeZone) : null;
-  const dateStr = now ? formatDate(now, timeZone) : null;
-  const nextTime = nextStation
+  const clockTime = now ? formatClock(now, timeZone) : null;
+  const clockDate = now ? formatDate(now, timeZone) : null;
+  const nextClockTime = nextStation
     ? formatClock(nextStation.time, timeZone)
     : null;
-  const inText = now && nextStation ? formatIn(nextStation.time, now) : "";
+  const countdownLabel =
+    now && nextStation ? formatIn(nextStation.time, now) : "";
 
   return (
     <header className="zt-header">
@@ -75,11 +74,11 @@ export default function TransitHeader({
               Live timetable
             </p>
             <h1 className="zt-title">Zmanim Train</h1>
-            <p className="zt-date">{dateStr ?? "Today's prayer times"}</p>
+            <p className="zt-date">{clockDate ?? "Today's prayer times"}</p>
           </div>
 
           <div className="zt-clock" aria-live="off">
-            <span className="zt-clock-time">{timeStr ?? "--:--"}</span>
+            <span className="zt-clock-time">{clockTime ?? "--:--"}</span>
             <span className="zt-clock-zone">{zoneLabel(timeZone)}</span>
           </div>
         </div>
@@ -99,12 +98,14 @@ export default function TransitHeader({
               <>
                 <span className="zt-next-label">Next</span>
                 <strong>{nextStation.name}</strong>
-                {nextTime && (
+                {nextClockTime && (
                   <time dateTime={nextStation.time.toISOString()}>
-                    {nextTime}
+                    {nextClockTime}
                   </time>
                 )}
-                {inText && <span className="zt-next-in">{inText}</span>}
+                {countdownLabel && (
+                  <span className="zt-next-in">{countdownLabel}</span>
+                )}
               </>
             ) : (
               "All of today's zmanim have passed"

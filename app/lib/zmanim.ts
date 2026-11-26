@@ -1,16 +1,14 @@
-// app/lib/zmanim.ts — Hebcal zmanim + shabbat API client + station definitions
-
 import type { ComponentType } from "react";
-import { 
-  LuMoon, 
-  LuSunrise, 
-  LuSunMedium, 
-  LuSun, 
-  LuSunset, 
-  LuCloudSun, 
-  LuClock, 
-  LuSparkles,
+import {
+  LuClock,
+  LuCloudSun,
   LuFlame,
+  LuMoon,
+  LuSparkles,
+  LuSun,
+  LuSunMedium,
+  LuSunrise,
+  LuSunset,
 } from "react-icons/lu";
 
 export type StationKind = "zman" | "candles" | "havdalah";
@@ -52,20 +50,20 @@ export const ZMANIM_STATIONS: ZmanimStationConfig[] = [
 ];
 
 /** Calendar date in `timeZone` as YYYY-MM-DD (Hebcal's expected format). */
-export const toApiDate = (d: Date, timeZone: string): string => {
+export const toApiDate = (date: Date, timeZone: string): string => {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  }).formatToParts(d);
-  const part = (type: string) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-  return `${part("year")}-${part("month")}-${part("day")}`;
+  }).formatToParts(date);
+  const valueFor = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${valueFor("year")}-${valueFor("month")}-${valueFor("day")}`;
 };
 
-interface HebcalTimes {
-  location: { title?: string; tzid?: string };
+interface HebcalZmanimResponse {
+  location?: { title?: string; tzid?: string };
   times: Record<string, string>;
 }
 
@@ -80,29 +78,35 @@ export async function fetchZmanim(
   fallbackLabel: string,
 ): Promise<ZmanimResult> {
   const url = `https://www.hebcal.com/zmanim?cfg=json&${params}&date=${dateKey}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Hebcal request failed (${res.status})`);
+  const hebcalResponse = await fetch(url);
+  if (!hebcalResponse.ok) {
+    throw new Error(`Hebcal request failed (${hebcalResponse.status})`);
+  }
 
-  const data = (await res.json()) as HebcalTimes;
-  const times = data?.times ?? {};
+  const hebcalDay = (await hebcalResponse.json()) as HebcalZmanimResponse;
+  const times = hebcalDay.times ?? {};
 
-  const stations: Station[] = ZMANIM_STATIONS
-    .filter((z) => typeof times[z.key] === "string")
-    .map((z) => ({
-      id: z.key,
-      name: z.name,
-      hebrew: z.hebrew,
-      time: new Date(times[z.key]),
-      icon: z.icon,
+  const stations: Station[] = ZMANIM_STATIONS.filter(
+    (config) => typeof times[config.key] === "string",
+  )
+    .map((config) => ({
+      id: config.key,
+      name: config.name,
+      hebrew: config.hebrew,
+      time: new Date(times[config.key]),
+      icon: config.icon,
     }))
     .sort((a, b) => a.time.getTime() - b.time.getTime());
 
-  if (stations.length === 0) throw new Error("Hebcal returned no zmanim for this date");
+  if (stations.length === 0) {
+    throw new Error("Hebcal returned no zmanim for this date");
+  }
 
-  return { stations, locationTitle: data.location?.title ?? fallbackLabel };
+  return {
+    stations,
+    locationTitle: hebcalDay.location?.title ?? fallbackLabel,
+  };
 }
-
-// ── Shabbat: candle lighting, havdalah, weekly parasha ─────
 
 export interface ShabbatInfo {
   candleLighting: Date | null;
@@ -110,17 +114,16 @@ export interface ShabbatInfo {
   parasha: string | null;
 }
 
-interface HebcalShabbatItem {
+interface HebcalShabbatEvent {
   category?: string;
   title?: string;
   date?: string;
 }
 
-/**
- * Fetches the Shabbat week that contains `dateKey`, but only returns
- * candle-lighting / havdalah times that fall ON that date in the
- * location's timezone — so on Friday you see tonight's candle lighting,
- * on Saturday tonight's havdalah, and mid-week the board stays clean.
+/*
+ * Hebcal returns the whole Shabbat week. Only keep candle lighting or havdalah
+ * when it falls on `dateKey` in the location's timezone, so the board shows
+ * Friday's candles, Saturday's havdalah, and nothing extra mid-week.
  */
 export async function fetchShabbat(
   params: string,
@@ -128,29 +131,39 @@ export async function fetchShabbat(
   timeZone: string,
 ): Promise<ShabbatInfo> {
   const url = `https://www.hebcal.com/shabbat?cfg=json&${params}&start=${dateKey}&end=${dateKey}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Hebcal shabbat request failed (${res.status})`);
+  const hebcalResponse = await fetch(url);
+  if (!hebcalResponse.ok) {
+    throw new Error(`Hebcal shabbat request failed (${hebcalResponse.status})`);
+  }
 
-  const data = (await res.json()) as { items?: HebcalShabbatItem[] };
-  const items = data?.items ?? [];
+  const shabbatWeek = (await hebcalResponse.json()) as {
+    items?: HebcalShabbatEvent[];
+  };
+  const events = shabbatWeek.items ?? [];
 
-  const inDay = (d: Date) => toApiDate(d, timeZone) === dateKey;
+  const isOnDate = (date: Date) => toApiDate(date, timeZone) === dateKey;
 
-  const candles = items.find((i) => i.category === "candles" && i.date);
-  const havdalah = items.find((i) => i.category === "havdalah" && i.date);
-  const parashaItem = items.find((i) => i.category === "parashat");
+  const candleEvent = events.find(
+    (event) => event.category === "candles" && event.date,
+  );
+  const havdalahEvent = events.find(
+    (event) => event.category === "havdalah" && event.date,
+  );
+  const parashaEvent = events.find((event) => event.category === "parashat");
 
-  const candleDate = candles?.date ? new Date(candles.date) : null;
-  const havdalahDate = havdalah?.date ? new Date(havdalah.date) : null;
+  const candleDate = candleEvent?.date ? new Date(candleEvent.date) : null;
+  const havdalahDate = havdalahEvent?.date
+    ? new Date(havdalahEvent.date)
+    : null;
 
   return {
-    candleLighting: candleDate && inDay(candleDate) ? candleDate : null,
-    havdalah: havdalahDate && inDay(havdalahDate) ? havdalahDate : null,
-    parasha: parashaItem?.title ?? null,
+    candleLighting:
+      candleDate && isOnDate(candleDate) ? candleDate : null,
+    havdalah: havdalahDate && isOnDate(havdalahDate) ? havdalahDate : null,
+    parasha: parashaEvent?.title ?? null,
   };
 }
 
-/** Build the special Shabbat rows shown on the board. */
 export function shabbatStations(info: ShabbatInfo): Station[] {
   const rows: Station[] = [];
   if (info.candleLighting) {

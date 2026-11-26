@@ -105,7 +105,7 @@ export default function PullToRefresh() {
       updatePhase(distance >= THRESHOLD ? "armed" : "pulling");
     };
 
-    const finish = () => {
+    const finishPull = () => {
       if (!trackingRef.current) return;
 
       const distance = pullRef.current;
@@ -137,7 +137,7 @@ export default function PullToRefresh() {
       capture: true,
       passive: false,
     });
-    window.addEventListener("touchend", finish, {
+    window.addEventListener("touchend", finishPull, {
       capture: true,
       passive: true,
     });
@@ -150,7 +150,7 @@ export default function PullToRefresh() {
     return () => {
       window.removeEventListener("touchstart", onTouchStart, { capture: true });
       window.removeEventListener("touchmove", onTouchMove, { capture: true });
-      window.removeEventListener("touchend", finish, { capture: true });
+      window.removeEventListener("touchend", finishPull, { capture: true });
       window.removeEventListener("touchcancel", onTouchCancel, {
         capture: true,
       });
@@ -158,12 +158,12 @@ export default function PullToRefresh() {
     };
   }, [updatePhase, updatePull]);
 
-  const visible = pull > 0 || phase === "refreshing";
+  const isVisible = pull > 0 || phase === "refreshing";
   return (
     <div
       className={[
         "ptr",
-        visible ? "is-visible" : "",
+        isVisible ? "is-visible" : "",
         phase === "pulling" || phase === "armed" ? "is-dragging" : "",
         phase === "armed" ? "is-armed" : "",
         phase === "refreshing" ? "is-refreshing" : "",
@@ -173,7 +173,7 @@ export default function PullToRefresh() {
       style={{ "--ptr-pull": `${pull}px` } as CSSProperties}
       role="status"
       aria-live="polite"
-      aria-hidden={!visible}
+      aria-hidden={!isVisible}
     >
       <span className="ptr-icon" aria-hidden="true">
         {phase === "refreshing" ? "◌" : "↓"}

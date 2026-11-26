@@ -1,5 +1,3 @@
-// app/videos/supabase.ts — shared Supabase client for the video library.
-//
 // The anon key is safe to expose because Row Level Security decides what the
 // browser may read or write. Never import a service-role key here.
 

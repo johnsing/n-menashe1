@@ -1,9 +1,11 @@
-// app/library/page.tsx — Tanakh index presented as a wooden bookcase.
-// Server Component: every book is a link styled as a bound spine.
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { BOOKS, SECTIONS, booksBySection, type Book } from "@/app/data/data";
-import { bookPalette, spineHash } from "@/app/lib/bookDesign";
+import { SECTIONS, booksBySection, type Book } from "@/app/data/data";
+import {
+  SECTION_HEBREW,
+  bookPalette,
+  spineHash,
+} from "@/app/lib/bookDesign";
 import { pageMetadata } from "@/app/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -14,18 +16,12 @@ export const metadata = pageMetadata({
 
 const BOOKS_PER_SHELF = 7;
 
-const SECTION_HEBREW: Record<Book["section"], string> = {
-  Torah: "תורה",
-  "Nevi'im": "נביאים",
-  Ketuvim: "כתובים",
-};
-
-function chunk<T>(items: T[], size: number): T[][] {
-  const rows: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    rows.push(items.slice(i, i + size));
+function chunkBooks<T>(books: T[], size: number): T[][] {
+  const shelves: T[][] = [];
+  for (let index = 0; index < books.length; index += size) {
+    shelves.push(books.slice(index, index + size));
   }
-  return rows;
+  return shelves;
 }
 
 interface SpineVars extends CSSProperties {
@@ -52,16 +48,22 @@ function spineVars(book: Book): SpineVars {
 }
 
 export default function LibraryPage() {
-  const totalChapters = BOOKS.reduce((sum, book) => sum + book.chapters, 0);
-
   return (
     <div className="container library-page" lang="en" dir="ltr">
       <header className="hero library-hero">
         <h1>Library</h1>
-        <p className="muted">
-          {BOOKS.length} books · {totalChapters} chapters — the full Tanakh,
-          from Bereshit to Divrei HaYamim.
-        </p>
+        <Link href="/library/parashat" className="parashat-plaque">
+          <span className="parashat-plaque-mark" aria-hidden="true">
+            ✦
+          </span>
+          <span className="parashat-plaque-text">
+            <strong>Parashat HaShavua</strong>
+            <small>The week&rsquo;s Torah portion, read by aliyah</small>
+          </span>
+          <span className="parashat-plaque-arrow" aria-hidden="true">
+            →
+          </span>
+        </Link>
       </header>
 
       <div className="bookcase">
@@ -69,7 +71,7 @@ export default function LibraryPage() {
 
         {SECTIONS.map((section) => {
           const books = booksBySection(section);
-          const shelves = chunk(books, BOOKS_PER_SHELF);
+          const shelves = chunkBooks(books, BOOKS_PER_SHELF);
           const headingId = `shelf-${section.toLowerCase().replace(/[^a-z]/g, "")}`;
 
           return (
@@ -116,19 +118,6 @@ export default function LibraryPage() {
 
         <div className="bookcase-base" aria-hidden="true" />
       </div>
-
-      <Link href="/library/parashat" className="parashat-plaque">
-        <span className="parashat-plaque-mark" aria-hidden="true">
-          ✦
-        </span>
-        <span className="parashat-plaque-text">
-          <strong>Parashat HaShavua</strong>
-          <small>The week&rsquo;s Torah portion, read by aliyah</small>
-        </span>
-        <span className="parashat-plaque-arrow" aria-hidden="true">
-          →
-        </span>
-      </Link>
     </div>
   );
 }

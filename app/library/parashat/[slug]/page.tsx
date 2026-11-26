@@ -1,9 +1,6 @@
-// app/library/parashat/[slug]/page.tsx — read one weekly portion (Hebrew only).
-// Fetches the portion's full range from the free Sefaria API, cached 24h.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import {
   CHUMASH_HEBREW,
   CHUMASH_LABELS,
@@ -11,39 +8,17 @@ import {
   getParasha,
   parashaIndex,
 } from "@/app/data/parashat-data";
-import { bookPalette } from "@/app/lib/bookDesign";
+import { coverVars } from "@/app/lib/bookDesign";
 import { pageMetadata } from "@/app/lib/metadata";
-import { sanitizeSefariaHtml } from "@/app/utils/sefaria";
+import {
+  fetchSefariaVerses,
+  sanitizeSefariaHtml,
+} from "@/app/utils/sefaria";
 
-export const revalidate = 86400; // ISR
+export const revalidate = 86400;
 
-interface SefariaResponse {
-  ref?: string;
-  he?: string[] | string[][];
-  error?: string;
-}
-
-/** Sefaria returns ranges nested by chapter → flatten to one verse list. */
-function toVerses(data?: string[] | string[][]): string[] {
-  if (!data) return [];
-  if (typeof data === "string") return [data];
-  return data.flatMap((v) => (Array.isArray(v) ? v : [v]));
-}
-
-async function fetchText(ref: string) {
-  const url = `https://www.sefaria.org/api/texts/${encodeURIComponent(
-    ref,
-  )}?context=0&commentary=0`;
-  const res = await fetch(url, { next: { revalidate } });
-  if (!res.ok) return null;
-  const data = (await res.json()) as SefariaResponse;
-  if (data.error) return null;
-  return { hebrew: toVerses(data.he) };
-}
-
-// All 54 portions are generated at build time.
 export function generateStaticParams() {
-  return PARASHIYOT.map((p) => ({ slug: p.slug }));
+  return PARASHIYOT.map((parasha) => ({ slug: parasha.slug }));
 }
 
 export async function generateMetadata({
@@ -63,12 +38,6 @@ export async function generateMetadata({
   });
 }
 
-interface CoverVars extends CSSProperties {
-  "--cover-bg": string;
-  "--cover-fg": string;
-  "--cover-accent": string;
-}
-
 export default async function ParashatReaderPage({
   params,
 }: {
@@ -78,35 +47,30 @@ export default async function ParashatReaderPage({
   const parasha = getParasha(slug);
   if (!parasha) notFound();
 
-  const content = await fetchText(parasha.ref);
-  const verses = content?.hebrew ?? [];
+  const verses = (await fetchSefariaVerses(parasha.ref)) ?? [];
   const verseCount = verses.length;
 
-  const idx = parashaIndex(slug);
-  const prev = idx > 0 ? PARASHIYOT[idx - 1] : null;
+  const portionIndex = parashaIndex(slug);
+  const previous =
+    portionIndex > 0 ? PARASHIYOT[portionIndex - 1] : null;
   const next =
-    idx >= 0 && idx < PARASHIYOT.length - 1 ? PARASHIYOT[idx + 1] : null;
+    portionIndex < PARASHIYOT.length - 1
+      ? PARASHIYOT[portionIndex + 1]
+      : null;
 
   const total = PARASHIYOT.length;
-  const portionNumber = idx + 1;
+  const portionNumber = portionIndex + 1;
   const progress = Math.round((portionNumber / total) * 100);
 
-  const bookLabel = CHUMASH_LABELS[parasha.book] ?? parasha.book;
-  const bookHebrew = CHUMASH_HEBREW[parasha.book] ?? "";
-  const palette = bookPalette(parasha.book);
-  const coverVars: CoverVars = {
-    "--cover-bg": palette.bg,
-    "--cover-fg": palette.fg,
-    "--cover-accent": palette.accent,
-  };
-
+  const bookLabel = CHUMASH_LABELS[parasha.book];
+  const bookHebrew = CHUMASH_HEBREW[parasha.book];
   const sefariaUrl = `https://www.sefaria.org/${parasha.ref}`;
 
   return (
     <div
       id="top"
       className="container parashat-reader-page"
-      style={coverVars}
+      style={coverVars(parasha.book)}
       lang="en"
       dir="ltr"
     >
@@ -266,20 +230,28 @@ export default async function ParashatReaderPage({
         aria-label="Parashat navigation"
       >
         <Link
-          href={prev ? `/library/parashat/${prev.slug}` : "/library/parashat"}
+          href={
+            previous
+              ? `/library/parashat/${previous.slug}`
+              : "/library/parashat"
+          }
           className="book-pager-link book-pager-prev"
         >
           <span className="book-pager-dir" aria-hidden="true">
             ←
           </span>
           <span className="book-pager-text">
-            <small>{prev ? "Previous portion" : "Parashat index"}</small>
-            <strong>{prev ? prev.name : "All portions"}</strong>
+            <small>{previous ? "Previous portion" : "Parashat index"}</small>
+            <strong>{previous ? previous.name : "All portions"}</strong>
           </span>
         </Link>
 
         <Link
-          href={next ? `/library/parashat/${next.slug}` : "/library/parashat"}
+          href={
+            next
+              ? `/library/parashat/${next.slug}`
+              : "/library/parashat"
+          }
           className="book-pager-link book-pager-next"
         >
           <span className="book-pager-text">

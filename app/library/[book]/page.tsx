@@ -1,17 +1,12 @@
-// app/library/[book]/page.tsx — all chapters of one book.
-// The leather cover reuses the same deterministic binding colour as the
-// book's spine on the /library bookcase.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import { BOOKS, getBook } from "@/app/data/data";
-import { bookPalette, SECTION_HEBREW } from "@/app/lib/bookDesign";
+import { SECTION_HEBREW, coverVars } from "@/app/lib/bookDesign";
 import { pageMetadata } from "@/app/lib/metadata";
 
-// All 39 book pages are generated at build time.
 export function generateStaticParams() {
-  return BOOKS.map((b) => ({ book: b.slug }));
+  return BOOKS.map((book) => ({ book: book.slug }));
 }
 
 export async function generateMetadata({
@@ -36,12 +31,6 @@ export async function generateMetadata({
   });
 }
 
-interface CoverVars extends CSSProperties {
-  "--cover-bg": string;
-  "--cover-fg": string;
-  "--cover-accent": string;
-}
-
 export default async function BookPage({
   params,
 }: {
@@ -51,19 +40,15 @@ export default async function BookPage({
   const book = getBook(slug);
   if (!book) notFound();
 
-  const palette = bookPalette(book.slug);
-  const coverVars: CoverVars = {
-    "--cover-bg": palette.bg,
-    "--cover-fg": palette.fg,
-    "--cover-accent": palette.accent,
-  };
-
-  const position = BOOKS.findIndex((b) => b.slug === book.slug);
+  const coverStyle = coverVars(book.slug);
+  const position = BOOKS.findIndex((entry) => entry.slug === book.slug);
   const previous = position > 0 ? BOOKS[position - 1] : null;
-  const next =
-    position >= 0 && position < BOOKS.length - 1 ? BOOKS[position + 1] : null;
+  const next = position < BOOKS.length - 1 ? BOOKS[position + 1] : null;
 
-  const chapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
+  const chapters = Array.from(
+    { length: book.chapters },
+    (_, index) => index + 1,
+  );
   const chapterWord = book.chapters === 1 ? "chapter" : "chapters";
 
   return (
@@ -78,7 +63,11 @@ export default async function BookPage({
         </span>
       </nav>
 
-      <section className="book-hero" style={coverVars} aria-labelledby="book-title">
+      <section
+        className="book-hero"
+        style={coverStyle}
+        aria-labelledby="book-title"
+      >
         <div className="book-cover" aria-hidden="true">
           <div className="book-cover-frame">
             <span className="book-cover-section" lang="he">

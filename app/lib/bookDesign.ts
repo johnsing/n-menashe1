@@ -1,11 +1,28 @@
-// app/lib/bookDesign.ts — deterministic binding colours shared by the
-// bookcase index and the individual book pages.
+// Deterministic bindings shared by the bookcase index and book pages.
+import type { CSSProperties } from "react";
+
 import { BOOKS, type Book } from "@/app/data/data";
 
 export interface SpinePalette {
   bg: string;
   fg: string;
   accent: string;
+}
+
+export interface CoverVars extends CSSProperties {
+  "--cover-bg": string;
+  "--cover-fg": string;
+  "--cover-accent": string;
+}
+
+export function coverVars(slug: string): CoverVars {
+  const palette = bookPalette(slug);
+
+  return {
+    "--cover-bg": palette.bg,
+    "--cover-fg": palette.fg,
+    "--cover-accent": palette.accent,
+  };
 }
 
 /** Hebrew names for the three Tanakh sections. */
@@ -41,7 +58,7 @@ export function spineHash(slug: string): number {
 export function bookPalette(slug: string): SpinePalette {
   // Colours cycle with the book's position in the Tanakh, so two adjacent
   // volumes never share a binding. (Heights and widths still vary by hash.)
-  const index = BOOKS.findIndex((book) => book.slug === slug);
+  const position = BOOKS.findIndex((book) => book.slug === slug);
   const offset = 6; // keeps Genesis on the plum binding
-  return SPINE_PALETTES[((index >= 0 ? index : 0) + offset) % SPINE_PALETTES.length];
+  return SPINE_PALETTES[(position + offset) % SPINE_PALETTES.length];
 }

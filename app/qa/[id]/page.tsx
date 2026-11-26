@@ -1,58 +1,36 @@
-// app/qa/[id]/page.tsx — Question detail with answers thread
 "use client";
 
-import { use, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  use,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type FormEvent,
+} from "react";
 import Link from "next/link";
 import {
   FiArrowLeft,
-  FiArrowUp,
   FiCheckCircle,
   FiEye,
   FiMessageSquare,
   FiSend,
 } from "react-icons/fi";
 
+import { initials, relTime } from "@/app/data/qa-data";
 import {
-  loadQuestions,
-  saveQuestions,
-  loadVoted,
-  saveVoted,
-  loadAnswers,
-  saveAnswers,
-  relTime,
-  initials,
-  type Question,
-  type Answer,
-} from "@/app/data/qa-data";
+  postAnswer,
+  recordQuestionView,
+  voteForQuestion,
+} from "@/app/data/qa-actions";
+import {
+  getQaSnapshot,
+  subscribeQaStore,
+  type QaSnapshot,
+} from "@/app/data/qa-store";
+import VoteButton from "../VoteButton";
 
-type QaSnapshot = {
-  questions: Question[];
-  answers: Record<string, Answer[]>;
-  voted: string[];
-};
-
-const QA_STORAGE_CHANGE = "qa-storage-change";
-
-function subscribeToQaStorage(onStoreChange: () => void) {
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(QA_STORAGE_CHANGE, onStoreChange);
-  return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(QA_STORAGE_CHANGE, onStoreChange);
-  };
-}
-
-function getQaSnapshot(): string {
-  return JSON.stringify({
-    questions: loadQuestions(),
-    answers: loadAnswers(),
-    voted: [...loadVoted()],
-  });
-}
-
-function publishQaChange() {
-  window.dispatchEvent(new Event(QA_STORAGE_CHANGE));
-}
+const getUnavailableSnapshot = () => null;
 
 export default function QuestionDetailPage({
   params,
@@ -60,76 +38,42 @@ export default function QuestionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const snapshot = useSyncExternalStore(
-    subscribeToQaStorage,
+  const snapshot = useSyncExternalStore<QaSnapshot | null>(
+    subscribeQaStore,
     getQaSnapshot,
-    () => null,
+    getUnavailableSnapshot,
   );
-  const data: QaSnapshot | null = snapshot ? JSON.parse(snapshot) : null;
-  const question = data?.questions.find((item) => item.id === id) ?? null;
-  const answers = data?.answers[id] ?? [];
-  const voted = new Set(data?.voted ?? []);
-  const notFound = data !== null && question === null;
-  const viewedQuestionId = useRef<string | null>(null);
+
+  const question =
+    snapshot?.questions.find((entry) => entry.id === id) ?? null;
+  const answers = snapshot?.answers[id] ?? [];
+  const isVoted = snapshot?.voted.includes(id) ?? false;
 
   const [answerAuthor, setAnswerAuthor] = useState("");
   const [answerBody, setAnswerBody] = useState("");
+  const viewedQuestionId = useRef<string | null>(null);
 
-  // Load data + bump the view count (browser only)
   useEffect(() => {
     if (!question || viewedQuestionId.current === id) return;
     viewedQuestionId.current = id;
-
-    // increment views once per visit
-    const updated = loadQuestions().map((item) =>
-      item.id === id ? { ...item, views: item.views + 1 } : item,
-    );
-    saveQuestions(updated);
-    publishQaChange();
+    recordQuestionView(id);
   }, [id, question]);
 
-  const handleVote = () => {
-    if (!question || voted.has(question.id)) return;
-    const next = new Set(voted).add(question.id);
-    saveVoted(next);
+  function handleVote() {
+    if (!question || isVoted) return;
+    voteForQuestion(question.id);
+  }
 
-    const questions = loadQuestions().map((x) =>
-      x.id === question.id ? { ...x, votes: x.votes + 1 } : x,
-    );
-    saveQuestions(questions);
-    publishQaChange();
-  };
-
-  const handleSubmitAnswer = (e: React.FormEvent) => {
-    e.preventDefault();
+  function handleSubmitAnswer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (!question || !answerBody.trim()) return;
 
-    const author = answerAuthor.trim() || "Anonymous";
-    const answer: Answer = {
-      id: Date.now().toString(),
-      author,
-      body: answerBody.trim(),
-      createdAtTs: Date.now(),
-    };
-
-    const store = loadAnswers();
-    const list = [...(store[question.id] ?? []), answer];
-    store[question.id] = list;
-    saveAnswers(store);
-
-    // keep the denormalized count in sync
-    const questions = loadQuestions().map((x) =>
-      x.id === question.id ? { ...x, answers: list.length } : x,
-    );
-    saveQuestions(questions);
-    publishQaChange();
-
+    postAnswer(question.id, answerAuthor, answerBody);
     setAnswerAuthor("");
     setAnswerBody("");
-  };
+  }
 
-  // Server render / loading state
-  if (!data) {
+  if (!snapshot) {
     return (
       <div
         className="container qa qa-page qa-detail"
@@ -147,13 +91,9 @@ export default function QuestionDetailPage({
     );
   }
 
-  if (notFound || !question) {
+  if (!question) {
     return (
-      <div
-        className="container qa qa-page qa-detail"
-        lang="en"
-        dir="ltr"
-      >
+      <div className="container qa qa-page qa-detail" lang="en" dir="ltr">
         <nav className="qa-detail-nav" aria-label="Breadcrumb">
           <Link href="/qa" className="qa-detail-back">
             <FiArrowLeft aria-hidden="true" />
@@ -167,8 +107,8 @@ export default function QuestionDetailPage({
           </span>
           <h1>Question not found</h1>
           <p className="muted">
-            It may have been asked in a different browser, or its saved data was
-            cleared.
+            It may have been asked in a different browser, or its saved data
+            was cleared.
           </p>
           <Link href="/qa" className="btn qa-empty-reset">
             Back to all questions
@@ -187,25 +127,12 @@ export default function QuestionDetailPage({
         </Link>
       </nav>
 
-      {/* The question */}
       <article className="card qa-card qa-detail-q">
-        <button
-          type="button"
-          className={`qa-vote${voted.has(question.id) ? " voted" : ""}`}
-          onClick={handleVote}
-          disabled={voted.has(question.id)}
-          aria-pressed={voted.has(question.id)}
-          title={voted.has(question.id) ? "You already voted" : "Upvote"}
-        >
-          <FiArrowUp aria-hidden="true" />
-          <span className="qa-vote-count">{question.votes}</span>
-          <span className="qa-vote-label">Votes</span>
-          <span className="qa-sr-only">
-            {voted.has(question.id)
-              ? "Already upvoted"
-              : "Upvote this question"}
-          </span>
-        </button>
+        <VoteButton
+          votes={question.votes}
+          voted={isVoted}
+          onVote={handleVote}
+        />
 
         <div className="qa-card-body qa-detail-body">
           <div className="qa-detail-flags">
@@ -224,9 +151,9 @@ export default function QuestionDetailPage({
 
           {question.tags.length > 0 && (
             <div className="qa-card-tags">
-              {question.tags.map((t) => (
-                <span key={t} className="qa-chip">
-                  {t}
+              {question.tags.map((tag) => (
+                <span key={tag} className="qa-chip">
+                  {tag}
                 </span>
               ))}
             </div>
@@ -256,7 +183,6 @@ export default function QuestionDetailPage({
         </div>
       </article>
 
-      {/* Answers */}
       <section className="qa-answers" aria-labelledby="qa-answers-title">
         <header className="qa-answers-head">
           <div>
@@ -288,26 +214,28 @@ export default function QuestionDetailPage({
           </div>
         ) : (
           <div className="qa-answers-list">
-            {answers.map((a) => (
-              <article key={a.id} className="card qa-answer">
-                <span className="qa-avatar qa-answer-avatar" aria-hidden="true">
-                  {initials(a.author)}
+            {answers.map((answer) => (
+              <article key={answer.id} className="card qa-answer">
+                <span
+                  className="qa-avatar qa-answer-avatar"
+                  aria-hidden="true"
+                >
+                  {initials(answer.author)}
                 </span>
                 <div className="qa-answer-body">
                   <div className="qa-answer-meta">
-                    <strong>{a.author}</strong>
+                    <strong>{answer.author}</strong>
                     <span className="muted" suppressHydrationWarning>
-                      · {relTime(a.createdAtTs)}
+                      · {relTime(answer.createdAtTs)}
                     </span>
                   </div>
-                  <p className="qa-answer-text">{a.body}</p>
+                  <p className="qa-answer-text">{answer.body}</p>
                 </div>
               </article>
             ))}
           </div>
         )}
 
-        {/* Answer form */}
         <form
           onSubmit={handleSubmitAnswer}
           className="qa-form qa-answer-form"
@@ -331,7 +259,7 @@ export default function QuestionDetailPage({
               type="text"
               placeholder="e.g. David L."
               value={answerAuthor}
-              onChange={(e) => setAnswerAuthor(e.target.value)}
+              onChange={(event) => setAnswerAuthor(event.target.value)}
               autoComplete="name"
               maxLength={80}
             />
@@ -349,7 +277,7 @@ export default function QuestionDetailPage({
               maxLength={2000}
               placeholder="Share sources, explanations, or your experience…"
               value={answerBody}
-              onChange={(e) => setAnswerBody(e.target.value)}
+              onChange={(event) => setAnswerBody(event.target.value)}
             />
           </div>
 

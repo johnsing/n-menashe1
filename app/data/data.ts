@@ -1,39 +1,40 @@
-// app/library/data.ts — Tanakh books with Sefaria reference names
+// Tanakh books with the Sefaria reference names used by the reader.
 
 export interface Book {
-  slug: string;        // URL-friendly id: "genesis", "i-samuel"
-  name: string;        // Display name
-  sefaria: string;     // Sefaria API ref name: "Genesis", "I Samuel"
+  slug: string;
+  name: string;
+  /** Sefaria API book name, e.g. "I Samuel". */
+  sefaria: string;
   chapters: number;
   section: "Torah" | "Nevi'im" | "Ketuvim";
 }
 
 export const BOOKS: Book[] = [
   // Torah
-  { slug: "genesis",      name: "Genesis",      sefaria: "Genesis",      chapters: 50, section: "Torah" },
-  { slug: "exodus",       name: "Exodus",       sefaria: "Exodus",       chapters: 40, section: "Torah" },
-  { slug: "leviticus",    name: "Leviticus",    sefaria: "Leviticus",    chapters: 27, section: "Torah" },
-  { slug: "numbers",      name: "Numbers",      sefaria: "Numbers",      chapters: 36, section: "Torah" },
-  { slug: "deuteronomy",  name: "Deuteronomy",  sefaria: "Deuteronomy",  chapters: 34, section: "Torah" },
+  { slug: "genesis",      name: "Bereshit",      sefaria: "Genesis",      chapters: 50, section: "Torah" },
+  { slug: "exodus",       name: "Shemot",       sefaria: "Exodus",       chapters: 40, section: "Torah" },
+  { slug: "leviticus",    name: "Vayikra",    sefaria: "Leviticus",    chapters: 27, section: "Torah" },
+  { slug: "numbers",      name: "Bamidbar",      sefaria: "Numbers",      chapters: 36, section: "Torah" },
+  { slug: "deuteronomy",  name: "Devarim",  sefaria: "Deuteronomy",  chapters: 34, section: "Torah" },
   // Nevi'im
-  { slug: "joshua",       name: "Joshua",       sefaria: "Joshua",       chapters: 24, section: "Nevi'im" },
-  { slug: "judges",       name: "Judges",       sefaria: "Judges",       chapters: 21, section: "Nevi'im" },
+  { slug: "joshua",       name: "Yehoshua",       sefaria: "Joshua",       chapters: 24, section: "Nevi'im" },
+  { slug: "judges",       name: "Shoftim",       sefaria: "Judges",       chapters: 21, section: "Nevi'im" },
   { slug: "i-samuel",     name: "I Samuel",     sefaria: "I Samuel",     chapters: 31, section: "Nevi'im" },
   { slug: "ii-samuel",    name: "II Samuel",    sefaria: "II Samuel",    chapters: 24, section: "Nevi'im" },
-  { slug: "i-kings",      name: "I Kings",      sefaria: "I Kings",      chapters: 22, section: "Nevi'im" },
-  { slug: "ii-kings",     name: "II Kings",     sefaria: "II Kings",     chapters: 25, section: "Nevi'im" },
-  { slug: "isaiah",       name: "Isaiah",       sefaria: "Isaiah",       chapters: 66, section: "Nevi'im" },
-  { slug: "jeremiah",     name: "Jeremiah",     sefaria: "Jeremiah",     chapters: 52, section: "Nevi'im" },
-  { slug: "ezekiel",      name: "Ezekiel",      sefaria: "Ezekiel",      chapters: 48, section: "Nevi'im" },
-  { slug: "hosea",        name: "Hosea",        sefaria: "Hosea",        chapters: 14, section: "Nevi'im" },
-  { slug: "joel",         name: "Joel",         sefaria: "Joel",         chapters: 4,  section: "Nevi'im" },
+  { slug: "i-kings",      name: "I Melachim",      sefaria: "I Kings",      chapters: 22, section: "Nevi'im" },
+  { slug: "ii-kings",     name: "II Melachim",     sefaria: "II Kings",     chapters: 25, section: "Nevi'im" },
+  { slug: "isaiah",       name: "Yeshayahu",       sefaria: "Isaiah",       chapters: 66, section: "Nevi'im" },
+  { slug: "jeremiah",     name: "Yirmiyahu",     sefaria: "Jeremiah",     chapters: 52, section: "Nevi'im" },
+  { slug: "ezekiel",      name: "Yechezkel",      sefaria: "Ezekiel",      chapters: 48, section: "Nevi'im" },
+  { slug: "hosea",        name: "Hoshea",        sefaria: "Hosea",        chapters: 14, section: "Nevi'im" },
+  { slug: "joel",         name: "Yoel",         sefaria: "Joel",         chapters: 4,  section: "Nevi'im" },
   { slug: "amos",         name: "Amos",         sefaria: "Amos",         chapters: 9,  section: "Nevi'im" },
-  { slug: "obadiah",      name: "Obadiah",      sefaria: "Obadiah",      chapters: 1,  section: "Nevi'im" },
-  { slug: "jonah",        name: "Jonah",        sefaria: "Jonah",        chapters: 4,  section: "Nevi'im" },
-  { slug: "micah",        name: "Micah",        sefaria: "Micah",        chapters: 7,  section: "Nevi'im" },
+  { slug: "obadiah",      name: "Avdiah",      sefaria: "Obadiah",      chapters: 1,  section: "Nevi'im" },
+  { slug: "jonah",        name: "Yonah",        sefaria: "Jonah",        chapters: 4,  section: "Nevi'im" },
+  { slug: "micah",        name: "Mikhah",        sefaria: "Micah",        chapters: 7,  section: "Nevi'im" },
   { slug: "nahum",        name: "Nahum",        sefaria: "Nahum",        chapters: 3,  section: "Nevi'im" },
-  { slug: "habakkuk",     name: "Habakkuk",     sefaria: "Habakkuk",     chapters: 3,  section: "Nevi'im" },
-  { slug: "zephaniah",    name: "Zephaniah",    sefaria: "Zephaniah",    chapters: 3,  section: "Nevi'im" },
+  { slug: "habakkuk",     name: "Chavakuk",     sefaria: "Habakkuk",     chapters: 3,  section: "Nevi'im" },
+  { slug: "zephaniah",    name: "Tzefaniah",    sefaria: "Zephaniah",    chapters: 3,  section: "Nevi'im" },
   { slug: "haggai",       name: "Haggai",       sefaria: "Haggai",       chapters: 2,  section: "Nevi'im" },
   { slug: "zechariah",    name: "Zechariah",    sefaria: "Zechariah",    chapters: 14, section: "Nevi'im" },
   { slug: "malachi",      name: "Malachi",      sefaria: "Malachi",      chapters: 3,  section: "Nevi'im" },
@@ -55,7 +56,8 @@ export const BOOKS: Book[] = [
 
 export const SECTIONS: Book["section"][] = ["Torah", "Nevi'im", "Ketuvim"];
 
-export const getBook = (slug: string) => BOOKS.find((b) => b.slug === slug);
+export const getBook = (slug: string) =>
+  BOOKS.find((book) => book.slug === slug);
 
 export const booksBySection = (section: Book["section"]) =>
-  BOOKS.filter((b) => b.section === section);
+  BOOKS.filter((book) => book.section === section);

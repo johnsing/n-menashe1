@@ -1514,9 +1514,9 @@ a.card:active {
   color: #2d2212;
   font-family:
     "Times New Roman", "David", "Narkisim", "Noto Serif Hebrew", serif;
-  font-size: clamp(1.14rem, 1.02rem + 0.6vw, 1.38rem);
+  font-size: 1.5em;
   line-height: 1.95;
-  text-align: start;
+  text-align: justify;
   overflow-wrap: break-word;
 }
 

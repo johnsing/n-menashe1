@@ -79,7 +79,7 @@ export default function LocaleProvider({
   }, []);
 
   const t = useCallback(
-    (key: MessageKey) => messages[locale][key] ?? messages.he[key],
+    (key: MessageKey) => messages[locale][key],
     [locale],
   );
 

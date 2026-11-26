@@ -56,7 +56,7 @@ Legacy `/videos/watch/youtube/:id` links 307-redirect to the canonical
 | Lighthouse (`/qa`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/qa/[id]`) | ✅ 100 accessibility, best practices, SEO |
 | Lighthouse (`/videos`) | ✅ 100 accessibility, best practices, SEO |
-| Lighthouse (`/watch?v=JHeBK-2JDz0`) | ✅ 100 accessibility, best practices, SEO |
+| Lighthouse (`/watch?v`) | ✅ 100 accessibility, best practices, SEO |
 
 ## Strengths
 
@@ -224,9 +224,8 @@ to `use cache` + `cacheLife`; `runtime`/`preferredRegion` are deprecated.
 - The shareable player moved from `/videos/watch/[provider]/[id]` to the
   canonical `/watch?v=<id>` URL. Card titles and posters now use the new URL.
   The old YouTube route was removed, and `next.config.ts` 307-redirects it so
-  existing bookmarks keep working. `proxy.ts` validates the ID before
-  rendering, which lets invalid IDs return a real 404 even though the page
-  reads `searchParams`; the page repeats the check. The retired `provider`
+  existing bookmarks keep working. The page validates the ID before rendering
+  and rejects invalid or retired provider-scoped links. The retired `provider`
   query is rejected, so old provider-scoped links cannot load a mismatched
   video. Any valid ID renders on demand, so a shared video plays from a
   direct URL even when its title has not loaded yet, using a generic title

@@ -7,8 +7,8 @@ import { useLocale } from "@/app/components/providers/LocaleProvider";
 import { formatPhoneIL, isValidIsraeliPhone } from "@/app/lib/format";
 
 type FieldName = "name" | "email" | "phone" | "message" | "consent";
-type Errors = Partial<Record<FieldName, string>>;
-type Status = "idle" | "sending" | "success";
+type FieldErrors = Partial<Record<FieldName, string>>;
+type SubmitStatus = "idle" | "sending" | "success";
 type Topic = "general" | "accessibility" | "content" | "other";
 
 interface FormValues {
@@ -29,7 +29,7 @@ const FIELD_ORDER: FieldName[] = [
   "consent",
 ];
 
-const EMPTY: FormValues = {
+const EMPTY_FORM: FormValues = {
   name: "",
   email: "",
   phone: "",
@@ -40,11 +40,11 @@ const EMPTY: FormValues = {
 
 export default function ContactForm() {
   const { t } = useLocale();
-  const [values, setValues] = useState<FormValues>(EMPTY);
-  const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<Status>("idle");
+  const [values, setValues] = useState<FormValues>(EMPTY_FORM);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [status, setStatus] = useState<SubmitStatus>("idle");
 
-  const update = <K extends keyof FormValues>(
+  const setField = <K extends keyof FormValues>(
     field: K,
     value: FormValues[K],
   ) => {
@@ -59,8 +59,8 @@ export default function ContactForm() {
     });
   };
 
-  const validate = (): Errors => {
-    const next: Errors = {};
+  const collectErrors = (): FieldErrors => {
+    const next: FieldErrors = {};
 
     if (!values.name.trim()) {
       next.name = t("contact.requiredField");
@@ -86,10 +86,10 @@ export default function ContactForm() {
     return next;
   };
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const next = validate();
+    const next = collectErrors();
     setErrors(next);
 
     const firstInvalid = FIELD_ORDER.find((field) => next[field]);
@@ -106,17 +106,17 @@ export default function ContactForm() {
     // Demo only: connect a server action or email API before launch.
     window.setTimeout(() => {
       setStatus("success");
-      setValues(EMPTY);
+      setValues(EMPTY_FORM);
     }, 600);
   };
 
-  const errorCount = Object.keys(errors).length;
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
-    <form className="contact-form" onSubmit={onSubmit} noValidate>
+    <form className="contact-form" onSubmit={handleSubmit} noValidate>
       <p className="form-help">{t("contact.requiredHint")}</p>
 
-      {errorCount > 0 ? (
+      {hasErrors ? (
         <div className="form-error-summary" role="alert">
           <p>{t("contact.errorSummary")}</p>
           <ul>
@@ -147,9 +147,10 @@ export default function ContactForm() {
           name="name"
           className="form-input"
           autoComplete="name"
+          placeholder={t("contact.namePlaceholder")}
           required
           value={values.name}
-          onChange={(event) => update("name", event.target.value)}
+          onChange={(event) => setField("name", event.target.value)}
           aria-invalid={errors.name ? true : undefined}
           aria-describedby={
             errors.name ? "contact-name-error" : undefined
@@ -181,7 +182,7 @@ export default function ContactForm() {
             placeholder={t("contact.emailPlaceholder")}
             required
             value={values.email}
-            onChange={(event) => update("email", event.target.value)}
+            onChange={(event) => setField("email", event.target.value)}
             aria-invalid={errors.email ? true : undefined}
             aria-describedby={
               errors.email ? "contact-email-error" : undefined
@@ -208,10 +209,10 @@ export default function ContactForm() {
             className="form-input form-ltr"
             placeholder={t("contact.phonePlaceholder")}
             value={values.phone}
-            onChange={(event) => update("phone", event.target.value)}
+            onChange={(event) => setField("phone", event.target.value)}
             onBlur={() => {
               if (isValidIsraeliPhone(values.phone)) {
-                update("phone", formatPhoneIL(values.phone));
+                setField("phone", formatPhoneIL(values.phone));
               }
             }}
             aria-invalid={errors.phone ? true : undefined}
@@ -242,7 +243,7 @@ export default function ContactForm() {
           className="form-select"
           value={values.topic}
           onChange={(event) =>
-            update("topic", event.target.value as Topic)
+            setField("topic", event.target.value as Topic)
           }
         >
           <option value="general">
@@ -273,7 +274,7 @@ export default function ContactForm() {
           placeholder={t("contact.messagePlaceholder")}
           required
           value={values.message}
-          onChange={(event) => update("message", event.target.value)}
+          onChange={(event) => setField("message", event.target.value)}
           aria-invalid={errors.message ? true : undefined}
           aria-describedby={
             errors.message ? "contact-message-error" : undefined
@@ -295,7 +296,7 @@ export default function ContactForm() {
             required
             checked={values.consent}
             onChange={(event) =>
-              update("consent", event.target.checked)
+              setField("consent", event.target.checked)
             }
             aria-invalid={errors.consent ? true : undefined}
             aria-describedby={

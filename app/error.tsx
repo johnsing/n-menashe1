@@ -1,5 +1,5 @@
 "use client";
-// app/error.tsx — route-level error boundary (must be a Client Component)
+
 import { useEffect } from "react";
 import Link from "next/link";
 
@@ -11,7 +11,6 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to console (swap for your analytics later)
     console.error(error);
   }, [error]);
 

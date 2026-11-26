@@ -1,7 +1,3 @@
-// app/qa/data.ts — shared Q&A data, storage keys, helpers
-// Used by both the list page (app/qa/page.tsx) and the detail
-// page (app/qa/[id]/page.tsx) so they read/write the same data.
-
 export interface Question {
   id: string;
   title: string;
@@ -9,7 +5,7 @@ export interface Question {
   author: string;
   avatar: string;
   votes: number;
-  answers: number; // denormalized count (kept in sync with answers store)
+  answers: number;
   views: number;
   tags: string[];
   createdAtTs: number;
@@ -23,8 +19,6 @@ export interface Answer {
   createdAtTs: number;
 }
 
-// Seed timestamps are fixed so the prerendered HTML and the first client
-// render agree. Relative times are refreshed after hydration.
 const SEED_NOW = Date.UTC(2026, 10, 11, 6, 0, 0);
 const minutesAgo = (minutes: number) => SEED_NOW - minutes * 60_000;
 
@@ -97,58 +91,41 @@ export const POPULAR_TAGS = [
   "Study",
 ];
 
-export const STORAGE_Q = "n-menashe:qa";
-export const STORAGE_VOTED = "n-menashe:qa-voted";
-export const STORAGE_ANSWERS = "n-menashe:qa-answers";
+const STORAGE_QUESTIONS = "n-menashe:qa";
+const STORAGE_VOTED = "n-menashe:qa-voted";
+const STORAGE_ANSWERS = "n-menashe:qa-answers";
 
-// ── storage helpers (safe on server: return defaults) ──────
+function readStoredQuestions(): Question[] {
+  if (typeof window === "undefined") return INITIAL_QUESTIONS;
 
-export function loadQuestions(): Question[] {
-  let base: Question[];
-
-  if (typeof window === "undefined") {
-    base = INITIAL_QUESTIONS;
-  } else {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_Q);
-      if (!raw) {
-        base = INITIAL_QUESTIONS;
-      } else {
-        const parsed = JSON.parse(raw) as Question[];
-        // Tolerate older stored shapes missing newer fields.
-        base = parsed.map((q) => ({
-          ...q,
-          answers: q.answers ?? 0,
-          views: q.views ?? 0,
-          tags: q.tags ?? [],
-          createdAtTs: q.createdAtTs ?? Date.now(),
-        }));
-      }
-    } catch {
-      base = INITIAL_QUESTIONS;
-    }
+  try {
+    const raw = window.localStorage.getItem(STORAGE_QUESTIONS);
+    return raw ? (JSON.parse(raw) as Question[]) : INITIAL_QUESTIONS;
+  } catch {
+    return INITIAL_QUESTIONS;
   }
+}
 
-  // The answers store is the source of truth; `answers` is only a cached
-  // count, and older stored question lists may have stale values.
-  const answers = loadAnswers();
-  return base.map((q) => ({
-    ...q,
-    tags: [...q.tags],
-    answers: answers[q.id]?.length ?? 0,
+export function loadQuestions(answers = loadAnswers()): Question[] {
+  return readStoredQuestions().map((question) => ({
+    ...question,
+    tags: question.tags ?? [],
+    answers: answers[question.id]?.length ?? 0,
+    views: question.views ?? 0,
   }));
 }
 
 export function saveQuestions(questions: Question[]): void {
   try {
-    window.localStorage.setItem(STORAGE_Q, JSON.stringify(questions));
+    window.localStorage.setItem(STORAGE_QUESTIONS, JSON.stringify(questions));
   } catch {
-    /* private mode */
+    // Storage is unavailable in private mode.
   }
 }
 
 export function loadVoted(): Set<string> {
   if (typeof window === "undefined") return new Set();
+
   try {
     const raw = window.localStorage.getItem(STORAGE_VOTED);
     return new Set(raw ? (JSON.parse(raw) as string[]) : []);
@@ -161,7 +138,7 @@ export function saveVoted(voted: Set<string>): void {
   try {
     window.localStorage.setItem(STORAGE_VOTED, JSON.stringify([...voted]));
   } catch {
-    /* private mode */
+    // Storage is unavailable in private mode.
   }
 }
 
@@ -203,21 +180,21 @@ export const INITIAL_ANSWERS: AnswersStore = {
 
 function cloneAnswers(store: AnswersStore): AnswersStore {
   return Object.fromEntries(
-    Object.entries(store).map(([id, list]) => [
-      id,
-      Array.isArray(list) ? [...list] : [],
-    ]),
+    Object.entries(store).map(([id, answers]) => [id, [...answers]]),
   );
 }
 
 export function loadAnswers(): AnswersStore {
   if (typeof window === "undefined") return cloneAnswers(INITIAL_ANSWERS);
+
   try {
     const raw = window.localStorage.getItem(STORAGE_ANSWERS);
     if (!raw) return cloneAnswers(INITIAL_ANSWERS);
-    const parsed = JSON.parse(raw) as AnswersStore;
-    // Keep the seeded demo threads and merge in anything the user added.
-    return cloneAnswers({ ...INITIAL_ANSWERS, ...parsed });
+
+    return cloneAnswers({
+      ...INITIAL_ANSWERS,
+      ...(JSON.parse(raw) as AnswersStore),
+    });
   } catch {
     return cloneAnswers(INITIAL_ANSWERS);
   }
@@ -227,26 +204,28 @@ export function saveAnswers(store: AnswersStore): void {
   try {
     window.localStorage.setItem(STORAGE_ANSWERS, JSON.stringify(store));
   } catch {
-    /* private mode */
+    // Storage is unavailable in private mode.
   }
 }
 
-// ── misc helpers ────────────────────────────────────────────
+const RELATIVE_TIME = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
-export const relTime = (ts: number): string => {
-  const diffMin = Math.round((Date.now() - ts) / 60_000);
-  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return rtf.format(-diffMin, "minute");
-  const h = Math.round(diffMin / 60);
-  if (h < 24) return rtf.format(-h, "hour");
-  return rtf.format(-Math.round(h / 24), "day");
-};
+export function relTime(timestamp: number): string {
+  const minutes = Math.round((Date.now() - timestamp) / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return RELATIVE_TIME.format(-minutes, "minute");
 
-export const initials = (name: string): string =>
-  name
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return RELATIVE_TIME.format(-hours, "hour");
+
+  return RELATIVE_TIME.format(-Math.round(hours / 24), "day");
+}
+
+export function initials(name: string): string {
+  return name
     .split(" ")
-    .map((w) => w[0])
+    .map((word) => word[0])
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}

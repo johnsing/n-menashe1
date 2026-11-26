@@ -1,4 +1,3 @@
-// app/videos/VideoWatch.tsx — full-page player for one video.
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,10 +20,10 @@ interface VideoWatchProps {
 }
 
 function VideoMedia({
-  video,
+  videoId,
   title,
 }: {
-  video: Video;
+  videoId: string;
   title: string;
 }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -34,7 +33,7 @@ function VideoMedia({
       {isPlaying ? (
         <iframe
           className="video-embed"
-          src={`${embedUrl(video)}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`}
+          src={`${embedUrl({ id: videoId })}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`}
           title={title}
           loading="eager"
           allow={iframeAllow()}
@@ -50,7 +49,7 @@ function VideoMedia({
         >
           <Image
             className="video-watch-poster-img"
-            src={thumbnailUrl(video)}
+            src={thumbnailUrl({ id: videoId })}
             alt=""
             fill
             sizes="(max-width: 900px) 100vw, 900px"
@@ -71,26 +70,16 @@ export default function VideoWatch({
 }: VideoWatchProps) {
   const { videos } = useVideoLibrary(initialVideos);
 
-  // A valid ID can always play, even if its title is not in the shared library.
-  // The generic fallback upgrades as soon as the row loads.
-  const video: Video =
-    videos.find((entry) => entry.id === id) ?? {
-      id,
-      title: "",
-      speaker: "",
-      category: "",
-    };
-
+  // A valid ID can play before its shared row has loaded.
+  const listedVideo = videos.find((entry) => entry.id === id) ?? null;
   const moreVideos = videos.filter((entry) => entry.id !== id).slice(0, 4);
+  const title = listedVideo?.title || "YouTube video";
 
-  const title = video.title || "YouTube video";
-
-  // The shared title arrives after hydration; keep the tab label in sync with
-  // what the page is showing. Curated seed pages already match.
+  // Streamed metadata can overwrite the title after the shared row arrives.
   useEffect(() => {
-    if (!video.title) return;
+    if (!listedVideo?.title) return;
 
-    const nextTitle = `${video.title} | N-MENASHE`;
+    const nextTitle = `${listedVideo.title} | N-MENASHE`;
     const syncTitle = () => {
       if (document.title !== nextTitle) document.title = nextTitle;
     };
@@ -104,7 +93,7 @@ export default function VideoWatch({
     });
 
     return () => observer.disconnect();
-  }, [video.title]);
+  }, [listedVideo?.title]);
 
   return (
     <div
@@ -121,7 +110,7 @@ export default function VideoWatch({
 
       <article className="video-watch-card" aria-labelledby="video-watch-title">
         <div className="video-watch-media">
-          <VideoMedia key={id} video={video} title={title} />
+          <VideoMedia key={id} videoId={id} title={title} />
         </div>
 
         <div className="video-watch-body">
@@ -137,15 +126,15 @@ export default function VideoWatch({
             {title}
           </h1>
 
-          {video.speaker && (
+          {listedVideo?.speaker && (
             <p className="video-speaker video-watch-speaker">
-              {video.speaker}
+              {listedVideo.speaker}
             </p>
           )}
 
-          {video.category && (
+          {listedVideo?.category && (
             <span className="video-category-tag video-watch-category">
-              {video.category}
+              {listedVideo.category}
             </span>
           )}
         </div>
